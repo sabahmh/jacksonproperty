@@ -24,7 +24,7 @@
         header {
             background-color: #2c3e50;
             color: white;
-            padding: 6px 12px;
+            padding: 5px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -32,9 +32,36 @@
             z-index: 10;
         }
 
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .header-logo {
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: white;
+            padding: 1px;
+        }
+
+        .header-title-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
         header h1 {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 0.45rem;
+            color: #f1c40f;
+            font-weight: bold;
+            letter-spacing: 0.5px;
         }
 
         .mode-switch {
@@ -59,6 +86,36 @@
         .mode-btn.active {
             background: #3498db;
             color: white;
+        }
+
+        /* Panel Statistik Ringkas */
+        .stats-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            padding: 6px 8px;
+            background: #ffffff;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .stat-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 3px 2px;
+        }
+
+        .stat-number {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .stat-label {
+            font-size: 0.45rem;
+            color: #6c757d;
+            text-transform: uppercase;
         }
 
         .legend {
@@ -154,6 +211,10 @@
         .lot.bumi-avail { background-color: #d35400; }
         .lot.sold { background-color: #7f8c8d; }
         .lot.bumi-sold { background-color: #5d4037; }
+
+        .lot.corner-lot {
+            border: 1.5px dashed #f1c40f;
+        }
 
         .lot.is-sold::after {
             content: '✕';
@@ -284,12 +345,37 @@
 <body>
 
     <header>
-        <h1 id="headerTitle">PROJECT TAMAN SUNGAI KAYU</h1>
+        <div class="header-brand">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9sKS7o8ocx7jnNJ5DA-_CZv1c356r_iMwID9sfySZKw&s=10" alt="Logo" class="header-logo">
+            <div class="header-title-wrapper">
+                <h1 id="headerTitle">PROJECT TAMAN SUNGAI KAYU</h1>
+                <span class="header-subtitle">JACKSON PROPERTY</span>
+            </div>
+        </div>
         <div class="mode-switch">
             <button class="mode-btn active" id="btnViewMode" onclick="setMode('view')">Paparan</button>
             <button class="mode-btn" id="btnAdminMode" onclick="setMode('admin')">Pengurusan</button>
         </div>
     </header>
+
+    <div class="stats-panel">
+        <div class="stat-box">
+            <div class="stat-number" id="statAvail">0</div>
+            <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="statBumiAvail">0</div>
+            <div class="stat-label">Bumi Avail</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="statCornerAvail">0</div>
+            <div class="stat-label">Corner Avail</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number" id="statSold">0</div>
+            <div class="stat-label">Total Sold</div>
+        </div>
+    </div>
 
     <div class="legend">
         <div class="legend-item"><div class="dot available"></div><span>Available</span></div>
@@ -309,7 +395,6 @@
                 <button class="close-btn" onclick="closeModalForce()">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Status Jualan -->
                 <div class="info-row">
                     <span class="info-label">Status Jualan</span>
                     <span class="info-value view-only" id="valStatus">-</span>
@@ -318,7 +403,6 @@
                         <option value="sold">Telah Dijual (Sold)</option>
                     </select>
                 </div>
-                <!-- Jenis Lot -->
                 <div class="info-row">
                     <span class="info-label">Jenis Lot</span>
                     <span class="info-value view-only" id="valType">-</span>
@@ -327,19 +411,24 @@
                         <option value="Bumi Lot">Bumi Lot</option>
                     </select>
                 </div>
-                <!-- Harga -->
+                <div class="info-row">
+                    <span class="info-label">Kategori Corner</span>
+                    <span class="info-value view-only" id="valCorner">-</span>
+                    <select id="editCorner" class="info-input admin-only hidden" onchange="saveLotData()">
+                        <option value="no">Lot Biasa (Intermediate)</option>
+                        <option value="yes">Corner Lot</option>
+                    </select>
+                </div>
                 <div class="info-row">
                     <span class="info-label">Harga (RM)</span>
                     <span class="info-value view-only" id="valPrice">-</span>
                     <input type="text" id="editPrice" class="info-input admin-only hidden" oninput="saveLotData()" placeholder="Cth: RM 350,000">
                 </div>
-                <!-- Saiz Tanah -->
                 <div class="info-row">
                     <span class="info-label">Saiz Tanah</span>
                     <span class="info-value view-only" id="valSize">-</span>
                     <input type="text" id="editSize" class="info-input admin-only hidden" oninput="saveLotData()">
                 </div>
-                <!-- Spesifikasi -->
                 <div class="info-row">
                     <span class="info-label">Spesifikasi</span>
                     <span class="info-value view-only" id="valSpecs">-</span>
@@ -353,6 +442,7 @@
     <script>
         const defaultBumiLots = [58, 61, 63, 66, 69, 110, 108, 105, 100, 97, 113, 117, 119, 122, 125, 157, 155, 152, 149, 146, 143];
         const defaultSoldLots = [59, 61, 63, 66, 108, 105, 97, 113, 119, 122, 155, 152, 146, 143];
+        const defaultCornerLots = [56, 62, 103, 111, 150];
         
         const blocksData = {
             "BLOCK A": [56, 57, 58, 59, 60, 61],
@@ -369,15 +459,11 @@
         let activeLotNo = null;
         let currentMode = 'view';
 
-        // Fungsi pembantu untuk memformat harga supaya sentiasa ada tanda koma (cth: 350000 -> 350,000)
         function formatPrice(val) {
             if (!val) return 'RM 0';
-            // Buang semua aksara selain nombor untuk pengiraan/pemformatan bersih
             let cleaned = val.toString().replace(/[^\d]/g, '');
-            if (!cleaned) return val; // Jika pengguna taip teks bebas selain nombor
+            if (!cleaned) return val;
             let formattedNumber = Number(cleaned).toLocaleString('en-US');
-            
-            // Kekalkan prefiks 'RM ' jika sebelum ini ada
             if (val.toUpperCase().includes('RM')) {
                 return `RM ${formattedNumber}`;
             }
@@ -387,6 +473,7 @@
         function getLotInfo(lotNo) {
             const isDefaultBumi = defaultBumiLots.includes(lotNo);
             const isDefaultSold = defaultSoldLots.includes(lotNo);
+            const isDefaultCorner = defaultCornerLots.includes(lotNo);
 
             const custom = customLotData[lotNo] || {};
             let rawPrice = custom.price !== undefined ? custom.price : (isDefaultBumi ? 'RM 330,000' : 'RM 350,000');
@@ -394,11 +481,41 @@
             return {
                 status: custom.status !== undefined ? custom.status : (isDefaultSold ? 'sold' : 'available'),
                 type: custom.type !== undefined ? custom.type : (isDefaultBumi ? 'Bumi Lot' : 'Non-Bumi Lot'),
-                price: formatPrice(rawPrice), // Sentiasa pastikan paparan ada tanda koma
+                isCorner: custom.isCorner !== undefined ? custom.isCorner : (isDefaultCorner ? 'yes' : 'no'),
+                price: formatPrice(rawPrice),
                 rawPrice: rawPrice,
                 size: custom.size !== undefined ? custom.size : "22' x 70'",
                 specs: custom.specs !== undefined ? custom.specs : "4 Bilik Tidur, 2 Bilik Air"
             };
+        }
+
+        function updateStatistics() {
+            let totalAvailable = 0;
+            let bumiAvailable = 0;
+            let cornerAvailable = 0;
+            let totalSold = 0;
+
+            Object.values(blocksData).forEach(blockLots => {
+                blockLots.forEach(lotNo => {
+                    const info = getLotInfo(lotNo);
+                    if (info.status === 'available') {
+                        totalAvailable++;
+                        if (info.type === 'Bumi Lot') {
+                            bumiAvailable++;
+                        }
+                        if (info.isCorner === 'yes') {
+                            cornerAvailable++;
+                        }
+                    } else if (info.status === 'sold') {
+                        totalSold++;
+                    }
+                });
+            });
+
+            document.getElementById('statAvail').innerText = totalAvailable;
+            document.getElementById('statBumiAvail').innerText = bumiAvailable;
+            document.getElementById('statCornerAvail').innerText = cornerAvailable;
+            document.getElementById('statSold').innerText = totalSold;
         }
 
         function setMode(mode) {
@@ -437,6 +554,7 @@
                         const info = getLotInfo(lotNo);
                         const isSold = info.status === 'sold';
                         const isBumi = info.type === 'Bumi Lot';
+                        const isCorner = info.isCorner === 'yes';
 
                         const lotEl = document.createElement('div');
                         let className = 'lot ';
@@ -444,6 +562,10 @@
                             className += isSold ? 'bumi-sold is-sold' : 'bumi-avail';
                         } else {
                             className += isSold ? 'sold is-sold' : 'available';
+                        }
+                        
+                        if (isCorner) {
+                            className += ' corner-lot';
                         }
                         
                         lotEl.className = className;
@@ -473,6 +595,8 @@
             openSpace.className = 'open-space';
             openSpace.innerText = 'OPEN SPACE 1';
             container.appendChild(openSpace);
+
+            updateStatistics();
         }
 
         function loadLot(lotNo) {
@@ -481,16 +605,16 @@
 
             document.getElementById('modalTitle').innerText = `Lot Rumah No. ${lotNo}`;
             
-            // Paparan View Mode (Harga dengan tanda koma automatik)
             document.getElementById('valStatus').innerText = info.status === 'sold' ? 'Telah Dijual (Sold)' : 'Masih Kosong (Available)';
             document.getElementById('valType').innerText = info.type;
+            document.getElementById('valCorner').innerText = info.isCorner === 'yes' ? 'Corner Lot' : 'Lot Biasa (Intermediate)';
             document.getElementById('valPrice').innerText = info.price;
             document.getElementById('valSize').innerText = info.size;
             document.getElementById('valSpecs').innerText = info.specs;
 
-            // Paparan Admin Mode (Input)
             document.getElementById('editStatus').value = info.status;
             document.getElementById('editType').value = info.type;
+            document.getElementById('editCorner').value = info.isCorner;
             document.getElementById('editPrice').value = info.rawPrice;
             document.getElementById('editSize').value = info.size;
             document.getElementById('editSpecs').value = info.specs;
@@ -527,6 +651,7 @@
             customLotData[activeLotNo] = {
                 status: document.getElementById('editStatus').value,
                 type: document.getElementById('editType').value,
+                isCorner: document.getElementById('editCorner').value,
                 price: rawPriceInput,
                 size: document.getElementById('editSize').value,
                 specs: document.getElementById('editSpecs').value
@@ -534,9 +659,9 @@
 
             localStorage.setItem('tamanSun_customLotData', JSON.stringify(customLotData));
             
-            // Kemaskini paparan nilai teks biasa dengan format koma
             document.getElementById('valStatus').innerText = document.getElementById('editStatus').value === 'sold' ? 'Telah Dijual (Sold)' : 'Masih Kosong (Available)';
             document.getElementById('valType').innerText = document.getElementById('editType').value;
+            document.getElementById('valCorner').innerText = document.getElementById('editCorner').value === 'yes' ? 'Corner Lot' : 'Lot Biasa (Intermediate)';
             document.getElementById('valPrice').innerText = formatPrice(rawPriceInput);
             document.getElementById('valSize').innerText = document.getElementById('editSize').value;
             document.getElementById('valSpecs').innerText = document.getElementById('editSpecs').value;
