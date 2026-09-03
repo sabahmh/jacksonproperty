@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masterplan Hartanah - Papar & Edit</title>
+    <!-- Masukkan SDK Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --available: #10b981;
+            --reserved: #f59e0b;
+            --sold: #ef4444;
+            --bumi: #10b981;
+            --non-bumi: #8b5cf6;
+            --corner: #0ea5e9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 6px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-logo {
+            max-width: 32px;
+            height: auto;
+            display: block;
+        }
+
+        .header-title h2 { margin: 0; font-size: 13px; font-weight: 700; }
+        .header-title p { color: var(--text-muted); margin: 0; font-size: 9px; }
+
+        .admin-bar {
+            display: flex;
+            gap: 4px;
+        }
+        .mode-btn {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background: #2563eb;
+            border-color: #3b82f6;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 100%;
+        }
+
+        .map-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .map-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            border-radius: 4px;
+            overflow: auto;
+            background: #000;
+            max-height: 220px;
+        }
+
+        .map-container img {
+            display: block;
+            width: 100%;
+            height: auto;
+            min-width: 500px;
+            filter: contrast(1.1) brightness(1.05);
+        }
+
+        .dashboard-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .stat-card {
+            background: #0f172a;
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 4px;
+        }
+        .stat-card span { font-size: 13px; font-weight: bold; }
+        .stat-card.avail span { color: var(--available); }
+        .stat-card.res span { color: var(--reserved); }
+        .stat-card.sold span { color: var(--sold); }
+        .stat-card label { font-size: 9px; color: var(--text-muted); }
+
+        .controls-bar {
+            display: grid;
+            grid-template-columns: 1.2fr 1.1fr 1fr 1fr;
+            gap: 3px;
+            margin-bottom: 6px;
+        }
+
+        .controls-bar input, .controls-bar select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 6px 3px;
+            border-radius: 4px;
+            font-size: 9.5px;
+            outline: none;
+            box-sizing: border-box;
+            text-overflow: ellipsis;
+        }
+
+        .card-list {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding-right: 2px;
+        }
+
+        .lot-card {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: default;
+        }
+
+        .lot-info .lot-title { 
+            margin: 0 0 2px 0; 
+            font-size: 15px; 
+            font-weight: 800; 
+            color: #38bdf8; 
+        }
+        
+        .lot-info .lot-price { 
+            font-size: 15px; 
+            font-weight: bold; 
+            color: #f8fafc; 
+        }
+
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 3px;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-available { background: rgba(16, 185, 129, 0.2); color: var(--available); border: 1px solid var(--available); }
+        .badge-reserved  { background: rgba(245, 158, 11, 0.2); color: var(--reserved); border: 1px solid var(--reserved); }
+        .badge-sold      { background: rgba(239, 68, 68, 0.2); color: var(--sold); border: 1px solid var(--sold); }
+        
+        .badge-bumi     { background: rgba(16, 185, 129, 0.2); color: var(--bumi); border: 1px solid var(--bumi); }
+        .badge-nonbumi  { background: rgba(139, 92, 246, 0.2); color: var(--non-bumi); border: 1px solid var(--non-bumi); }
+        .badge-corner   { background: rgba(14, 165, 233, 0.2); color: var(--corner); border: 1px solid var(--corner); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            width: 85%;
+            max-width: 300px;
+        }
+        .modal-content h3 { margin-top: 0; font-size: 15px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; text-align: left; }
+        .form-group label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+        
+        .modal-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .modal-btns button {
+            flex: 1;
+            padding: 10px 0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+        .btn-save { background: #2563eb; color: white; }
+        .btn-save:active { background: #1d4ed8; }
+        .btn-cancel { background: #475569; color: white; }
+        .btn-cancel:active { background: #334155; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo Baru" class="brand-logo">
+            <div class="header-title">
+                <h2>Taman Villa Lestari K.M</h2>
+                <p id="modeDesc">Jackson Property</p>
+            </div>
+        </div>
+        <div class="admin-bar">
+            <button class="mode-btn active" id="btnViewMode" onclick="setMode('view')">Papar</button>
+            <button class="mode-btn" id="btnEditMode" onclick="setMode('edit')">Edit</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        
+        <!-- PELAN TAPAK -->
+        <div class="map-section">
+            <div class="map-container" id="mapContainer">
+                <img src="https://i.ibb.co/LzL0ZSrG/lot-rumah.jpg" alt="Pelan Tapak">
+            </div>
+        </div>
+
+        <!-- DASHBOARD & KAD -->
+        <div class="dashboard-section">
+            <div class="stats-grid">
+                <div class="stat-card avail">
+                    <span id="countAvail">0</span>
+                    <label>Available</label>
+                </div>
+                <div class="stat-card res">
+                    <span id="countRes">0</span>
+                    <label>Reserved</label>
+                </div>
+                <div class="stat-card sold">
+                    <span id="countSold">0</span>
+                    <label>Sold</label>
+                </div>
+            </div>
+
+            <!-- KAWALAN CARIAN & 3 DROP-DOWN SEBARIS -->
+            <div class="controls-bar">
+                <input type="text" id="searchInput" placeholder="Cari No..." onkeyup="filterCards()">
+                
+                <select id="filterCategory" onchange="filterCards()">
+                    <option value="all">Kategori</option>
+                    <option value="BUMI">BUMI</option>
+                    <option value="NON-BUMI">NON-BUMI</option>
+                </select>
+
+                <select id="filterType" onchange="filterCards()">
+                    <option value="all">Jenis</option>
+                    <option value="BIASA">Inter</option>
+                    <option value="CORNER">Corner</option>
+                </select>
+
+                <select id="filterStatus" onchange="filterCards()">
+                    <option value="all">Status</option>
+                    <option value="available">Avail</option>
+                    <option value="reserved">Res</option>
+                    <option value="sold">Sold</option>
+                </select>
+            </div>
+
+            <div class="card-list" id="cardListContainer">
+                <!-- Dijana Automatik -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL EDIT LOT -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3>Edit Maklumat Lot <span id="modalLotTitle"></span></h3>
+            <input type="hidden" id="editLotNum">
+            
+            <div class="form-group">
+                <label>Status Lot:</label>
+                <select id="editStatus">
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Harga (RM):</label>
+                <input type="text" id="editPrice" placeholder="Cth: 350,000" oninput="formatInputPrice(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Kategori (BUMI / NON-BUMI):</label>
+                <select id="editRemark">
+                    <option value="BUMI">BUMI</option>
+                    <option value="NON-BUMI">NON-BUMI</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Jenis Lot (CORNER / BIASA):</label>
+                <select id="editType">
+                    <option value="BIASA">BIASA (Inter)</option>
+                    <option value="CORNER">CORNER</option>
+                </select>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal()">Batal</button>
+                <button class="btn-save" onclick="saveLotData()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Konfigurasi Firebase Projek Villalestari
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8WMMi-VrGuoN-yskdc6_yPSpP2spggik",
+            authDomain: "villalestari.firebaseapp.com",
+            databaseURL: "https://villalestari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "villalestari",
+            storageBucket: "villalestari.firebasestorage.app",
+            messagingSenderId: "1044557383917",
+            appId: "1:1044557383917:web:49bdea24da2fc7e99f24e4",
+            measurementId: "G-3X014WL37T"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const allLots = [];
+        for (let i = 1; i <= 122; i++) {
+            allLots.push(i.toString());
+        }
+
+        const defaultCornerLots = [1, 14, 15, 24, 25, 33, 34, 43, 44, 56, 57, 66, 67, 78, 79, 90, 91, 102, 103, 112, 113, 122];
+
+        function isBumiDefault(lotNum) {
+            let n = parseInt(lotNum);
+            let inRange1 = (n >= 34 && n <= 56);
+            let inRange2 = (n >= 79 && n <= 92);
+            return inRange1 || inRange2;
+        }
+
+        let currentMode = 'view';
+        let lotsCache = {};
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btnViewMode').classList.toggle('active', mode === 'view');
+            document.getElementById('btnEditMode').classList.toggle('active', mode === 'edit');
+            
+            const desc = document.getElementById('modeDesc');
+            const lotCards = document.querySelectorAll('.lot-card');
+
+            if(mode === 'view') {
+                desc.innerText = "Jackson Property";
+                lotCards.forEach(c => c.style.cursor = 'default');
+            } else {
+                desc.innerText = "Mod Edit: Sentuh kad lot.";
+                lotCards.forEach(c => c.style.cursor = 'pointer');
+            }
+        }
+
+        function formatNumberWithComma(value) {
+            let cleanVal = value.toString().replace(/\D/g, '');
+            if (!cleanVal) return '';
+            return Number(cleanVal).toLocaleString('en-US');
+        }
+
+        function formatInputPrice(input) {
+            let cursorPosition = input.selectionStart;
+            let originalLength = input.value.length;
+            
+            let formatted = formatNumberWithComma(input.value);
+            input.value = formatted;
+            
+            let newLength = input.value.length;
+            cursorPosition = cursorPosition + (newLength - originalLength);
+            input.setSelectionRange(cursorPosition, cursorPosition);
+        }
+
+        function getLotData(lotNum) {
+            if (lotsCache[lotNum]) {
+                return lotsCache[lotNum];
+            }
+            
+            let isCornerDefault = defaultCornerLots.includes(parseInt(lotNum));
+            let isBumi = isBumiDefault(lotNum);
+            
+            return { 
+                status: 'available', 
+                price: '350,000', 
+                remark: isBumi ? 'BUMI' : 'NON-BUMI', 
+                type: isCornerDefault ? 'CORNER' : 'BIASA' 
+            };
+        }
+
+        function saveLotFullData(lotNum, status, price, remark, type) {
+            const data = { status, price, remark, type };
+            db.ref('taman_villa_lestari/lots/' + lotNum).set(data)
+              .then(() => {
+                  console.log("Data berjaya disimpan ke awan!");
+              })
+              .catch((error) => {
+                  alert("Gagal menyimpan: " + error.message);
+              });
+        }
+
+        function handleCardClick(lotNum) {
+            if (currentMode === 'view') {
+                return; 
+            }
+            openModal(lotNum);
+        }
+
+        function openModal(lotNum) {
+            const data = getLotData(lotNum);
+            document.getElementById('modalLotTitle').innerText = lotNum;
+            document.getElementById('editLotNum').value = lotNum;
+            document.getElementById('editStatus').value = data.status;
+            document.getElementById('editPrice').value = formatNumberWithComma(data.price);
+            document.getElementById('editRemark').value = data.remark;
+            document.getElementById('editType').value = data.type || 'BIASA';
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveLotData() {
+            const lotNum = document.getElementById('editLotNum').value;
+            const status = document.getElementById('editStatus').value;
+            let rawPrice = document.getElementById('editPrice').value;
+            let price = rawPrice ? formatNumberWithComma(rawPrice) : '350,000';
+            const remark = document.getElementById('editRemark').value;
+            const type = document.getElementById('editType').value;
+
+            saveLotFullData(lotNum, status, price, remark, type);
+            closeModal();
+        }
+
+        function updateUI() {
+            let availCount = 0, resCount = 0, soldCount = 0;
+            const container = document.getElementById('cardListContainer');
+            container.innerHTML = '';
+
+            allLots.forEach(lotNum => {
+                let data = getLotData(lotNum);
+
+                if (data.status === 'available') availCount++;
+                else if (data.status === 'reserved') resCount++;
+                else if (data.status === 'sold') soldCount++;
+
+                let formattedPrice = formatNumberWithComma(data.price);
+
+                let card = document.createElement('div');
+                card.className = `lot-card`;
+                card.setAttribute('data-lot', lotNum);
+                card.setAttribute('data-status', data.status);
+                card.setAttribute('data-remark', data.remark);
+                card.setAttribute('data-type', data.type || 'BIASA');
+                card.onclick = () => handleCardClick(lotNum);
+                card.style.cursor = (currentMode === 'edit') ? 'pointer' : 'default';
+
+                let remarkClass = data.remark === 'BUMI' ? 'badge-bumi' : 'badge-nonbumi';
+                
+                let cornerBadgeHTML = '';
+                if (data.type === 'CORNER') {
+                    cornerBadgeHTML = `<div class="badge badge-corner">CORNER</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="lot-info">
+                        <div class="lot-title">Lot ${lotNum}</div>
+                        <div class="lot-price">RM ${formattedPrice}</div>
+                    </div>
+                    <div class="badge-group">
+                        <div class="badge-row">
+                            ${cornerBadgeHTML}
+                            <div class="badge ${remarkClass}">${data.remark}</div>
+                        </div>
+                        <div class="badge badge-${data.status}">${data.status}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('countAvail').innerText = availCount;
+            document.getElementById('countRes').innerText = resCount;
+            document.getElementById('countSold').innerText = soldCount;
+
+            filterCards();
+        }
+
+        function filterCards() {
+            let query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let catFilter = document.getElementById('filterCategory').value;
+            let typeFilter = document.getElementById('filterType').value;
+            let statusFilter = document.getElementById('filterStatus').value;
+            let cards = document.querySelectorAll('.lot-card');
+
+            cards.forEach(card => {
+                let lotNum = card.getAttribute('data-lot');
+                let status = card.getAttribute('data-status');
+                let remark = card.getAttribute('data-remark');
+                let type = card.getAttribute('data-type');
+
+                let matchSearch = lotNum.includes(query);
+                let matchCat = (catFilter === 'all' || remark === catFilter);
+                let matchType = (typeFilter === 'all' || type === typeFilter);
+                let matchStatus = (statusFilter === 'all' || status === statusFilter);
+
+                if (matchSearch && matchCat && matchType && matchStatus) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Dengar perubahan data secara masa nyata (Real-time listener dari Firebase)
+        window.onload = function() {
+            db.ref('taman_villa_lestari/lots').on('value', (snapshot) => {
+                lotsCache = snapshot.val() || {};
+                updateUI();
+            });
+        };
+    </script>
+</body>
+</html>
