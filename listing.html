@@ -11,236 +11,201 @@
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-16 select-none" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="propertyApp()">
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-3 py-2 shadow-xs">
+<body class="bg-slate-100 text-slate-800 font-sans pb-10 select-none text-[11px]" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="propertyApp()">
+    <!-- Header Ultra Kompak -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-2 py-1 shadow-2xs">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Maxxan Logo" class="w-7 h-7 object-contain rounded-sm border border-slate-100 shadow-2xs">
+            <div class="flex items-center gap-1.5">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-5 h-5 object-contain rounded-xs">
                 <div>
-                    <h1 class="text-xs font-bold text-slate-900 leading-tight">🏠 Listing Jackson Property</h1>
-                    <p class="text-[10px] text-slate-500 font-medium" x-text="isAdmin ? '✨ Mod Admin (Boleh Edit)' : '👁️ Mod Awam (Papar Sahaja)'"></p>
+                    <h1 class="font-bold text-slate-900 leading-none text-xs">🏠 Listing Jackson</h1>
+                    <span class="text-[8px] font-semibold text-slate-500" x-text="isAdmin ? '⚡ Admin' : '👁️ Papar'"></span>
                 </div>
             </div>
-            <div class="flex gap-1.5">
+            <div class="flex gap-1">
                 <template x-if="!isAdmin">
-                    <button @click="openLoginModal = true" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1 rounded-md text-[11px] font-semibold transition shadow-xs">
-                        🔑 Login
-                    </button>
+                    <button @click="isAdmin = true" class="bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-semibold">🔑 Admin</button>
                 </template>
                 <template x-if="isAdmin">
-                    <button @click="logout" class="bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-md text-[11px] font-semibold transition shadow-xs">
-                        Logout
-                    </button>
+                    <div class="flex gap-1">
+                        <button @click="openAddModal = true" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-semibold">+ Tambah</button>
+                        <button @click="isAdmin = false" class="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] font-semibold">👁️ Keluar</button>
+                    </div>
                 </template>
-                <template x-if="isAdmin">
-                    <button @click="openAddModal = true" class="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-md text-[11px] font-semibold shadow-xs transition">
-                        + Tambah
-                    </button>
-                </template>
-                <button @click="exportToCSV" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded-md text-[11px] font-semibold shadow-xs transition">
-                    CSV
-                </button>
             </div>
         </div>
     </header>
-    <main class="max-w-4xl mx-auto p-2.5 space-y-2.5">
-        <div class="bg-white p-2.5 rounded-lg shadow-xs border border-slate-200 space-y-2">
-            <div>
-                <input type="text" x-model="search" placeholder="🔍 Cari hartanah, nota, owner..." class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
-            </div>
-            <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-                <select x-model="statusFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Status (Semua)</option>
+
+    <main class="max-w-4xl mx-auto p-1.5 space-y-1.5">
+        <!-- Carian & Filter Mikro -->
+        <div class="bg-white p-1.5 rounded shadow-2xs border border-slate-200 space-y-1">
+            <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-1 bg-slate-50 border border-slate-200 rounded text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1">
+                <select x-model="statusFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Status</option>
                     <option value="AVAILABLE">AVAILABLE</option>
                     <option value="SOLD">SOLD</option>
                 </select>
-                <select x-model="zoneFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Zon (Semua)</option>
+                <select x-model="zoneFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Zon</option>
                     <option value="SDK">SDK</option>
                     <option value="KK">KK</option>
                     <option value="TWU">TWU</option>
                 </select>
-                <select x-model="forFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Urusan (Semua)</option>
+                <select x-model="forFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Urusan</option>
                     <option value="SELL">SELL</option>
                     <option value="RENT">RENT</option>
                 </select>
-                <select x-model="typeFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Jenis (Semua)</option>
+                <select x-model="typeFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Jenis</option>
                     <option value="APT">APT</option>
                     <option value="LANDED">LANDED</option>
                     <option value="COMMERCIAL">COMMERCIAL</option>
                 </select>
-                <select x-model="ownerFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500 col-span-2 sm:col-span-1">
-                    <option value="">Owner (Semua)</option>
+                <select x-model="ownerFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Owner</option>
                     <template x-for="own in uniqueOwners">
                         <option :value="own" x-text="own"></option>
                     </template>
                 </select>
-            </div>
-            <div class="flex justify-between items-center pt-1.5 border-t border-slate-100 text-[11px]">
-                <span class="text-slate-500 font-semibold">Susunan:</span>
-                <select x-model="sortBy" class="px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500 font-medium">
-                    <option value="name_asc">Nama (A - Z)</option>
-                    <option value="name_desc">Nama (Z - A)</option>
-                    <option value="price_asc">Harga (Rendah ➔ Tinggi)</option>
-                    <option value="price_desc">Harga (Tinggi ➔ Rendah)</option>
+                <select x-model="sortBy" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="name_asc">Nama (A-Z)</option>
+                    <option value="name_desc">Nama (Z-A)</option>
+                    <option value="price_asc">Harga ⬆</option>
+                    <option value="price_desc">Harga ⬇</option>
                 </select>
             </div>
         </div>
-        <div class="space-y-2">
+
+        <!-- Senarai Listing (Ultra-Compact Mobile Row) -->
+        <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
             <template x-for="(item, id) in filteredProperties" :key="id">
-                <div class="bg-white p-3 rounded-lg shadow-xs border border-slate-200 space-y-2 relative">
-                    <div class="flex justify-between items-start gap-1.5">
-                        <div>
-                            <div class="flex items-center gap-1.5 mb-0.5">
-                                <span class="px-1.5 py-0.2 text-[9px] font-bold rounded bg-indigo-50 text-indigo-600" x-text="item.ZONE"></span>
-                                <span class="px-1.5 py-0.2 text-[9px] font-medium rounded bg-slate-100 text-slate-700" x-text="item.TYPE"></span>
-                                <span class="text-[9px] text-slate-400 font-medium uppercase" x-text="item.FOR"></span>
+                <div class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50 transition">
+                    <!-- Kiri: Badge & Nama Hartanah -->
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                        <div class="flex flex-col gap-0.5 shrink-0">
+                            <span class="px-1 py-0 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase text-center" x-text="item.ZONE"></span>
+                            <span class="px-1 py-0 text-[7px] font-medium rounded bg-slate-100 text-slate-600 uppercase text-center" x-text="item.TYPE"></span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-slate-900 truncate text-[11px] uppercase" x-text="item.PROPERTY"></span>
+                                <span class="text-[8px] font-bold text-slate-400 shrink-0" x-text="'[' + item.FOR + ']'"></span>
                             </div>
-                            <h2 class="text-xs font-bold text-slate-900 leading-tight" x-text="item.PROPERTY"></h2>
-                        </div>
-                        <div>
-                            <span :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'" class="px-2 py-0.5 text-[9px] font-bold rounded-full uppercase" x-text="item.STATUS"></span>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2 rounded-md text-xs">
-                        <div>
-                            <span class="text-slate-400 block text-[9px] uppercase font-semibold">Harga</span>
-                            <span class="font-bold text-blue-600 text-xs" x-text="'RM ' + item.PRICE"></span>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 block text-[9px] uppercase font-semibold">Owner / Agen</span>
-                            <span class="font-medium text-slate-700 truncate block text-[11px]" x-text="item.OWNER || '-'"></span>
+                            <div class="flex items-center gap-1.5 text-[9px] text-slate-500 leading-tight">
+                                <span class="truncate">Own: <strong class="text-slate-700" x-text="item.OWNER || '-'"></strong></span>
+                                <template x-if="item.REMARK">
+                                    <span class="text-amber-600 bg-amber-50 px-1 rounded truncate max-w-[120px]" x-text="item.REMARK"></span>
+                                </template>
+                            </div>
                         </div>
                     </div>
-                    <template x-if="item.REMARK">
-                        <p class="text-[11px] text-slate-600 bg-amber-50 border border-amber-100 px-2 py-1 rounded" x-text="item.REMARK"></p>
-                    </template>
-                    <div class="flex justify-between items-center pt-1.5 border-t border-slate-100 text-xs">
+
+                    <!-- Kanan: Harga, Status & Aksi Ringkas -->
+                    <div class="flex items-center gap-2 shrink-0 text-right">
                         <div>
+                            <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
+                            <div class="flex items-center justify-end gap-1">
+                                <span :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'" class="px-1 py-0 text-[7px] font-bold rounded uppercase" x-text="item.STATUS"></span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1 border-l border-slate-100 pl-1.5">
                             <template x-if="item.URL">
-                                <a :href="item.URL" target="_blank" class="text-blue-600 font-semibold hover:underline flex items-center gap-1 text-[11px]">
-                                    🔗 Pautan Iklan
-                                </a>
+                                <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs p-0.5" title="Pautan">🔗</a>
                             </template>
-                            <template x-if="!item.URL">
-                                <span class="text-slate-400 text-[11px]">Tiada pautan</span>
+                            <template x-if="isAdmin">
+                                <div class="flex gap-0.5">
+                                    <button @click="editItem(id, item)" class="px-1 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-medium">Edit</button>
+                                    <button @click="deleteItem(id)" class="px-1 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[9px] font-medium">Padam</button>
+                                </div>
                             </template>
                         </div>
-                        <template x-if="isAdmin">
-                            <div class="flex gap-1">
-                                <button @click="editItem(id, item)" class="text-blue-600 hover:text-blue-800 font-medium px-2 py-0.5 bg-blue-50 rounded text-[11px] transition">
-                                    Edit
-                                </button>
-                                <button @click="deleteItem(id)" class="text-rose-500 hover:text-rose-700 font-medium px-2 py-0.5 bg-rose-50 rounded text-[11px] transition">
-                                    Padam
-                                </button>
-                            </div>
-                        </template>
                     </div>
                 </div>
             </template>
             <template x-if="Object.keys(filteredProperties).length === 0">
-                <div class="bg-white p-6 rounded-lg text-center text-slate-400 border border-slate-200 text-xs">
-                    Tiada rekod hartanah ditemui mengikut penapis ini.
+                <div class="p-6 text-center text-slate-400 text-xs">
+                    Tiada rekod hartanah ditemui.
                 </div>
             </template>
         </div>
-        <!-- LOGIN MODAL -->
-        <div x-show="openLoginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;">
-            <div @click.outside="openLoginModal = false" class="bg-white rounded-xl max-w-sm w-full p-4 shadow-xl border border-slate-100 space-y-3">
-                <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="text-sm font-bold text-slate-900">🔐 Admin Login</h3>
-                    <button @click="openLoginModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-base">&times;</button>
+
+        <!-- MODAL TAMBAH / EDIT -->
+        <div x-show="openAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 z-50" style="display: none;">
+            <div @click.outside="closeModal()" class="bg-white rounded-lg max-w-md w-full p-3 shadow-xl border border-slate-100 space-y-2">
+                <div class="flex justify-between items-center border-b pb-1">
+                    <h3 class="font-bold text-slate-900 text-xs" x-text="editId ? 'Kemas Kini Listing' : 'Tambah Listing Baru'"></h3>
+                    <button @click="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">&times;</button>
                 </div>
-                <div class="space-y-2.5">
+                <form @submit.prevent="addItem" class="space-y-1.5">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Email Admin</label>
-                        <input type="email" id="adminEmail" placeholder="Masukkan e-mel anda" autocomplete="email" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Nama Hartanah / Projek</label>
+                        <input type="text" x-model="form.PROPERTY" @input="form.PROPERTY = form.PROPERTY.toUpperCase()" required placeholder="Cth: TAMAN INDAH JAYA" class="w-full px-2 py-1 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 uppercase">
                     </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Password</label>
-                        <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" onkeydown="if(event.key === 'Enter') login()" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
-                    </div>
-                    <button onclick="login()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-xs font-semibold shadow-sm">LOGIN</button>
-                </div>
-            </div>
-        </div>
-        <!-- ADD / EDIT MODAL -->
-        <div x-show="openAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center sm:p-3 z-50" style="display: none;">
-            <div @click.outside="closeModal()" class="bg-white rounded-t-xl sm:rounded-xl max-w-lg w-full p-4 shadow-xl border border-slate-100 max-h-[85vh] overflow-y-auto space-y-3">
-                <div class="flex justify-between items-center border-b pb-2">
-                    <h3 class="text-sm font-bold text-slate-900" x-text="editId ? 'Kemas Kini Listing' : 'Tambah Listing Baru'"></h3>
-                    <button @click="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold text-base">&times;</button>
-                </div>
-                <form @submit.prevent="addItem" class="space-y-2.5">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Hartanah / Projek</label>
-                        <input type="text" x-model="form.PROPERTY" required placeholder="Cth: TAMAN INDAH JAYA" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-1.5">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Urusan</label>
-                            <select x-model="form.FOR" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Urusan</label>
+                            <select x-model="form.FOR" class="w-full px-2 py-1 border rounded text-xs outline-none">
                                 <option value="SELL">SELL</option>
                                 <option value="RENT">RENT</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Jenis</label>
-                            <select x-model="form.TYPE" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Jenis</label>
+                            <select x-model="form.TYPE" class="w-full px-2 py-1 border rounded text-xs outline-none">
                                 <option value="APT">APT</option>
                                 <option value="LANDED">LANDED</option>
                                 <option value="COMMERCIAL">COMMERCIAL</option>
                             </select>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-1.5">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Owner / Agen</label>
-                            <input type="text" x-model="form.OWNER" placeholder="Cth: JACKSON" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Owner / Agen</label>
+                            <input type="text" x-model="form.OWNER" placeholder="Cth: JACKSON" class="w-full px-2 py-1 border rounded text-xs outline-none">
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Harga (RM)</label>
-                            <input type="text" x-model="form.PRICE" placeholder="Cth: 310000" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Harga (RM)</label>
+                            <input type="text" x-model="form.PRICE" placeholder="Cth: 310000" class="w-full px-2 py-1 border rounded text-xs outline-none">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-1.5">
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Zon</label>
-                            <select x-model="form.ZONE" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Zon</label>
+                            <select x-model="form.ZONE" class="w-full px-2 py-1 border rounded text-xs outline-none">
                                 <option value="SDK">SDK</option>
                                 <option value="KK">KK</option>
                                 <option value="TWU">TWU</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Status</label>
-                            <select x-model="form.STATUS" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Status</label>
+                            <select x-model="form.STATUS" class="w-full px-2 py-1 border rounded text-xs outline-none">
                                 <option value="AVAILABLE">AVAILABLE</option>
                                 <option value="SOLD">SOLD</option>
                             </select>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Pautan URL</label>
-                        <input type="url" x-model="form.URL" placeholder="https://..." class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Pautan URL</label>
+                        <input type="url" x-model="form.URL" placeholder="https://..." class="w-full px-2 py-1 border rounded text-xs outline-none">
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nota / Remark</label>
-                        <input type="text" x-model="form.REMARK" placeholder="Cth: MV 320k" class="w-full px-2.5 py-1.5 border rounded-md text-xs focus:ring-1 focus:ring-blue-500 outline-none">
+                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Nota / Remark</label>
+                        <input type="text" x-model="form.REMARK" placeholder="Cth: MV 320k" class="w-full px-2 py-1 border rounded text-xs outline-none">
                     </div>
-                    <div class="flex gap-2 pt-2">
-                        <button type="button" @click="closeModal()" class="w-1/2 py-2 border rounded-md text-xs font-semibold text-slate-600 bg-slate-50">Batal</button>
-                        <button type="submit" class="w-1/2 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-xs font-semibold shadow-sm">Simpan</button>
+                    <div class="flex gap-1.5 pt-1">
+                        <button type="button" @click="closeModal()" class="w-1/2 py-1.5 border rounded text-xs font-semibold text-slate-600 bg-slate-50">Batal</button>
+                        <button type="submit" class="w-1/2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Simpan</button>
                     </div>
                 </form>
             </div>
         </div>
     </main>
+
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
@@ -262,31 +227,6 @@
             return true;
         }
 
-        async function login() {
-            const emailField = document.getElementById("adminEmail");
-            const passField = document.getElementById("password");
-            if (!emailField || !passField) return;
-
-            const email = emailField.value.trim();
-            const password = passField.value;
-
-            if (!email || !password) {
-                alert("Sila masukkan e-mel dan password.");
-                return;
-            }
-
-            firebase.auth().signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    emailField.value = "";
-                    passField.value = "";
-                    window.dispatchEvent(new CustomEvent('admin-logged-in'));
-                })
-                .catch((error) => {
-                    alert("Log masuk gagal. E-mel atau password salah.");
-                    console.error(error.message);
-                });
-        }
-
         function propertyApp() {
             return {
                 search: '',
@@ -296,7 +236,6 @@
                 typeFilter: '',
                 ownerFilter: '',
                 sortBy: 'name_asc',
-                openLoginModal: false,
                 openAddModal: false,
                 isAdmin: false,
                 properties: {},
@@ -305,20 +244,17 @@
                     PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK'
                 },
                 init() {
-                    firebase.auth().onAuthStateChanged((user) => {
-                        this.isAdmin = !!user;
-                    });
-
-                    window.addEventListener('admin-logged-in', () => {
-                        this.isAdmin = true;
-                        this.openLoginModal = false;
-                        alert('Berjaya login sebagai Admin!');
-                    });
-
                     db.ref('properties').on('value', snapshot => {
                         const data = snapshot.val();
                         this.properties = data || {};
                     });
+                },
+                formatPrice(val) {
+                    if (!val) return 'RM 0';
+                    let cleanNum = String(val).replace(/[^0-9.]/g, '');
+                    let num = parseFloat(cleanNum);
+                    if (isNaN(num)) return val;
+                    return 'RM ' + num.toLocaleString('en-US', {maximumFractionDigits: 2});
                 },
                 get uniqueOwners() {
                     let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
@@ -353,23 +289,17 @@
                         return acc;
                     }, {});
                 },
-                logout() {
-                    firebase.auth().signOut().then(() => {
-                        this.isAdmin = false;
-                        alert('Anda telah log keluar dari mod admin.');
-                    }).catch((error) => {
-                        console.error(error);
-                    });
-                },
                 editItem(id, item) {
+                    if (!this.isAdmin) return;
                     this.editId = id;
                     this.form = { ...item };
                     this.openAddModal = true;
                 },
                 addItem() {
-                    if (!this.isAdmin) {
-                        alert('Akses ditolak! Hanya admin boleh mengubah listing.');
-                        return;
+                    if (!this.isAdmin) return;
+                    // Pastikan nama hartanah sentiasa huruf besar (uppercase)
+                    if (this.form.PROPERTY) {
+                        this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
                     }
                     if (this.editId) {
                         db.ref('properties/' + this.editId).set(this.form);
@@ -384,26 +314,10 @@
                     this.form = { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK' };
                 },
                 deleteItem(id) {
-                    if (!this.isAdmin) {
-                        alert('Akses ditolak! Hanya admin boleh memadam listing.');
-                        return;
-                    }
+                    if (!this.isAdmin) return;
                     if (confirm('Padam listing ini?')) {
                         db.ref('properties/' + id).remove();
                     }
-                },
-                exportToCSV() {
-                    let csvContent = "data:text/csv;charset=utf-8,PROPERTY,FOR,OWNER,PRICE/RENT,REMARK,STATUS,TYPE,URL,ZONE\r\n";
-                    Object.values(this.properties).forEach(row => {
-                        csvContent += `"${row.PROPERTY}","${row.FOR}","${row.OWNER}","${row.PRICE}","${row.REMARK}","${row.STATUS}","${row.TYPE}","${row.URL}","${row.ZONE}"\r\n`;
-                    });
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", "sabah_listing_export.csv");
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
                 }
             }
         }
