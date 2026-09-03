@@ -16,9 +16,12 @@
 <body class="bg-slate-100 text-slate-800 font-sans pb-16 select-none" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="propertyApp()">
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-3 py-2 shadow-xs">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <div>
-                <h1 class="text-xs font-bold text-slate-900">🏠 Listing Jackson Property</h1>
-                <p class="text-[10px] text-slate-500 font-medium" x-text="isAdmin ? '✨ Mod Admin (Boleh Edit)' : '👁️ Mod Awam (Papar Sahaja)'"></p>
+            <div class="flex items-center gap-2">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Maxxan Logo" class="w-7 h-7 object-contain rounded-sm border border-slate-100 shadow-2xs">
+                <div>
+                    <h1 class="text-xs font-bold text-slate-900 leading-tight">🏠 Listing Jackson Property</h1>
+                    <p class="text-[10px] text-slate-500 font-medium" x-text="isAdmin ? '✨ Mod Admin (Boleh Edit)' : '👁️ Mod Awam (Papar Sahaja)'"></p>
+                </div>
             </div>
             <div class="flex gap-1.5">
                 <template x-if="!isAdmin">
@@ -49,29 +52,29 @@
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
                 <select x-model="statusFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Semua Status</option>
+                    <option value="">Status (Semua)</option>
                     <option value="AVAILABLE">AVAILABLE</option>
                     <option value="SOLD">SOLD</option>
                 </select>
                 <select x-model="zoneFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Semua Zon</option>
+                    <option value="">Zon (Semua)</option>
                     <option value="SDK">SDK</option>
                     <option value="KK">KK</option>
                     <option value="TWU">TWU</option>
                 </select>
                 <select x-model="forFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Jual / Sewa</option>
+                    <option value="">Urusan (Semua)</option>
                     <option value="SELL">SELL</option>
                     <option value="RENT">RENT</option>
                 </select>
                 <select x-model="typeFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <option value="">Semua Jenis</option>
+                    <option value="">Jenis (Semua)</option>
                     <option value="APT">APT</option>
                     <option value="LANDED">LANDED</option>
                     <option value="COMMERCIAL">COMMERCIAL</option>
                 </select>
                 <select x-model="ownerFilter" class="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500 col-span-2 sm:col-span-1">
-                    <option value="">Semua Owner</option>
+                    <option value="">Owner (Semua)</option>
                     <template x-for="own in uniqueOwners">
                         <option :value="own" x-text="own"></option>
                     </template>
