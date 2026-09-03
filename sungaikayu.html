@@ -2,682 +2,625 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pelan Tapak Interaktif - Taman Sungai Kayu</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masterplan Hartanah - Papar & Edit</title>
+    <!-- Masukkan SDK Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --available: #10b981;
+            --reserved: #f59e0b;
+            --sold: #ef4444;
+            --unavailable: #64748b;
+            --bumi: #10b981;
+            --non-bumi: #8b5cf6;
+            --corner: #0ea5e9;
         }
 
         body {
-            background-color: #f4f7f6;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 6px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 5px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            z-index: 10;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
         }
 
-        .header-brand {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
-        .header-logo {
-            width: 20px;
-            height: 20px;
-            object-fit: contain;
-            border-radius: 50%;
-            background: white;
-            padding: 1px;
+        .brand-logo {
+            max-width: 32px;
+            height: auto;
+            display: block;
         }
 
-        .header-title-wrapper {
+        .header-title h2 { margin: 0; font-size: 13px; font-weight: 700; }
+        .header-title p { color: var(--text-muted); margin: 0; font-size: 9px; }
+
+        .admin-bar {
+            display: flex;
+            gap: 4px;
+        }
+        .mode-btn {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background: #2563eb;
+            border-color: #3b82f6;
+        }
+
+        .main-layout {
             display: flex;
             flex-direction: column;
+            gap: 6px;
+            max-width: 100%;
         }
 
-        header h1 {
-            font-size: 0.65rem;
-            font-weight: 600;
+        .map-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
         }
 
-        .header-subtitle {
-            font-size: 0.45rem;
-            color: #f1c40f;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-        }
-
-        .mode-switch {
-            display: flex;
-            background: #1a252f;
+        .map-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
             border-radius: 4px;
-            padding: 2px;
-            gap: 2px;
+            overflow: auto;
+            background: #000;
+            max-height: 220px;
         }
 
-        .mode-btn {
-            background: transparent;
-            border: none;
-            color: #bdc3c7;
-            font-size: 0.55rem;
-            padding: 3px 6px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-weight: bold;
+        .map-container img {
+            display: block;
+            width: 100%;
+            height: auto;
+            min-width: 500px;
+            filter: contrast(1.1) brightness(1.05);
         }
 
-        .mode-btn.active {
-            background: #3498db;
-            color: white;
+        .dashboard-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 480px;
         }
 
-        /* Panel Statistik Ringkas */
-        .stats-panel {
+        .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 4px;
-            padding: 6px 8px;
-            background: #ffffff;
-            border-bottom: 1px solid #ddd;
-            text-align: center;
+            margin-bottom: 4px;
         }
 
-        .stat-box {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
+        .stat-card {
+            background: #0f172a;
+            padding: 2px 4px;
             border-radius: 4px;
-            padding: 3px 2px;
-        }
-
-        .stat-number {
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .stat-label {
-            font-size: 0.45rem;
-            color: #6c757d;
-            text-transform: uppercase;
-        }
-
-        .legend {
+            text-align: center;
+            border: 1px solid var(--border-color);
             display: flex;
-            gap: 6px;
-            padding: 4px 8px;
-            background: #fff;
-            border-bottom: 1px solid #ddd;
-            overflow-x: auto;
-            white-space: nowrap;
-            font-size: 0.55rem;
-            align-items: center;
-        }
-
-        .legend-item {
-            display: flex;
+            flex-direction: column;
+            justify-content: center;
             align-items: center;
             gap: 2px;
         }
+        .stat-card span { font-size: 12px; font-weight: bold; }
+        .stat-card.avail span { color: var(--available); }
+        .stat-card.res span { color: var(--reserved); }
+        .stat-card.sold span { color: var(--sold); }
+        .stat-card.unavail span { color: var(--unavailable); }
+        .stat-card label { font-size: 8px; color: var(--text-muted); }
 
-        .dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 2px;
+        .controls-bar {
+            display: grid;
+            grid-template-columns: 1.2fr 1.1fr 1fr 1fr;
+            gap: 3px;
+            margin-bottom: 6px;
         }
 
-        .dot.available { background-color: #3498db; }
-        .dot.sold { background-color: #7f8c8d; }
-        .dot.bumi { background-color: #d35400; }
-        .dot.bumi-sold { background-color: #4a3b32; }
+        .controls-bar input, .controls-bar select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 6px 3px;
+            border-radius: 4px;
+            font-size: 9.5px;
+            outline: none;
+            box-sizing: border-box;
+            text-overflow: ellipsis;
+        }
 
-        .container {
+        .card-list {
             flex: 1;
             overflow-y: auto;
-            padding: 3px;
             display: flex;
             flex-direction: column;
-            gap: 2px;
-            -webkit-overflow-scrolling: touch;
+            gap: 5px;
+            padding-right: 2px;
         }
 
-        .blocks-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2px;
-        }
-
-        .block-card {
-            background: #e8f5e9;
-            border-radius: 2px;
-            padding: 2px;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.05);
-            border: 1px solid #c8e6c9;
-            position: relative;
-        }
-
-        .block-title {
-            font-size: 0.55rem;
-            font-weight: bold;
-            color: #2e7d32;
-            margin-bottom: 1px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .lots-grid {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 1px;
-        }
-
-        .lot {
-            aspect-ratio: 0.75;
-            border-radius: 2px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: transform 0.1s;
-            box-shadow: 0 1px 1px rgba(0,0,0,0.15);
-            position: relative;
-        }
-
-        .lot:active {
-            transform: scale(0.95);
-        }
-
-        .lot.available { background-color: #3498db; }
-        .lot.bumi-avail { background-color: #d35400; }
-        .lot.sold { background-color: #7f8c8d; }
-        .lot.bumi-sold { background-color: #5d4037; }
-
-        .lot.corner-lot {
-            border: 1.5px dashed #f1c40f;
-        }
-
-        .lot.is-sold::after {
-            content: '✕';
-            position: absolute;
-            color: #e74c3c;
-            font-size: 0.99rem;
-            font-weight: 900;
-        }
-
-        .lot-number { font-size: 0.55rem; line-height: 1; }
-        .lot-status { font-size: 0.40rem; text-transform: uppercase; opacity: 0.9; line-height: 1; }
-
-        .road-divider {
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 0.5rem;
-            font-weight: bold;
-            padding: 1px;
-            background: #e2e8f0;
-            border-radius: 2px;
-            letter-spacing: 0.5px;
-        }
-
-        .open-space {
-            background: #d4edda;
-            border: 1px dashed #28a745;
-            border-radius: 2px;
-            padding: 2px;
-            text-align: center;
-            color: #155724;
-            font-weight: bold;
-            font-size: 0.5rem;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            visibility: hidden;
-            opacity: 0;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-            z-index: 100;
-        }
-
-        .modal-overlay.active {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .modal-content {
-            background: white;
-            width: 100%;
-            max-width: 500px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-            padding: 12px;
-            transform: translateY(100%);
-            transition: transform 0.3s cubic-bezier(0.1, 1, 0.1, 1);
-            box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 4px;
-        }
-
-        .modal-header h3 { font-size: 0.95rem; color: #2c3e50; }
-        .close-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #7f8c8d; }
-
-        .modal-body {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            font-size: 0.8rem;
-            margin-bottom: 12px;
-        }
-
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 3px 0;
-            border-bottom: 1px dashed #f1f1f1;
-        }
-
-        .info-label { color: #7f8c8d; }
-        .info-value { font-weight: 600; color: #2c3e50; }
-
-        .info-input, select.info-input {
-            padding: 3px 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            font-size: 0.8rem;
-            font-weight: 600;
-            background-color: #f9f9f9;
-            width: 60%;
-            text-align: right;
-        }
-
-        .action-btn {
-            width: 100%;
-            padding: 8px;
-            border: none;
+        .lot-card {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
             border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.85rem;
-            cursor: pointer;
-            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: default;
         }
 
-        .btn-book { background-color: #27ae60; color: white; }
-        .btn-sold { background-color: #95a5a6; color: white; cursor: not-allowed; }
-        .hidden { display: none !important; }
+        .lot-info .lot-title { 
+            margin: 0 0 2px 0; 
+            font-size: 15px; 
+            font-weight: 800; 
+            color: #38bdf8; 
+        }
+        
+        .lot-info .lot-price { 
+            font-size: 15px; 
+            font-weight: bold; 
+            color: #f8fafc; 
+        }
+
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 3px;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-available   { background: rgba(16, 185, 129, 0.2); color: var(--available); border: 1px solid var(--available); }
+        .badge-reserved    { background: rgba(245, 158, 11, 0.2); color: var(--reserved); border: 1px solid var(--reserved); }
+        .badge-sold        { background: rgba(239, 68, 68, 0.2); color: var(--sold); border: 1px solid var(--sold); }
+        .badge-unavailable { background: rgba(100, 116, 139, 0.2); color: var(--unavailable); border: 1px solid var(--unavailable); }
+        
+        .badge-bumi     { background: rgba(16, 185, 129, 0.2); color: var(--bumi); border: 1px solid var(--bumi); }
+        .badge-nonbumi  { background: rgba(139, 92, 246, 0.2); color: var(--non-bumi); border: 1px solid var(--non-bumi); }
+        .badge-corner   { background: rgba(14, 165, 233, 0.2); color: var(--corner); border: 1px solid var(--corner); }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            width: 85%;
+            max-width: 300px;
+        }
+        .modal-content h3 { margin-top: 0; font-size: 15px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; text-align: left; }
+        .form-group label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; }
+        .form-group input, .form-group select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 12px;
+        }
+        
+        .modal-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .modal-btns button {
+            flex: 1;
+            padding: 10px 0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+        .btn-save { background: #2563eb; color: white; }
+        .btn-save:active { background: #1d4ed8; }
+        .btn-cancel { background: #475569; color: white; }
+        .btn-cancel:active { background: #334155; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-brand">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9sKS7o8ocx7jnNJ5DA-_CZv1c356r_iMwID9sfySZKw&s=10" alt="Logo" class="header-logo">
-            <div class="header-title-wrapper">
-                <h1 id="headerTitle">PROJECT TAMAN SUNGAI KAYU</h1>
-                <span class="header-subtitle">JACKSON PROPERTY</span>
+        <div class="header-left">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo Baru" class="brand-logo">
+            <div class="header-title">
+                <h2>Taman Sungai Kayu</h2>
+                <p id="modeDesc">Jackson Richard</p>
             </div>
         </div>
-        <div class="mode-switch">
-            <button class="mode-btn active" id="btnViewMode" onclick="setMode('view')">Paparan</button>
-            <button class="mode-btn" id="btnAdminMode" onclick="setMode('admin')">Pengurusan</button>
+        <div class="admin-bar">
+            <button class="mode-btn active" id="btnViewMode" onclick="setMode('view')">Papar</button>
+            <button class="mode-btn" id="btnEditMode" onclick="setMode('edit')">Edit</button>
         </div>
     </header>
 
-    <div class="stats-panel">
-        <div class="stat-box">
-            <div class="stat-number" id="statAvail">0</div>
-            <div class="stat-label">Available</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number" id="statBumiAvail">0</div>
-            <div class="stat-label">Bumi Avail</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number" id="statCornerAvail">0</div>
-            <div class="stat-label">Corner Avail</div>
-        </div>
-        <div class="stat-box">
-            <div class="stat-number" id="statSold">0</div>
-            <div class="stat-label">Total Sold</div>
-        </div>
-    </div>
-
-    <div class="legend">
-        <div class="legend-item"><div class="dot available"></div><span>Available</span></div>
-        <div class="legend-item"><div class="dot sold"></div><span>Sold</span></div>
-        <div class="legend-item"><div class="dot bumi"></div><span>Bumi Lot</span></div>
-        <div class="legend-item"><div class="dot bumi-sold"></div><span>Bumi Sold</span></div>
-    </div>
-
-    <div class="container" id="container">
-        <!-- Struktur Blok & Lot dijana secara dinamik melalui JavaScript -->
-    </div>
-
-    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="modal-header">
-                <h3 id="modalTitle">Lot Rumah</h3>
-                <button class="close-btn" onclick="closeModalForce()">&times;</button>
+    <div class="main-layout">
+        
+        <!-- PELAN TAPAK -->
+        <div class="map-section">
+            <div class="map-container" id="mapContainer">
+                <img src="sg-kayu.jpg" alt="Pelan Tapak Taman Sungai Kayu">
             </div>
-            <div class="modal-body">
-                <div class="info-row">
-                    <span class="info-label">Status Jualan</span>
-                    <span class="info-value view-only" id="valStatus">-</span>
-                    <select id="editStatus" class="info-input admin-only hidden" onchange="saveLotData()">
-                        <option value="available">Masih Kosong (Available)</option>
-                        <option value="sold">Telah Dijual (Sold)</option>
-                    </select>
+        </div>
+
+        <!-- DASHBOARD & KAD -->
+        <div class="dashboard-section">
+            <div class="stats-grid">
+                <div class="stat-card avail">
+                    <span id="countAvail">0</span>
+                    <label>Available</label>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Jenis Lot</span>
-                    <span class="info-value view-only" id="valType">-</span>
-                    <select id="editType" class="info-input admin-only hidden" onchange="saveLotData()">
-                        <option value="Non-Bumi Lot">Non-Bumi Lot</option>
-                        <option value="Bumi Lot">Bumi Lot</option>
-                    </select>
+                <div class="stat-card res">
+                    <span id="countRes">0</span>
+                    <label>Reserved</label>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Kategori Corner</span>
-                    <span class="info-value view-only" id="valCorner">-</span>
-                    <select id="editCorner" class="info-input admin-only hidden" onchange="saveLotData()">
-                        <option value="no">Lot Biasa (Intermediate)</option>
-                        <option value="yes">Corner Lot</option>
-                    </select>
+                <div class="stat-card sold">
+                    <span id="countSold">0</span>
+                    <label>Sold</label>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Harga (RM)</span>
-                    <span class="info-value view-only" id="valPrice">-</span>
-                    <input type="text" id="editPrice" class="info-input admin-only hidden" oninput="saveLotData()" placeholder="Cth: RM 350,000">
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Saiz Tanah</span>
-                    <span class="info-value view-only" id="valSize">-</span>
-                    <input type="text" id="editSize" class="info-input admin-only hidden" oninput="saveLotData()">
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Spesifikasi</span>
-                    <span class="info-value view-only" id="valSpecs">-</span>
-                    <input type="text" id="editSpecs" class="info-input admin-only hidden" oninput="saveLotData()">
+                <div class="stat-card unavail">
+                    <span id="countUnavail">0</span>
+                    <label>Unavail</label>
                 </div>
             </div>
-            <button class="action-btn btn-book" id="actionButton" onclick="closeModalForce()">Tutup</button>
+
+            <!-- KAWALAN CARIAN & 3 DROP-DOWN SEBARIS -->
+            <div class="controls-bar">
+                <input type="text" id="searchInput" placeholder="Cari No..." onkeyup="filterCards()">
+                
+                <select id="filterCategory" onchange="filterCards()">
+                    <option value="all">Kategori</option>
+                    <option value="BUMI">BUMI</option>
+                    <option value="NON-BUMI">NON-BUMI</option>
+                </select>
+
+                <select id="filterType" onchange="filterCards()">
+                    <option value="all">Jenis</option>
+                    <option value="BIASA">Inter</option>
+                    <option value="CORNER">Corner</option>
+                </select>
+
+                <select id="filterStatus" onchange="filterCards()">
+                    <option value="all">Status</option>
+                    <option value="available">Avail</option>
+                    <option value="reserved">Res</option>
+                    <option value="sold">Sold</option>
+                    <option value="unavailable">Unavail</option>
+                </select>
+            </div>
+
+            <div class="card-list" id="cardListContainer">
+                <!-- Dijana Automatik -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- MODAL EDIT LOT -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <h3>Edit Maklumat Lot <span id="modalLotTitle"></span></h3>
+            <input type="hidden" id="editLotNum">
+            
+            <div class="form-group">
+                <label>Status Lot:</label>
+                <select id="editStatus">
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                    <option value="unavailable">Unavailable</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Harga (RM):</label>
+                <input type="text" id="editPrice" placeholder="Cth: 350,000" oninput="formatInputPrice(this)">
+            </div>
+
+            <div class="form-group">
+                <label>Kategori (BUMI / NON-BUMI):</label>
+                <select id="editRemark">
+                    <option value="BUMI">BUMI</option>
+                    <option value="NON-BUMI">NON-BUMI</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Jenis Lot (CORNER / BIASA):</label>
+                <select id="editType">
+                    <option value="BIASA">BIASA (Inter)</option>
+                    <option value="CORNER">CORNER</option>
+                </select>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal()">Batal</button>
+                <button class="btn-save" onclick="saveLotData()">Simpan</button>
+            </div>
         </div>
     </div>
 
     <script>
-        const defaultBumiLots = [58, 61, 63, 66, 69, 110, 108, 105, 100, 97, 113, 117, 119, 122, 125, 157, 155, 152, 149, 146, 143];
-        const defaultSoldLots = [59, 61, 63, 66, 108, 105, 97, 113, 119, 122, 155, 152, 146, 143];
-        const defaultCornerLots = [56, 62, 103, 111, 150];
-        
-        const blocksData = {
-            "BLOCK A": [56, 57, 58, 59, 60, 61],
-            "BLOCK B": [62, 63, 64, 65, 66, 67, 68, 69],
-            "BLOCK C": [110, 109, 108, 107, 106, 105, 104, 103],
-            "BLOCK D": [102, 101, 100, 99, 98, 97, 96, 95],
-            "BLOCK E": [111, 112, 113, 114, 115, 116, 117],
-            "BLOCK F": [118, 119, 120, 121, 122, 123, 124, 125],
-            "BLOCK G": [157, 156, 155, 154, 153, 152, 151, 150],
-            "BLOCK H": [149, 148, 147, 146, 145, 144, 143, 142]
+        // Konfigurasi Firebase Projek Sungai Kayu
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8WMMi-VrGuoN-yskdc6_yPSpP2spggik",
+            authDomain: "villalestari.firebaseapp.com",
+            databaseURL: "https://villalestari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "villalestari",
+            storageBucket: "villalestari.firebasestorage.app",
+            messagingSenderId: "1044557383917",
+            appId: "1:1044557383917:web:49bdea24da2fc7e99f24e4",
+            measurementId: "G-3X014WL37T"
         };
 
-        let customLotData = JSON.parse(localStorage.getItem('tamanSun_customLotData')) || {};
-        let activeLotNo = null;
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        const allLots = [];
+        for (let i = 1; i <= 157; i++) {
+            allLots.push(i.toString());
+        }
+
+        const defaultCornerLots = [1, 15, 16, 30, 31, 45, 46, 60, 61, 75, 76, 90, 91, 105, 106, 120, 121, 135, 136, 150, 157];
+
+        function isBumiDefault(lotNum) {
+            let n = parseInt(lotNum);
+            let inRange1 = (n >= 40 && n <= 80);
+            let inRange2 = (n >= 110 && n <= 135);
+            return inRange1 || inRange2;
+        }
+
         let currentMode = 'view';
-
-        function formatPrice(val) {
-            if (!val) return 'RM 0';
-            let cleaned = val.toString().replace(/[^\d]/g, '');
-            if (!cleaned) return val;
-            let formattedNumber = Number(cleaned).toLocaleString('en-US');
-            if (val.toUpperCase().includes('RM')) {
-                return `RM ${formattedNumber}`;
-            }
-            return formattedNumber;
-        }
-
-        function getLotInfo(lotNo) {
-            const isDefaultBumi = defaultBumiLots.includes(lotNo);
-            const isDefaultSold = defaultSoldLots.includes(lotNo);
-            const isDefaultCorner = defaultCornerLots.includes(lotNo);
-
-            const custom = customLotData[lotNo] || {};
-            let rawPrice = custom.price !== undefined ? custom.price : (isDefaultBumi ? 'RM 330,000' : 'RM 350,000');
-            
-            return {
-                status: custom.status !== undefined ? custom.status : (isDefaultSold ? 'sold' : 'available'),
-                type: custom.type !== undefined ? custom.type : (isDefaultBumi ? 'Bumi Lot' : 'Non-Bumi Lot'),
-                isCorner: custom.isCorner !== undefined ? custom.isCorner : (isDefaultCorner ? 'yes' : 'no'),
-                price: formatPrice(rawPrice),
-                rawPrice: rawPrice,
-                size: custom.size !== undefined ? custom.size : "22' x 70'",
-                specs: custom.specs !== undefined ? custom.specs : "4 Bilik Tidur, 2 Bilik Air"
-            };
-        }
-
-        function updateStatistics() {
-            let totalAvailable = 0;
-            let bumiAvailable = 0;
-            let cornerAvailable = 0;
-            let totalSold = 0;
-
-            Object.values(blocksData).forEach(blockLots => {
-                blockLots.forEach(lotNo => {
-                    const info = getLotInfo(lotNo);
-                    if (info.status === 'available') {
-                        totalAvailable++;
-                        if (info.type === 'Bumi Lot') {
-                            bumiAvailable++;
-                        }
-                        if (info.isCorner === 'yes') {
-                            cornerAvailable++;
-                        }
-                    } else if (info.status === 'sold') {
-                        totalSold++;
-                    }
-                });
-            });
-
-            document.getElementById('statAvail').innerText = totalAvailable;
-            document.getElementById('statBumiAvail').innerText = bumiAvailable;
-            document.getElementById('statCornerAvail').innerText = cornerAvailable;
-            document.getElementById('statSold').innerText = totalSold;
-        }
+        let lotsCache = {};
 
         function setMode(mode) {
             currentMode = mode;
             document.getElementById('btnViewMode').classList.toggle('active', mode === 'view');
-            document.getElementById('btnAdminMode').classList.toggle('active', mode === 'admin');
+            document.getElementById('btnEditMode').classList.toggle('active', mode === 'edit');
             
-            const headerTitle = document.getElementById('headerTitle');
-            if (mode === 'admin') {
-                headerTitle.innerText = 'TAMAN SUNGAI KAYU (Mod Pengurusan)';
+            const desc = document.getElementById('modeDesc');
+            const lotCards = document.querySelectorAll('.lot-card');
+
+            if(mode === 'view') {
+                desc.innerText = "Jackson Richard";
+                lotCards.forEach(c => c.style.cursor = 'default');
             } else {
-                headerTitle.innerText = 'PROJECT TAMAN SUNGAI KAYU';
+                desc.innerText = "Mod Edit: Sentuh kad lot.";
+                lotCards.forEach(c => c.style.cursor = 'pointer');
             }
         }
 
-        function renderPelan() {
-            const container = document.getElementById('container');
-            container.innerHTML = '';
-
-            const blockKeys = Object.keys(blocksData);
-            
-            for (let i = 0; i < blockKeys.length; i += 2) {
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'blocks-row';
-
-                for (let j = i; j < i + 2 && j < blockKeys.length; j++) {
-                    const blockName = blockKeys[j];
-                    const card = document.createElement('div');
-                    card.className = 'block-card';
-                    
-                    card.innerHTML = `<div class="block-title"><span>${blockName}</span></div>`;
-                    const grid = document.createElement('div');
-                    grid.className = 'lots-grid';
-
-                    blocksData[blockName].forEach(lotNo => {
-                        const info = getLotInfo(lotNo);
-                        const isSold = info.status === 'sold';
-                        const isBumi = info.type === 'Bumi Lot';
-                        const isCorner = info.isCorner === 'yes';
-
-                        const lotEl = document.createElement('div');
-                        let className = 'lot ';
-                        if (isBumi) {
-                            className += isSold ? 'bumi-sold is-sold' : 'bumi-avail';
-                        } else {
-                            className += isSold ? 'sold is-sold' : 'available';
-                        }
-                        
-                        if (isCorner) {
-                            className += ' corner-lot';
-                        }
-                        
-                        lotEl.className = className;
-                        lotEl.onclick = () => loadLot(lotNo);
-                        lotEl.innerHTML = `
-                            <span class="lot-number">${lotNo}</span>
-                            <span class="lot-status">${isBumi ? 'Bumi' : 'Non'}</span>
-                        `;
-                        grid.appendChild(lotEl);
-                    });
-
-                    card.appendChild(grid);
-                    rowDiv.appendChild(card);
-                }
-
-                container.appendChild(rowDiv);
-
-                if (i === 0 || i === 4) {
-                    const road = document.createElement('div');
-                    road.className = 'road-divider';
-                    road.innerHTML = '--- 🛣️ JALAN UTAMA ---';
-                    container.appendChild(road);
-                }
-            }
-
-            const openSpace = document.createElement('div');
-            openSpace.className = 'open-space';
-            openSpace.innerText = 'OPEN SPACE 1';
-            container.appendChild(openSpace);
-
-            updateStatistics();
+        function formatNumberWithComma(value) {
+            let cleanVal = value.toString().replace(/\D/g, '');
+            if (!cleanVal) return '';
+            return Number(cleanVal).toLocaleString('en-US');
         }
 
-        function loadLot(lotNo) {
-            activeLotNo = lotNo;
-            const info = getLotInfo(lotNo);
-
-            document.getElementById('modalTitle').innerText = `Lot Rumah No. ${lotNo}`;
+        function formatInputPrice(input) {
+            let cursorPosition = input.selectionStart;
+            let originalLength = input.value.length;
             
-            document.getElementById('valStatus').innerText = info.status === 'sold' ? 'Telah Dijual (Sold)' : 'Masih Kosong (Available)';
-            document.getElementById('valType').innerText = info.type;
-            document.getElementById('valCorner').innerText = info.isCorner === 'yes' ? 'Corner Lot' : 'Lot Biasa (Intermediate)';
-            document.getElementById('valPrice').innerText = info.price;
-            document.getElementById('valSize').innerText = info.size;
-            document.getElementById('valSpecs').innerText = info.specs;
+            let formatted = formatNumberWithComma(input.value);
+            input.value = formatted;
+            
+            let newLength = input.value.length;
+            cursorPosition = cursorPosition + (newLength - originalLength);
+            input.setSelectionRange(cursorPosition, cursorPosition);
+        }
 
-            document.getElementById('editStatus').value = info.status;
-            document.getElementById('editType').value = info.type;
-            document.getElementById('editCorner').value = info.isCorner;
-            document.getElementById('editPrice').value = info.rawPrice;
-            document.getElementById('editSize').value = info.size;
-            document.getElementById('editSpecs').value = info.specs;
-
-            const adminElements = document.querySelectorAll('.admin-only');
-            const viewElements = document.querySelectorAll('.view-only');
-            const actionBtn = document.getElementById('actionButton');
-
-            if (currentMode === 'admin') {
-                adminElements.forEach(el => el.classList.remove('hidden'));
-                viewElements.forEach(el => el.classList.add('hidden'));
-                actionBtn.innerText = 'Simpan & Tutup';
-                actionBtn.className = 'action-btn btn-book';
-            } else {
-                adminElements.forEach(el => el.classList.add('hidden'));
-                viewElements.forEach(el => el.classList.remove('hidden'));
-                if (info.status === 'sold') {
-                    actionBtn.innerText = 'Lot Telah Dijual';
-                    actionBtn.className = 'action-btn btn-sold';
-                } else {
-                    actionBtn.innerText = 'Tempah / Hubungi Agen';
-                    actionBtn.className = 'action-btn btn-book';
-                }
+        function getLotData(lotNum) {
+            if (lotsCache[lotNum]) {
+                return lotsCache[lotNum];
             }
+            
+            let isCornerDefault = defaultCornerLots.includes(parseInt(lotNum));
+            let isBumi = isBumiDefault(lotNum);
+            
+            return { 
+                status: 'available', 
+                price: '350,000', 
+                remark: isBumi ? 'BUMI' : 'NON-BUMI', 
+                type: isCornerDefault ? 'CORNER' : 'BIASA' 
+            };
+        }
 
-            document.getElementById('modalOverlay').classList.add('active');
+        function saveLotFullData(lotNum, status, price, remark, type) {
+            const data = { status, price, remark, type };
+            db.ref('taman_sungai_kayu/lots/' + lotNum).set(data)
+              .then(() => {
+                  console.log("Data berjaya disimpan ke awan!");
+              })
+              .catch((error) => {
+                  alert("Gagal menyimpan: " + error.message);
+              });
+        }
+
+        function handleCardClick(lotNum) {
+            if (currentMode === 'view') {
+                return; 
+            }
+            openModal(lotNum);
+        }
+
+        function openModal(lotNum) {
+            const data = getLotData(lotNum);
+            document.getElementById('modalLotTitle').innerText = lotNum;
+            document.getElementById('editLotNum').value = lotNum;
+            document.getElementById('editStatus').value = data.status;
+            document.getElementById('editPrice').value = formatNumberWithComma(data.price);
+            document.getElementById('editRemark').value = data.remark;
+            document.getElementById('editType').value = data.type || 'BIASA';
+            
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').style.display = 'none';
         }
 
         function saveLotData() {
-            if (!activeLotNo) return;
+            const lotNum = document.getElementById('editLotNum').value;
+            const status = document.getElementById('editStatus').value;
+            let rawPrice = document.getElementById('editPrice').value;
+            let price = rawPrice ? formatNumberWithComma(rawPrice) : '350,000';
+            const remark = document.getElementById('editRemark').value;
+            const type = document.getElementById('editType').value;
 
-            const rawPriceInput = document.getElementById('editPrice').value;
-
-            customLotData[activeLotNo] = {
-                status: document.getElementById('editStatus').value,
-                type: document.getElementById('editType').value,
-                isCorner: document.getElementById('editCorner').value,
-                price: rawPriceInput,
-                size: document.getElementById('editSize').value,
-                specs: document.getElementById('editSpecs').value
-            };
-
-            localStorage.setItem('tamanSun_customLotData', JSON.stringify(customLotData));
-            
-            document.getElementById('valStatus').innerText = document.getElementById('editStatus').value === 'sold' ? 'Telah Dijual (Sold)' : 'Masih Kosong (Available)';
-            document.getElementById('valType').innerText = document.getElementById('editType').value;
-            document.getElementById('valCorner').innerText = document.getElementById('editCorner').value === 'yes' ? 'Corner Lot' : 'Lot Biasa (Intermediate)';
-            document.getElementById('valPrice').innerText = formatPrice(rawPriceInput);
-            document.getElementById('valSize').innerText = document.getElementById('editSize').value;
-            document.getElementById('valSpecs').innerText = document.getElementById('editSpecs').value;
-
-            renderPelan();
+            saveLotFullData(lotNum, status, price, remark, type);
+            closeModal();
         }
 
-        function closeModal(e) {
-            if (e.target.id === 'modalOverlay') closeModalForce();
+        function updateUI() {
+            let availCount = 0, resCount = 0, soldCount = 0, unavailCount = 0;
+            const container = document.getElementById('cardListContainer');
+            container.innerHTML = '';
+
+            allLots.forEach(lotNum => {
+                let data = getLotData(lotNum);
+
+                if (data.status === 'available') availCount++;
+                else if (data.status === 'reserved') resCount++;
+                else if (data.status === 'sold') soldCount++;
+                else if (data.status === 'unavailable') unavailCount++;
+
+                let formattedPrice = formatNumberWithComma(data.price);
+
+                let card = document.createElement('div');
+                card.className = `lot-card`;
+                card.setAttribute('data-lot', lotNum);
+                card.setAttribute('data-status', data.status);
+                card.setAttribute('data-remark', data.remark);
+                card.setAttribute('data-type', data.type || 'BIASA');
+                card.onclick = () => handleCardClick(lotNum);
+                card.style.cursor = (currentMode === 'edit') ? 'pointer' : 'default';
+
+                let remarkClass = data.remark === 'BUMI' ? 'badge-bumi' : 'badge-nonbumi';
+                
+                let cornerBadgeHTML = '';
+                if (data.type === 'CORNER') {
+                    cornerBadgeHTML = `<div class="badge badge-corner">CORNER</div>`;
+                }
+
+                card.innerHTML = `
+                    <div class="lot-info">
+                        <div class="lot-title">Lot ${lotNum}</div>
+                        <div class="lot-price">RM ${formattedPrice}</div>
+                    </div>
+                    <div class="badge-group">
+                        <div class="badge-row">
+                            ${cornerBadgeHTML}
+                            <div class="badge ${remarkClass}">${data.remark}</div>
+                        </div>
+                        <div class="badge badge-${data.status}">${data.status}</div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('countAvail').innerText = availCount;
+            document.getElementById('countRes').innerText = resCount;
+            document.getElementById('countSold').innerText = soldCount;
+            document.getElementById('countUnavail').innerText = unavailCount;
+
+            filterCards();
         }
 
-        function closeModalForce() {
-            document.getElementById('modalOverlay').classList.remove('active');
+        function filterCards() {
+            let query = document.getElementById('searchInput').value.toLowerCase().trim();
+            let catFilter = document.getElementById('filterCategory').value;
+            let typeFilter = document.getElementById('filterType').value;
+            let statusFilter = document.getElementById('filterStatus').value;
+            let cards = document.querySelectorAll('.lot-card');
+
+            cards.forEach(card => {
+                let lotNum = card.getAttribute('data-lot');
+                let status = card.getAttribute('data-status');
+                let remark = card.getAttribute('data-remark');
+                let type = card.getAttribute('data-type');
+
+                let matchSearch = lotNum.includes(query);
+                let matchCat = (catFilter === 'all' || remark === catFilter);
+                let matchType = (typeFilter === 'all' || type === typeFilter);
+                let matchStatus = (statusFilter === 'all' || status === statusFilter);
+
+                if (matchSearch && matchCat && matchType && matchStatus) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
-        renderPelan();
+        // Dengar perubahan data secara masa nyata (Real-time listener dari Firebase)
+        window.onload = function() {
+            db.ref('taman_sungai_kayu/lots').on('value', (snapshot) => {
+                lotsCache = snapshot.val() || {};
+                updateUI();
+            });
+        };
     </script>
 </body>
 </html>
