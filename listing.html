@@ -45,6 +45,7 @@
                 <select x-model="statusFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
                     <option value="">Status</option>
                     <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="BOOKED">BOOKED</option>
                     <option value="SOLD">SOLD</option>
                 </select>
                 <select x-model="zoneFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
@@ -108,7 +109,7 @@
                         <div>
                             <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
                             <div class="flex items-center justify-end gap-1">
-                                <span :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'" class="px-1 py-0 text-[7px] font-bold rounded uppercase" x-text="item.STATUS"></span>
+                                <span :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (item.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" class="px-1 py-0 text-[7px] font-bold rounded uppercase" x-text="item.STATUS"></span>
                             </div>
                         </div>
 
@@ -185,6 +186,7 @@
                             <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Status</label>
                             <select x-model="form.STATUS" class="w-full px-2 py-1 border rounded text-xs outline-none">
                                 <option value="AVAILABLE">AVAILABLE</option>
+                                <option value="BOOKED">BOOKED</option>
                                 <option value="SOLD">SOLD</option>
                             </select>
                         </div>
@@ -297,7 +299,6 @@
                 },
                 addItem() {
                     if (!this.isAdmin) return;
-                    // Pastikan nama hartanah sentiasa huruf besar (uppercase)
                     if (this.form.PROPERTY) {
                         this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
                     }
