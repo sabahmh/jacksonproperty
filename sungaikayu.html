@@ -616,6 +616,7 @@
 
         // Dengar perubahan data secara masa nyata (Real-time listener dari Firebase)
         window.onload = function() {
+            document.getElementById('filterStatus').value = 'available';
             db.ref('taman_sungai_kayu/lots').on('value', (snapshot) => {
                 lotsCache = snapshot.val() || {};
                 updateUI();
