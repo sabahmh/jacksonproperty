@@ -1,22 +1,40 @@
-<!DOCTYPE html><html lang="ms"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Kalkulator Loan DSR</title>    <style>
-        * { box-sizing: border-box; }
-        html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; background-color: #f0f2f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; overflow: hidden; }
-        .container { height: 100vh; width: 100vw; display: flex; flex-direction: column; background: #fff; padding: 6px; }
-        .brand { display: flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; }
-        .brand img { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; }
-        .brand span { font-size: 0.95em; font-weight: bold; color: #2980b9; }
-        h3 { margin: 2px 0; font-size: 0.95em; text-align: center; color: #333; flex-shrink: 0; }
-        select { width: 100%; padding: 3px; margin: 2px 0; border: 1px solid #ddd; border-radius: 3px; font-size: 11px; background: #fff; flex-shrink: 0; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; min-height: 0; overflow: hidden; }
-        .col { display: flex; flex-direction: column; min-height: 0; height: 100%; }
-        h4 { margin: 2px 0; font-size: 0.75em; color: #444; border-bottom: 1px solid #ddd; padding-bottom: 1px; text-align: center; flex-shrink: 0; }
-        .sec-title { font-weight: bold; color: #2980b9; margin: 2px 0; font-size: 0.75em; flex-shrink: 0; }
+<!DOCTYPE html><html lang="ms"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">    <title>Kalkulator Loan DSR</title>    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%); font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11px; overflow: hidden; }
+        .container { height: 100%; width: 100%; display: flex; flex-direction: column; background: #ffffff; padding: 6px 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        
+        .brand { display: flex; align-items: center; justify-content: center; gap: 8px; flex-shrink: 0; padding: 2px 0; }
+        .brand img { width: 20px; height: 20px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .brand span { font-size: 1em; font-weight: 700; color: #1e3c72; letter-spacing: 0.3px; }
+        
+        h3 { margin: 2px 0; font-size: 0.95em; text-align: center; color: #2c3e50; font-weight: 600; flex-shrink: 0; }
+        
+        .select-wrapper { position: relative; flex-shrink: 0; margin: 2px 0; }
+        select { width: 100%; padding: 4px 8px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 11px; background: #f8fafc; color: #334155; font-weight: 500; appearance: none; height: 26px; }
+        select:focus { outline: none; border-color: #2563eb; background: #fff; }
+        .select-wrapper::after { content: '▼'; font-size: 8px; color: #64748b; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; min-height: 0; overflow: hidden; margin-top: 2px; }
+        .col { display: flex; flex-direction: column; min-height: 0; height: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 6px; }
+        
+        h4 { margin: 2px 0 3px 0; font-size: 0.75em; color: #1e293b; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 2px; text-align: center; font-weight: 700; flex-shrink: 0; letter-spacing: 0.5px; }
+        .sec-title { font-weight: 700; color: #2563eb; margin: 3px 0 2px 0; font-size: 0.7em; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
+        
         .inputs-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
-        input { width: 100%; padding: 0px 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 11px; height: 100%; min-height: 16px; }
+        
+        input { width: 100%; padding: 0px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; height: 100%; min-height: 16px; background: #ffffff; color: #0f172a; transition: all 0.2s ease; }
+        input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); background: #fff; }
+        input::placeholder { color: #94a3b8; font-size: 10px; }
+        
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        
         .input-row { flex: 1; display: flex; flex-direction: column; min-height: 0; margin-bottom: 1px; }
-        .result { padding: 4px 6px; background: #e7f3ff; border-radius: 6px; flex-shrink: 0; margin-top: 2px; }
-        .result p { margin: 1px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; }
-        .highlight { color: #27ae60; font-size: 1.1em; }
+        
+        .result { padding: 6px 10px; background: linear-gradient(135deg, #eff6ff 100%, #dbeafe 0%); border: 1px solid #bfdbfe; border-radius: 8px; flex-shrink: 0; margin-top: 4px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); }
+        .result p { margin: 2px 0; display: flex; justify-content: space-between; font-weight: 600; font-size: 11px; color: #334155; }
+        .result span { color: #1e293b; font-weight: 700; }
+        .highlight { color: #16a34a !important; font-size: 1.15em !important; font-weight: 800 !important; text-shadow: 0 1px 1px rgba(0,0,0,0.02); }
     </style></head><body>
 <div class="container">    
     <div class="brand">
@@ -24,10 +42,12 @@
         <span>Jackson Property</span>
     </div>
     <h3>Kalkulator Loan Gabung Gaji</h3>    
-    <select id="tempoh" onchange="updateInputs()">        
-        <option value="3">Purata 3 Bulan Gaji</option>
-        <option value="6">Purata 6 Bulan Gaji</option>    
-    </select>
+    <div class="select-wrapper">
+        <select id="tempoh" onchange="updateInputs()">        
+            <option value="3">Purata 3 Bulan Gaji</option>
+            <option value="6">Purata 6 Bulan Gaji</option>    
+        </select>
+    </div>
     <div class="grid">        
         <div class="col">            
             <h4>PEMOHON 1</h4>
@@ -42,7 +62,7 @@
         <p>Gaji Gabungan: <span id="jpb">0.00</span></p>
         <p>Jumlah Komitmen: <span id="totalKom">0.00</span></p>
         <p>Ansuran Maks (DSR 60%): <span id="ansuran">0.00</span></p>
-        <p class="highlight">Max Loan: RM <span id="loan">0.00</span></p>    
+        <p>Max Loan: <span class="highlight">RM <span id="loan" class="highlight">0.00</span></span></p>    
     </div>
 </div>
 <script>
@@ -53,11 +73,11 @@ function updateInputs() {
     let htmlContent = '';
     
     for(let i=1; i<=n; i++) {
-        htmlContent += `<div class="input-row"><input type="number" class="gaji" placeholder="Gaji B${i}" oninput="kira()"></div>`;
+        htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="gaji" placeholder="Gaji B${i}" oninput="kira()"></div>`;
     }
     htmlContent += `<div class="sec-title">KOMITMEN</div>`;
     komitmenList.forEach(k => {
-        htmlContent += `<div class="input-row"><input type="number" class="kom" placeholder="${k}" oninput="kira()"></div>`;
+        htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="kom" placeholder="${k}" oninput="kira()"></div>`;
     });
         
     document.getElementById('wrapP1').innerHTML = htmlContent;    
