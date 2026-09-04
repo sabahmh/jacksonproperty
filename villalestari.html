@@ -330,14 +330,14 @@
 
                 <select id="filterType" onchange="filterCards()">
                     <option value="all">Jenis</option>
-                    <option value="BIASA">Inter</option>
+                    <option value="BIASA">Intermediate</option>
                     <option value="CORNER">Corner</option>
                 </select>
 
                 <select id="filterStatus" onchange="filterCards()">
                     <option value="all">Status</option>
-                    <option value="available">Avail</option>
-                    <option value="reserved">Res</option>
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
                     <option value="sold">Sold</option>
                 </select>
             </div>
@@ -608,6 +608,8 @@
                 lotsCache = snapshot.val() || {};
                 updateUI();
             });
+            document.getElementById('filterStatus').value = 'available';
+            filterCards();
         };
     </script>
 </body>
