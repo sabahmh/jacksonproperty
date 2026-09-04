@@ -1,0 +1,80 @@
+<!DOCTYPE html><html lang="ms"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">    <title>Kalkulator Loan DSR</title>    <style>
+        * { box-sizing: border-box; }
+        html, body { height: 100vh; width: 100vw; margin: 0; padding: 0; background-color: #f0f2f5; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 11px; overflow: hidden; }
+        .container { height: 100vh; width: 100vw; display: flex; flex-direction: column; background: #fff; padding: 6px; }
+        .brand { display: flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; }
+        .brand img { width: 16px; height: 16px; object-fit: contain; border-radius: 3px; }
+        .brand span { font-size: 0.95em; font-weight: bold; color: #2980b9; }
+        h3 { margin: 2px 0; font-size: 0.95em; text-align: center; color: #333; flex-shrink: 0; }
+        select { width: 100%; padding: 3px; margin: 2px 0; border: 1px solid #ddd; border-radius: 3px; font-size: 11px; background: #fff; flex-shrink: 0; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; min-height: 0; overflow: hidden; }
+        .col { display: flex; flex-direction: column; min-height: 0; height: 100%; }
+        h4 { margin: 2px 0; font-size: 0.75em; color: #444; border-bottom: 1px solid #ddd; padding-bottom: 1px; text-align: center; flex-shrink: 0; }
+        .sec-title { font-weight: bold; color: #2980b9; margin: 2px 0; font-size: 0.75em; flex-shrink: 0; }
+        .inputs-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+        input { width: 100%; padding: 0px 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 11px; height: 100%; min-height: 16px; }
+        .input-row { flex: 1; display: flex; flex-direction: column; min-height: 0; margin-bottom: 1px; }
+        .result { padding: 4px 6px; background: #e7f3ff; border-radius: 6px; flex-shrink: 0; margin-top: 2px; }
+        .result p { margin: 1px 0; display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; }
+        .highlight { color: #27ae60; font-size: 1.1em; }
+    </style></head><body>
+<div class="container">    
+    <div class="brand">
+        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo">
+        <span>Jackson Property</span>
+    </div>
+    <h3>Kalkulator Loan Gabung Gaji</h3>    
+    <select id="tempoh" onchange="updateInputs()">        
+        <option value="3">Purata 3 Bulan Gaji</option>
+        <option value="6">Purata 6 Bulan Gaji</option>    
+    </select>
+    <div class="grid">        
+        <div class="col">            
+            <h4>PEMOHON 1</h4>
+            <div class="inputs-wrapper" id="wrapP1"></div>
+        </div>        
+        <div class="col">            
+            <h4>PEMOHON 2</h4>
+            <div class="inputs-wrapper" id="wrapP2"></div>
+        </div>    
+    </div>
+    <div class="result">        
+        <p>Gaji Gabungan: <span id="jpb">0.00</span></p>
+        <p>Jumlah Komitmen: <span id="totalKom">0.00</span></p>
+        <p>Ansuran Maks (DSR 60%): <span id="ansuran">0.00</span></p>
+        <p class="highlight">Max Loan: RM <span id="loan">0.00</span></p>    
+    </div>
+</div>
+<script>
+const komitmenList = ["Kereta", "Peribadi", "Kad Kredit", "PTPTN", "Koperasi", "ASB/Rumah", "BNPL", "Lain-lain"];
+function formatRupiah(num) { return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+function updateInputs() {    
+    let n = parseInt(document.getElementById('tempoh').value);    
+    let htmlContent = '';
+    
+    for(let i=1; i<=n; i++) {
+        htmlContent += `<div class="input-row"><input type="number" class="gaji" placeholder="Gaji B${i}" oninput="kira()"></div>`;
+    }
+    htmlContent += `<div class="sec-title">KOMITMEN</div>`;
+    komitmenList.forEach(k => {
+        htmlContent += `<div class="input-row"><input type="number" class="kom" placeholder="${k}" oninput="kira()"></div>`;
+    });
+        
+    document.getElementById('wrapP1').innerHTML = htmlContent;    
+    document.getElementById('wrapP2').innerHTML = htmlContent;    
+    kira();
+}
+function kira() {    
+    let n = parseInt(document.getElementById('tempoh').value);    
+    let pGaji = 0, pKom = 0;    
+    document.querySelectorAll('.gaji').forEach(i => pGaji += parseFloat(i.value) || 0);    
+    document.querySelectorAll('.kom').forEach(i => pKom += parseFloat(i.value) || 0);        
+    let jpb = pGaji / n;    
+    let ansuran = Math.max((jpb * 0.60) - pKom, 0);        
+    document.getElementById('jpb').innerText = formatRupiah(jpb);    
+    document.getElementById('totalKom').innerText = formatRupiah(pKom);    
+    document.getElementById('ansuran').innerText = formatRupiah(ansuran);    
+    document.getElementById('loan').innerText = formatRupiah(ansuran * 200);
+}
+updateInputs();
+</script></body></html>
