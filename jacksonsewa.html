@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <!-- Dioptimumkan untuk mobile -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kiraan Kos Sewaan | PIONEER Realty Group</title>
+    <style>
+        :root {
+            --primary-color: #1a2a6c;
+            --secondary-color: #b21f1f;
+            --accent-color: #fdbb2d;
+            --bg-color: #f0f2f5;
+            --text-color: #2d3436;
+            --card-bg: #ffffff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding: 10px; 
+            line-height: 1.5;
+            -webkit-text-size-adjust: 100%;
+        }
+        .container { width: 100%; max-width: 450px; margin: 0 auto; }
+        
+        h1 { text-align: center; color: var(--primary-color); margin-bottom: 5px; font-size: 20px; }
+        .subtitle { text-align: center; color: #636e72; font-size: 12px; margin-bottom: 15px; font-weight: 600; text-transform: uppercase; }
+        
+        .input-container { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; }
+        .input-container label { font-weight: 600; color: var(--primary-color); display: block; margin-bottom: 5px; font-size: 14px; }
+        .input-container input, .input-container select { 
+            padding: 14px; 
+            font-size: 16px; /* 16px menghalang auto-zoom pada iPhone */
+            border: 2px solid #dfe6e9; 
+            border-radius: 8px; 
+            width: 100%; 
+            outline: none; 
+            margin-bottom: 10px;
+        }
+
+        .grid-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 15px; }
+        .card { background: var(--card-bg); padding: 12px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; }
+        .card.total { grid-column: span 2; background: var(--primary-color); color: white; }
+        .card-title { font-size: 9px; text-transform: uppercase; opacity: 0.8; margin-bottom: 2px; }
+        .card-value { font-size: 16px; font-weight: 700; }
+        .card.total .card-value { color: var(--accent-color); font-size: 20px; }
+
+        .table-container { background: var(--card-bg); padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .table-title { font-size: 13px; color: var(--primary-color); font-weight: 700; margin-bottom: 10px; border-bottom: 1px solid #f0f2f5; padding-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; }
+        td { padding: 8px 0; font-size: 13px; }
+        .text-right { text-align: right; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>KOS PENYEWAAN</h1>
+    <div class="subtitle">PIONEER Realty Group</div>
+    <div class="input-container">
+        <label for="sewaInput">Sewa Bulanan (RM):</label>
+        <input type="number" id="sewaInput" placeholder="Contoh: 1500" inputmode="decimal" oninput="calculate()">
+        
+        <label for="tempohInput">Tempoh Sewaan:</label>
+        <select id="tempohInput" onchange="calculate()">
+            <option value="1">1 Tahun</option>
+            <option value="2">2 Tahun - 3 Tahun</option>
+            <option value="3">4 Tahun - 5 Tahun</option>
+            <option value="4">6 Tahun ke atas</option>
+        </select>
+    </div>
+    
+    <div class="grid-cards">
+        <div class="card"><div class="card-title">KE MAXXAN</div><div class="card-value" id="cardMaxxan">RM 0.00</div></div>
+        <div class="card"><div class="card-title">KE OWNER</div><div class="card-value" id="cardOwner">RM 0.00</div></div>
+        <div class="card total"><div class="card-title">JUMLAH DEPOSIT</div><div class="card-value" id="cardTotal">RM 0.00</div></div>
+    </div>
+
+    <div class="table-container">
+        <div class="table-title">Perincian Amaun</div>
+        <table>
+            <tbody>
+                <tr><td>1 Month Advance Rental</td><td class="text-right" id="valSewa">0.00</td></tr>
+                <tr><td>Security Deposit (2 Bulan)</td><td class="text-right" id="valDepoRumah">0.00</td></tr>
+                <tr><td>Deposit Utiliti</td><td class="text-right" id="valUtiliti">0.00</td></tr>
+                <tr><td>Perjanjian (TA)</td><td class="text-right" id="valTA">0.00</td></tr>
+                <tr><td>SST 8% (atas Sewa)</td><td class="text-right" id="valSST">0.00</td></tr>
+                <tr><td>Duti Setem (Stamping)</td><td class="text-right" id="valStamping">0.00</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const sewaInput = document.getElementById('sewaInput');
+    const tempohInput = document.getElementById('tempohInput');
+    function formatRM(val) { return val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+    function calculate() {
+        const sewa = parseFloat(sewaInput.value) || 0;
+        const tempohOption = parseInt(tempohInput.value);
+        let ta = 0;
+        if ((tempohOption === 2 || tempohOption === 3 || tempohOption === 4) && sewa >= 500 && sewa <= 3000) {
+            ta = 450;
+        } else {
+            if (sewa > 3000) ta = 450;
+            else if (sewa >= 2500) ta = 400;
+            else if (sewa >= 2000) ta = 350;
+            else if (sewa >= 1500) ta = 300;
+            else if (sewa >= 1000) ta = 280;
+            else if (sewa >= 500) ta = 250;
+        }
+        const bulan = (tempohOption === 1) ? 12 : (tempohOption === 2 ? 36 : (tempohOption === 3 ? 60 : 84));
+        const stamping = sewa > 0 ? Math.ceil((sewa * bulan) / 250) : 0;
+        const depoRumah = sewa * 2;
+        const depoUtiliti = sewa * 0.5;
+        const sst = sewa * 0.08; 
+        const totalDeposit = depoRumah + sewa + depoUtiliti + ta + stamping;
+        const bayarMaxxan = sewa > 0 ? (sewa + sst + ta + stamping) : 0;
+        const bayarOwner = totalDeposit - bayarMaxxan;
+
+        document.getElementById('cardMaxxan').innerText = 'RM ' + formatRM(bayarMaxxan);
+        document.getElementById('cardOwner').innerText = 'RM ' + formatRM(bayarOwner);
+        document.getElementById('cardTotal').innerText = 'RM ' + formatRM(totalDeposit);
+        document.getElementById('valSewa').innerText = formatRM(sewa);
+        document.getElementById('valDepoRumah').innerText = formatRM(depoRumah);
+        document.getElementById('valUtiliti').innerText = formatRM(depoUtiliti);
+        document.getElementById('valTA').innerText = formatRM(ta);
+        document.getElementById('valSST').innerText = formatRM(sst);
+        document.getElementById('valStamping').innerText = formatRM(stamping);
+    }
+</script>
+</body>
+</html>
