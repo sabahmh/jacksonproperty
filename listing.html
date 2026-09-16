@@ -10,6 +10,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans pb-10 select-none text-[11px]" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="propertyApp()">
@@ -24,13 +25,10 @@
                 </div>
             </div>
             <div class="flex gap-1">
-                <template x-if="!isAdmin">
-                    <button @click="isAdmin = true" class="bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-semibold">🔑 Admin</button>
-                </template>
                 <template x-if="isAdmin">
                     <div class="flex gap-1">
                         <button @click="openAddModal = true" class="bg-blue-600 text-white px-2 py-0.5 rounded text-[10px] font-semibold">+ Tambah</button>
-                        <button @click="isAdmin = false" class="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] font-semibold">👁️ Keluar</button>
+                        <button @click="logoutAdmin" class="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] font-semibold">🚪 Keluar</button>
                     </div>
                 </template>
             </div>
@@ -222,6 +220,14 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        // Semak sesi log masuk secara automatik (Halang akses terus)
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                // Jika belum log masuk, tendang balik ke halaman log masuk utama
+                window.location.href = "https://sabahmh.github.io/jacksonproperty/index.html";
+            }
+        });
+
         function disableShortcuts(e) {
             if (e.key === 'F12') return false;
             if (e.ctrlKey && e.shiftKey && ['I', 'J', 'C', 'i', 'j', 'c'].includes(e.key)) return false;
@@ -239,7 +245,7 @@
                 ownerFilter: '',
                 sortBy: 'name_asc',
                 openAddModal: false,
-                isAdmin: false,
+                isAdmin: true, // Automatik set true kerana halaman ini hanya boleh diakses selepas login
                 properties: {},
                 editId: null,
                 form: {
@@ -319,6 +325,13 @@
                     if (confirm('Padam listing ini?')) {
                         db.ref('properties/' + id).remove();
                     }
+                },
+                logoutAdmin() {
+                    firebase.auth().signOut().then(() => {
+                        window.location.href = "https://sabahmh.github.io/jacksonproperty/index.html";
+                    }).catch((error) => {
+                        console.error("Gagal log keluar:", error);
+                    });
                 }
             }
         }
