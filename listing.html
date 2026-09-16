@@ -4,10 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Listing Hartanah Sabah</title>
-    // Semak sesi log masuk secara automatik
 firebase.auth().onAuthStateChanged((user) => {
     if (!user) {
-        // Jika belum log masuk, tendang balik ke halaman log masuk utama
         window.location.href = "https://sabahmh.github.io/jacksonproperty/index.html";
     }
 });
