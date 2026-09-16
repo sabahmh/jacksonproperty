@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Listing Hartanah Sabah</title>
+    
+    <!-- SEKAT DIRECT ACCESS: Semak sama ada sudah log masuk dari index.html -->
+    <script>
+        if (sessionStorage.getItem('jackson_logged_in') !== 'true') {
+            window.location.replace('index.html');
+        }
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
@@ -13,6 +21,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans pb-10 select-none text-[11px]" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="propertyApp()">
+    
     <!-- Header Ultra Kompak -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-2 py-1 shadow-2xs">
         <div class="max-w-4xl mx-auto flex justify-between items-center">
@@ -24,6 +33,9 @@
                 </div>
             </div>
             <div class="flex gap-1">
+                <!-- Butang Keluar / Logout balik ke index.html -->
+                <button @click="logout()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-0.5 rounded text-[10px] font-semibold">🚪 Log Keluar</button>
+
                 <template x-if="!isAdmin">
                     <button @click="isAdmin = true" class="bg-slate-900 text-white px-2 py-0.5 rounded text-[10px] font-semibold">🔑 Admin</button>
                 </template>
@@ -80,11 +92,10 @@
             </div>
         </div>
 
-        <!-- Senarai Listing (Ultra-Compact Mobile Row) -->
+        <!-- Senarai Listing -->
         <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
             <template x-for="(item, id) in filteredProperties" :key="id">
                 <div class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50 transition">
-                    <!-- Kiri: Badge & Nama Hartanah -->
                     <div class="flex items-center gap-1.5 min-w-0 flex-1">
                         <div class="flex flex-col gap-0.5 shrink-0">
                             <span class="px-1 py-0 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase text-center" x-text="item.ZONE"></span>
@@ -104,7 +115,6 @@
                         </div>
                     </div>
 
-                    <!-- Kanan: Harga, Status & Aksi Ringkas -->
                     <div class="flex items-center gap-2 shrink-0 text-right">
                         <div>
                             <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
@@ -250,6 +260,11 @@
                         const data = snapshot.val();
                         this.properties = data || {};
                     });
+                },
+                logout() {
+                    // Buang tanda sesi dan tendang semula ke index.html
+                    sessionStorage.removeItem('jackson_logged_in');
+                    window.location.href = 'index.html';
                 },
                 formatPrice(val) {
                     if (!val) return 'RM 0';
