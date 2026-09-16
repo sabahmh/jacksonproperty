@@ -262,13 +262,7 @@
                 },
                 logout() {
                     sessionStorage.removeItem('jackson_logged_in');
-    
-    // Jika ada guna Firebase Authentication:
-    firebase.auth().signOut().then(() => {
-        window.location.replace('index.html');
-    }).catch((error) => {
-        // Fallback jika ralat
-        window.location.replace('index.html');
+    window.location.replace('index.html');
     });
                 },
                 formatPrice(val) {
