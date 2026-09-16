@@ -62,11 +62,11 @@
                 <select x-model="zoneFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
                     <option value="">Zon</option>
                     <option value="SDK">SDK</option>
-    <option value="KK">KK</option>
-    <option value="TWU">TWU</option>
-    <option value="LDU">LDU</option>
-    <option value="SPA">SPA</option>
-    <option value="RNU">RNU</option>
+                    <option value="KK">KK</option>
+                    <option value="TWU">TWU</option>
+                    <option value="LDU">LDU</option>
+                    <option value="SPA">SPA</option>
+                    <option value="RNU">RNU</option>
                 </select>
                 <select x-model="forFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
                     <option value="">Urusan</option>
@@ -98,7 +98,7 @@
         <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
             <template x-for="(item, id) in filteredProperties" :key="id">
                 <div @click="showDetail(item)" class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50 transition cursor-pointer">
-    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
                         <div class="flex flex-col gap-0.5 shrink-0">
                             <span class="px-1 py-0 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase text-center" x-text="item.ZONE"></span>
                             <span class="px-1 py-0 text-[7px] font-medium rounded bg-slate-100 text-slate-600 uppercase text-center" x-text="item.TYPE"></span>
@@ -127,12 +127,12 @@
 
                         <div class="flex items-center gap-1 border-l border-slate-100 pl-1.5">
                             <template x-if="item.URL">
-                                <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs p-0.5" title="Pautan">🔗</a>
+                                <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs p-0.5" title="Pautan" @click.stop>🔗</a>
                             </template>
                             <template x-if="isAdmin">
                                 <div class="flex gap-0.5">
-                                    <button @click="editItem(id, item)" class="px-1 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-medium">Edit</button>
-                                    <button @click="deleteItem(id)" class="px-1 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[9px] font-medium">Padam</button>
+                                    <button @click.stop="editItem(id, item)" class="px-1 py-0.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[9px] font-medium">Edit</button>
+                                    <button @click.stop="deleteItem(id)" class="px-1 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[9px] font-medium">Padam</button>
                                 </div>
                             </template>
                         </div>
@@ -177,14 +177,14 @@
                     </div>
                     <div class="grid grid-cols-2 gap-1.5">
                         <div>
-    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Owner / Agen</label>
-    <input type="text" x-model="form.OWNER" @input="form.OWNER = form.OWNER.toUpperCase()" list="ownerList" placeholder="Cth: JACKSON" class="w-full px-2 py-1 border rounded text-xs outline-none uppercase">
-    <datalist id="ownerList">
-        <template x-for="own in uniqueOwners">
-            <option :value="own"></option>
-        </template>
-    </datalist>
-</div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Owner / Agen</label>
+                            <input type="text" x-model="form.OWNER" @input="form.OWNER = form.OWNER.toUpperCase()" list="ownerList" placeholder="Cth: JACKSON" class="w-full px-2 py-1 border rounded text-xs outline-none uppercase">
+                            <datalist id="ownerList">
+                                <template x-for="own in uniqueOwners">
+                                    <option :value="own"></option>
+                                </template>
+                            </datalist>
+                        </div>
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">HARGA (RM)</label>
                             <input type="text" x-model="form.PRICE" @input="formatInputPrice($event)" placeholder="Cth: 310,000" class="w-full px-2 py-1 border rounded text-xs outline-none">
@@ -195,11 +195,11 @@
                             <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Zon</label>
                             <select x-model="form.ZONE" class="w-full px-2 py-1 border rounded text-xs outline-none">
                                 <option value="SDK">SDK</option>
-    <option value="KK">KK</option>
-    <option value="TWU">TWU</option>
-    <option value="LDU">LDU</option>
-    <option value="SPA">SPA</option>
-    <option value="RNU">RNU</option>
+                                <option value="KK">KK</option>
+                                <option value="TWU">TWU</option>
+                                <option value="LDU">LDU</option>
+                                <option value="SPA">SPA</option>
+                                <option value="RNU">RNU</option>
                             </select>
                         </div>
                         <div>
@@ -226,58 +226,59 @@
                 </form>
             </div>
         </div>
+
         <!-- MODAL DETAIL / NOTA (RESPONSIF MOBILE) -->
-<div x-show="selectedItem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;" @click.self="closeDetail()">
-    <div class="bg-white rounded-xl max-w-sm w-full p-4 shadow-2xl border border-slate-100 space-y-3 max-h-[85vh] flex flex-col">
-        
-        <!-- Header Modal -->
-        <div class="flex justify-between items-start border-b pb-2 gap-2">
-            <h3 class="font-bold text-slate-900 text-xs uppercase leading-snug break-words" x-text="selectedItem?.PROPERTY"></h3>
-            <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-base p-1 -mr-1 -mt-1 leading-none">&times;</button>
-        </div>
-
-        <!-- Kandungan Utama (Boleh Skrol jika panjang di telefon) -->
-        <div class="space-y-1.5 text-[11px] text-slate-700 overflow-y-auto pr-1">
-            <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
-                <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
-            </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                <span class="text-slate-500 font-medium">Zon:</span>
-                <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
-            </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                <span class="text-slate-500 font-medium">Owner / Agen:</span>
-                <span class="font-bold uppercase" x-text="selectedItem?.OWNER || '-'"></span>
-            </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                <span class="text-slate-500 font-medium">Harga:</span>
-                <span class="font-bold text-blue-600 text-xs" x-text="formatPrice(selectedItem?.PRICE)"></span>
-            </div>
-            <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                <span class="text-slate-500 font-medium">Status:</span>
-                <span class="font-bold uppercase px-1.5 py-0.5 rounded text-[9px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
-            </div>
-            
-            <div class="pt-1">
-                <span class="text-slate-500 font-medium block mb-1">Nota / Remark:</span>
-                <div class="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-900 text-[11px] leading-relaxed break-words" x-text="selectedItem?.REMARK || 'Tiada nota dimasukkan.'"></div>
-            </div>
-
-            <template x-if="selectedItem?.URL">
-                <div class="pt-1">
-                    <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold text-[11px] transition">🔗 Buka Pautan Luar</a>
+        <div x-show="selectedItem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;" @click.self="closeDetail()">
+            <div class="bg-white rounded-xl max-w-sm w-full p-4 shadow-2xl border border-slate-100 space-y-3 max-h-[85vh] flex flex-col">
+                
+                <!-- Header Modal -->
+                <div class="flex justify-between items-start border-b pb-2 gap-2">
+                    <h3 class="font-bold text-slate-900 text-xs uppercase leading-snug break-words" x-text="selectedItem?.PROPERTY"></h3>
+                    <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-base p-1 -mr-1 -mt-1 leading-none">&times;</button>
                 </div>
-            </template>
-        </div>
 
-        <!-- Butang Tutup Bawah -->
-        <div class="pt-1 border-t border-slate-100">
-            <button @click="closeDetail()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Tutup</button>
-        </div>
+                <!-- Kandungan Utama -->
+                <div class="space-y-1.5 text-[11px] text-slate-700 overflow-y-auto pr-1">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
+                        <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Zon:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Owner / Agen:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.OWNER || '-'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Harga:</span>
+                        <span class="font-bold text-blue-600 text-xs" x-text="formatPrice(selectedItem?.PRICE)"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Status:</span>
+                        <span class="font-bold uppercase px-1.5 py-0.5 rounded text-[9px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
+                    </div>
+                    
+                    <div class="pt-1">
+                        <span class="text-slate-500 font-medium block mb-1">Nota / Remark:</span>
+                        <div class="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-900 text-[11px] leading-relaxed break-words" x-text="selectedItem?.REMARK || 'Tiada nota dimasukkan.'"></div>
+                    </div>
 
-    </div>
-</div>
+                    <template x-if="selectedItem?.URL">
+                        <div class="pt-1">
+                            <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold text-[11px] transition">🔗 Buka Pautan Luar</a>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Butang Tutup Bawah -->
+                <div class="pt-1 border-t border-slate-100">
+                    <button @click="closeDetail()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Tutup</button>
+                </div>
+
+            </div>
+        </div>
     </main>
 
     <script>
@@ -378,18 +379,11 @@
                     }, {});
                 },
                 showDetail(item) {
-            this.selectedItem = item;
-        },
-        closeDetail() {
-            this.selectedItem = null;
-        },
-
-        deleteItem(id) {
-            if (!this.isAdmin) return;
-            if (confirm('Padam listing ini?')) {
-                db.ref('properties/' + id).remove();
-            }
-        }
+                    this.selectedItem = item;
+                },
+                closeDetail() {
+                    this.selectedItem = null;
+                },
                 editItem(id, item) {
                     if (!this.isAdmin) return;
                     this.editId = id;
@@ -402,8 +396,8 @@
                         this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
                     }
                     if (this.form.OWNER) {
-        this.form.OWNER = this.form.OWNER.toUpperCase();
-    }
+                        this.form.OWNER = this.form.OWNER.toUpperCase();
+                    }
                     if (this.editId) {
                         db.ref('properties/' + this.editId).set(this.form);
                     } else {
