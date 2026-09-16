@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistem Listing Hartanah Sabah</title>
     
-    <!-- SEKAT DIRECT ACCESS: Semak sama ada sudah log masuk dari index.html -->
+    <!-- SEKAT DIRECT ACCESS: Jika buka terus tanpa index.html, tendang balik -->
     <script>
         if (sessionStorage.getItem('jackson_logged_in') !== 'true') {
             window.location.replace('index.html');
@@ -33,7 +33,6 @@
                 </div>
             </div>
             <div class="flex gap-1">
-                <!-- Butang Keluar / Logout balik ke index.html -->
                 <button @click="logout()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-0.5 rounded text-[10px] font-semibold">🚪 Log Keluar</button>
 
                 <template x-if="!isAdmin">
@@ -262,7 +261,6 @@
                     });
                 },
                 logout() {
-                    // Buang tanda sesi dan tendang semula ke index.html
                     sessionStorage.removeItem('jackson_logged_in');
                     window.location.href = 'index.html';
                 },
