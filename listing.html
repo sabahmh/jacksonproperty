@@ -92,6 +92,11 @@
                     <option value="price_desc">Harga ⬇</option>
                 </select>
             </div>
+            <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
+            <div class="flex justify-between items-center pt-1 px-0.5 text-[10px] text-slate-500 border-t border-slate-100">
+                <span>Jumlah Rekod: <strong class="text-slate-700" x-text="Object.keys(filteredProperties).length"></strong></span>
+                <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
+            </div>
         </div>
 
         <!-- Senarai Listing -->
