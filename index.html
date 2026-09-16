@@ -137,6 +137,7 @@
             if (user) {
                 // Set tanda sesi apabila sah log masuk
                 sessionStorage.setItem('jackson_logged_in', 'true');
+                window.location.href = 'listing.html';
                 document.getElementById('loginSection').style.display = 'none';
                 document.getElementById('portalSection').style.display = 'flex';
             } else {
