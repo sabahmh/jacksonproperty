@@ -270,6 +270,14 @@
                     let num = parseFloat(cleanNum);
                     if (isNaN(num)) return val;
                     return 'RM ' + num.toLocaleString('en-US', {maximumFractionDigits: 2});
+                formatInputPrice(event) {
+                    let input = event.target;
+                    let value = input.value.replace(/[^0-9]/g, '');
+                    if (value) {
+                        value = Number(value).toLocaleString('en-US');
+                    }
+                    this.form.PRICE = value;
+                    input.value = value;
                 },
                 get uniqueOwners() {
                     let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
