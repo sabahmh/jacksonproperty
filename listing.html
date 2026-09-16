@@ -178,9 +178,9 @@
                             <input type="text" x-model="form.OWNER" placeholder="Cth: JACKSON" class="w-full px-2 py-1 border rounded text-xs outline-none">
                         </div>
                         <div>
-    <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">HARGA (RM)</label>
-    <input type="text" x-model="form.PRICE" @input="formatInputPrice($event)" placeholder="Cth: 310,000" class="w-full px-2 py-1 border rounded text-xs outline-none">
-</div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">HARGA (RM)</label>
+                            <input type="text" x-model="form.PRICE" @input="formatInputPrice($event)" placeholder="Cth: 310,000" class="w-full px-2 py-1 border rounded text-xs outline-none">
+                        </div>
                     </div>
                     <div class="grid grid-cols-2 gap-1.5">
                         <div>
@@ -270,6 +270,7 @@
                     let num = parseFloat(cleanNum);
                     if (isNaN(num)) return val;
                     return 'RM ' + num.toLocaleString('en-US', {maximumFractionDigits: 2});
+                },
                 formatInputPrice(event) {
                     let input = event.target;
                     let value = input.value.replace(/[^0-9]/g, '');
