@@ -153,8 +153,9 @@
         </div>
 
         <!-- MODAL TAMBAH / EDIT -->
+        <!-- MODAL TAMBAH / EDIT -->
         <div x-show="openAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 z-50" style="display: none;">
-            <div @click.outside="closeModal()" class="bg-white rounded-lg max-w-md w-full p-3 shadow-xl border border-slate-100 space-y-2">
+            <div class="bg-white rounded-lg max-w-md w-full p-3 shadow-xl border border-slate-100 space-y-2">
                 <div class="flex justify-between items-center border-b pb-1">
                     <h3 class="font-bold text-slate-900 text-xs" x-text="editId ? 'Kemas Kini Listing' : 'Tambah Listing Baru'"></h3>
                     <button @click="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold text-sm">&times;</button>
