@@ -86,6 +86,7 @@
                     </template>
                 </select>
                 <select x-model="sortBy" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="latest">Terkini (Paling Atas)</option>
                     <option value="name_asc">Nama (A-Z)</option>
                     <option value="name_desc">Nama (Z-A)</option>
                     <option value="price_asc">Harga ⬆</option>
@@ -315,7 +316,7 @@
                 forFilter: '',
                 typeFilter: '',
                 ownerFilter: '',
-                sortBy: 'name_asc',
+                sortBy: 'latest',
                 openAddModal: false,
                 isAdmin: false,
                 properties: {},
@@ -369,7 +370,10 @@
                     let mapped = result.map(([id, item]) => ({ id, ...item }));
 
                     return mapped.sort((a, b) => {
-                        if (this.sortBy === 'name_asc') {
+                        if (this.sortBy === 'latest') {
+            // Urutkan ikut masa terkini (fallback ke 0 jika rekod lama tiada timestamp)
+            return (b.createdAt || 0) - (a.createdAt || 0);
+                    } else if (this.sortBy === 'name_asc') {
                             return a.PROPERTY.localeCompare(b.PROPERTY);
                         } else if (this.sortBy === 'name_desc') {
                             return b.PROPERTY.localeCompare(a.PROPERTY);
@@ -406,6 +410,7 @@
                     if (this.editId) {
                         db.ref('properties/' + this.editId).set(this.form);
                     } else {
+                        this.form.createdAt = Date.now();
                         db.ref('properties').push(this.form);
                     }
                     this.closeModal();
