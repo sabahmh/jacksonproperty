@@ -339,11 +339,19 @@
                     PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK'
                 },
                 init() {
-                    db.ref('properties').on('value', snapshot => {
-                        const data = snapshot.val();
-                        this.properties = data || {};
-                    });
-                },
+    // 1. Paparkan data sedia ada dari memori pelayar serta-merta (Instant Load)
+    const cachedData = localStorage.getItem('jackson_properties');
+    if (cachedData) {
+        this.properties = JSON.parse(cachedData);
+    }
+
+    // 2. Ambil data terkini dari Firebase di latar belakang (Background Sync)
+    db.ref('properties').on('value', snapshot => {
+        const data = snapshot.val() || {};
+        this.properties = data;
+        localStorage.setItem('jackson_properties', JSON.stringify(data));
+    });
+},
                 logout() {
                     sessionStorage.removeItem('jackson_logged_in');
                     window.location.replace('index.html');
