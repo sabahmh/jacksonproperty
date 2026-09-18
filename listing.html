@@ -158,7 +158,6 @@
         </div>
 
         <!-- MODAL TAMBAH / EDIT -->
-        <!-- MODAL TAMBAH / EDIT -->
         <div x-show="openAddModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 z-50" style="display: none;">
             <div class="bg-white rounded-lg max-w-md w-full p-3 shadow-xl border border-slate-100 space-y-2">
                 <div class="flex justify-between items-center border-b pb-1">
@@ -304,17 +303,12 @@
             appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
             measurementId: "G-SZ47HNR9PT"
         };
-       document.addEventListener("DOMContentLoaded", () => {
-            // Semak sama ada status sudah ada dalam sessionStorage
+
+        document.addEventListener("DOMContentLoaded", () => {
             let currentStatus = sessionStorage.getItem('property_status');
-
             if (!currentStatus) {
-                // Tetapkan kepada huruf besar 'AVAILABLE' supaya sepadan dengan option value dalam HTML
                 sessionStorage.setItem('property_status', 'AVAILABLE');
-                currentStatus = 'AVAILABLE';
             }
-
-            console.log("Status semasa:", currentStatus);
         });
 
         firebase.initializeApp(firebaseConfig);
@@ -330,7 +324,6 @@
         function propertyApp() {
             return {
                 search: '',
-                // Ambil terus nilai dari sessionStorage atau tetapkan default 'AVAILABLE'
                 statusFilter: sessionStorage.getItem('property_status') || 'AVAILABLE',
                 zoneFilter: '',
                 forFilter: '',
@@ -378,7 +371,7 @@
                 get filteredProperties() {
                     let entries = Object.entries(this.properties);
                     let result = entries.filter(([id, item]) => {
-                        const matchSearch = (item.PROPERTY + item.OWNER + item.ZONE + item.REMARK).toLowerCase().includes(this.search.toLowerCase());
+                        const matchSearch = ((item.PROPERTY || '') + (item.OWNER || '') + (item.ZONE || '') + (item.REMARK || '')).toLowerCase().includes(this.search.toLowerCase());
                         const matchStatus = this.statusFilter === '' || item.STATUS === this.statusFilter;
                         const matchZone = this.zoneFilter === '' || item.ZONE === this.zoneFilter;
                         const matchFor = this.forFilter === '' || item.FOR === this.forFilter;
@@ -393,12 +386,12 @@
                         if (this.sortBy === 'latest') {
                             return (b.createdAt || 0) - (a.createdAt || 0);
                         } else if (this.sortBy === 'name_asc') {
-                            return a.PROPERTY.localeCompare(b.PROPERTY);
+                            return (a.PROPERTY || '').localeCompare(b.PROPERTY || '');
                         } else if (this.sortBy === 'name_desc') {
-                            return b.PROPERTY.localeCompare(a.PROPERTY);
+                            return (b.PROPERTY || '').localeCompare(a.PROPERTY || '');
                         } else if (this.sortBy === 'price_asc' || this.sortBy === 'price_desc') {
-                            let priceA = parseFloat(String(a.PRICE).replace(/[^0-9.]/g, '')) || 0;
-                            let priceB = parseFloat(String(b.PRICE).replace(/[^0-9.]/g, '')) || 0;
+                            let priceA = parseFloat(String(a.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
+                            let priceB = parseFloat(String(b.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
                             return this.sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
                         }
                     }).reduce((acc, curr) => {
