@@ -304,25 +304,19 @@
             appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
             measurementId: "G-SZ47HNR9PT"
         };
-        document.addEventListener("DOMContentLoaded", () => {
+       document.addEventListener("DOMContentLoaded", () => {
             // Semak sama ada status sudah ada dalam sessionStorage
             let currentStatus = sessionStorage.getItem('property_status');
 
             if (!currentStatus) {
-                // Jika tiada (kali pertama masuk atau baru lepas refresh), tetapkan kepada 'Available'
-                sessionStorage.setItem('property_status', 'Available');
-                currentStatus = 'Available';
+                // Tetapkan kepada huruf besar 'AVAILABLE' supaya sepadan dengan option value dalam HTML
+                sessionStorage.setItem('property_status', 'AVAILABLE');
+                currentStatus = 'AVAILABLE';
             }
 
             console.log("Status semasa:", currentStatus);
-            
-            // Jika anda ada elemen dropdown penapis (filter) status di listing.html, 
-            // anda boleh set nilai dropdown tersebut di sini secara automatik:
-            // const filterElement = document.getElementById('statusFilter');
-            // if (filterElement) {
-            //     filterElement.value = currentStatus;
-            // }
         });
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
@@ -336,7 +330,8 @@
         function propertyApp() {
             return {
                 search: '',
-                statusFilter: '',
+                // Ambil terus nilai dari sessionStorage atau tetapkan default 'AVAILABLE'
+                statusFilter: sessionStorage.getItem('property_status') || 'AVAILABLE',
                 zoneFilter: '',
                 forFilter: '',
                 typeFilter: '',
@@ -396,9 +391,8 @@
 
                     return mapped.sort((a, b) => {
                         if (this.sortBy === 'latest') {
-            // Urutkan ikut masa terkini (fallback ke 0 jika rekod lama tiada timestamp)
-            return (b.createdAt || 0) - (a.createdAt || 0);
-                    } else if (this.sortBy === 'name_asc') {
+                            return (b.createdAt || 0) - (a.createdAt || 0);
+                        } else if (this.sortBy === 'name_asc') {
                             return a.PROPERTY.localeCompare(b.PROPERTY);
                         } else if (this.sortBy === 'name_desc') {
                             return b.PROPERTY.localeCompare(a.PROPERTY);
