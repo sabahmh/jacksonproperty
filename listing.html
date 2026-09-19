@@ -340,7 +340,19 @@
                 },
                 checkZoneAuto() {
                     let text = (this.form.PROPERTY || '').toUpperCase();
-                    if (text.includes('KOTA KINABALU')) {
+                    if (
+                        text.includes('KOTA KINABALU') || 
+                        text.includes('TUARAN') || 
+                        text.includes('MENGGATAL') || 
+                        text.includes('INANAM') || 
+                        text.includes('PAPAR') || 
+                        text.includes('PUTATAN') || 
+                        text.includes('PENAMPANG') || 
+                        text.includes('KINARUT') || 
+                        text.includes('TELIPOK') || 
+                        text.includes('UNIVERSITY CONDO APARTMENT') || 
+                        text.includes('ELEMEN UTARA CONDO')
+                    ) {
                         this.form.ZONE = 'KK';
                     } else if (text.includes('SANDAKAN')) {
                         this.form.ZONE = 'SDK';
