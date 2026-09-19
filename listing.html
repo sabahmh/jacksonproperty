@@ -167,7 +167,7 @@
                 <form @submit.prevent="addItem" class="space-y-1.5">
                     <div>
                         <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Nama Hartanah / Projek</label>
-                        <input type="text" x-model="form.PROPERTY" @input="form.PROPERTY = form.PROPERTY.toUpperCase()" required placeholder="Cth: TAMAN INDAH JAYA" class="w-full px-2 py-1 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 uppercase">
+                        <input type="text" x-model="form.PROPERTY" @input="form.PROPERTY = form.PROPERTY.toUpperCase(); checkZoneAuto()" required placeholder="Cth: TAMAN INDAH JAYA" class="w-full px-2 py-1 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 uppercase">
                     </div>
                     <div class="grid grid-cols-2 gap-1.5">
                         <div>
@@ -337,6 +337,16 @@
                 selectedItem: null,
                 form: {
                     PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK'
+                },
+                checkZoneAuto() {
+                    let text = (this.form.PROPERTY || '').toUpperCase();
+                    if (text.includes('KOTA KINABALU')) {
+                        this.form.ZONE = 'KK';
+                    } else if (text.includes('SANDAKAN')) {
+                        this.form.ZONE = 'SDK';
+                    } else if (text.includes('TAWAU')) {
+                        this.form.ZONE = 'TWU';
+                    }
                 },
                 init() {
     // 1. Paparkan data sedia ada dari memori pelayar serta-merta (Instant Load)
