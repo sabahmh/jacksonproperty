@@ -101,7 +101,7 @@
             </div>
             <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
             <div class="flex justify-between items-center pt-1 px-0.5 text-[10px] text-slate-500 border-t border-slate-100">
-                <span>Jumlah Rekod: <strong class="text-slate-700" x-text="Object.keys(filteredProperties).length"></strong></span>
+                <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong></span>
                 <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
             </div>
         </div>
@@ -156,6 +156,21 @@
                     Tiada rekod hartanah ditemui.
                 </div>
             </template>
+        </div>
+
+        <!-- 📄 NAVIGASI PAGINATION -->
+        <div class="flex justify-between items-center bg-white px-3 py-2 rounded shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1">
+            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
+                ⬅ Sebelumnya
+            </button>
+            
+            <span class="text-slate-600 font-medium">
+                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> dari <strong class="text-slate-900" x-text="totalPages"></strong>
+            </span>
+
+            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
+                Seterusnya ➡
+            </button>
         </div>
 
         <!-- MODAL TAMBAH / EDIT -->
@@ -337,9 +352,9 @@
                 properties: {},
                 editId: null,
                 selectedItem: null,
-                form: {
-                    PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK'
-                },
+                currentPage: 1,
+                itemsPerPage: 13,
+
                 checkZoneAuto() {
                     let text = (this.form.PROPERTY || '').toUpperCase();
                     if (
@@ -364,19 +379,28 @@
                     }
                 },
                 init() {
-    // 1. Paparkan data sedia ada dari memori pelayar serta-merta (Instant Load)
-    const cachedData = localStorage.getItem('jackson_properties');
-    if (cachedData) {
-        this.properties = JSON.parse(cachedData);
-    }
+                    // 1. Paparkan data sedia ada dari memori pelayar serta-merta (Instant Load)
+                    const cachedData = localStorage.getItem('jackson_properties');
+                    if (cachedData) {
+                        this.properties = JSON.parse(cachedData);
+                    }
 
-    // 2. Ambil data terkini dari Firebase di latar belakang (Background Sync)
-    db.ref('properties').on('value', snapshot => {
-        const data = snapshot.val() || {};
-        this.properties = data;
-        localStorage.setItem('jackson_properties', JSON.stringify(data));
-    });
-},
+                    // 2. Ambil data terkini dari Firebase di latar belakang (Background Sync)
+                    db.ref('properties').on('value', snapshot => {
+                        const data = snapshot.val() || {};
+                        this.properties = data;
+                        localStorage.setItem('jackson_properties', JSON.stringify(data));
+                    });
+
+                    // 3. Reset halaman ke 1 setiap kali carian atau penapis berubah
+                    this.$watch('search', () => this.currentPage = 1);
+                    this.$watch('statusFilter', () => this.currentPage = 1);
+                    this.$watch('zoneFilter', () => this.currentPage = 1);
+                    this.$watch('forFilter', () => this.currentPage = 1);
+                    this.$watch('typeFilter', () => this.currentPage = 1);
+                    this.$watch('ownerFilter', () => this.currentPage = 1);
+                    this.$watch('sortBy', () => this.currentPage = 1);
+                },
                 logout() {
                     sessionStorage.removeItem('jackson_logged_in');
                     window.location.replace('index.html');
@@ -401,9 +425,9 @@
                     let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
                     return [...new Set(owners)].sort();
                 },
-                get filteredProperties() {
+                get getFilteredResult() {
                     let entries = Object.entries(this.properties);
-                    let result = entries.filter(([id, item]) => {
+                    return entries.filter(([id, item]) => {
                         const matchSearch = ((item.PROPERTY || '') + (item.OWNER || '') + (item.ZONE || '') + (item.REMARK || '')).toLowerCase().includes(this.search.toLowerCase());
                         const matchStatus = this.statusFilter === '' || item.STATUS === this.statusFilter;
                         const matchZone = this.zoneFilter === '' || item.ZONE === this.zoneFilter;
@@ -412,10 +436,18 @@
                         const matchOwner = this.ownerFilter === '' || item.OWNER === this.ownerFilter;
                         return matchSearch && matchStatus && matchZone && matchFor && matchType && matchOwner;
                     });
-
+                },
+                get totalFilteredCount() {
+                    return this.getFilteredResult.length;
+                },
+                get totalPages() {
+                    return Math.ceil(this.totalFilteredCount / this.itemsPerPage) || 1;
+                },
+                get filteredProperties() {
+                    let result = this.getFilteredResult;
                     let mapped = result.map(([id, item]) => ({ id, ...item }));
 
-                    return mapped.sort((a, b) => {
+                    let sorted = mapped.sort((a, b) => {
                         if (this.sortBy === 'latest') {
                             return (b.createdAt || 0) - (a.createdAt || 0);
                         } else if (this.sortBy === 'name_asc') {
@@ -427,7 +459,13 @@
                             let priceB = parseFloat(String(b.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
                             return this.sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
                         }
-                    }).reduce((acc, curr) => {
+                    });
+
+                    // Potong hanya 13 item sahaja untuk halaman semasa
+                    let start = (this.currentPage - 1) * this.itemsPerPage;
+                    let paginated = sorted.slice(start, start + this.itemsPerPage);
+
+                    return paginated.reduce((acc, curr) => {
                         acc[curr.id] = curr;
                         return acc;
                     }, {});
