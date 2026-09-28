@@ -249,7 +249,16 @@
                     </div>
                     <div class="flex gap-1.5 pt-1">
                         <button type="button" @click="closeModal()" class="w-1/2 py-1.5 border rounded text-xs font-semibold text-slate-600 bg-slate-50">Batal</button>
-                        <button type="submit" class="w-1/2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold">Simpan</button>
+                        <button
+    type="submit"
+    class="w-1/2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold"
+    :disabled="saving"
+    :class="saving ? 'opacity-60 cursor-not-allowed' : ''">
+
+    <span x-show="!saving">💾 Simpan</span>
+    <span x-show="saving">⏳ Menyimpan...</span>
+
+</button>
                     </div>
                 </form>
             </div>
@@ -339,239 +348,728 @@
         }
 
         function propertyApp() {
-            return {
-                search: '',
-                statusFilter: 'AVAILABLE',
-                zoneFilter: '',
-                forFilter: '',
-                typeFilter: '',
-                ownerFilter: '',
-                sortBy: 'latest',
-                openAddModal: false,
-                isAdmin: false,
-                properties: {},
-                editId: null,
-                selectedItem: null,
-                currentPage: 1,
-                itemsPerPage: 13,
-                form: { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK' },
+    return {
+        search: '',
+        statusFilter: 'AVAILABLE',
+        zoneFilter: '',
+        forFilter: '',
+        typeFilter: '',
+        ownerFilter: '',
+        sortBy: 'latest',
 
-                checkZoneAuto() {
-                    let text = (this.form.PROPERTY || '').toUpperCase();
-                    if (
-                        text.includes('KOTA KINABALU') || 
-                        text.includes('TUARAN') || 
-                        text.includes('MENGGATAL') || 
-                        text.includes('INANAM') || 
-                        text.includes('PAPAR') || 
-                        text.includes('PUTATAN') || 
-                        text.includes('PENAMPANG') || 
-                        text.includes('KINARUT') || 
-                        text.includes('TELIPOK') || 
-                        text.includes('UNIVERSITY CONDO APARTMENT') ||
-                        text.includes('UNIVERSITY UTAMA CONDOMINIUM') ||
-                        text.includes('ELEMEN UTARA CONDO')
-                    ) {
-                        this.form.ZONE = 'KK';
-                    } else if (text.includes('SANDAKAN')) {
-                        this.form.ZONE = 'SDK';
-                    } else if (text.includes('TAWAU')) {
-                        this.form.ZONE = 'TWU';
-                    }
-                },
-                init() {
-                    // 1. Paparkan data sedia ada dari memori pelayar serta-merta (Instant Load)
-                    const cachedData = localStorage.getItem('jackson_properties');
-                    if (cachedData) {
-                        this.properties = JSON.parse(cachedData);
-                    }
+        openAddModal: false,
+        isAdmin: false,
 
-                    // 2. Ambil data terkini dari Firebase di latar belakang (Background Sync)
-                    db.ref('properties').on('value', snapshot => {
-                        const data = snapshot.val() || {};
-                        this.properties = data;
-                        localStorage.setItem('jackson_properties', JSON.stringify(data));
-                    });
+        properties: {},
+        editId: null,
+        selectedItem: null,
 
-                    // 3. Reset halaman ke 1 setiap kali carian atau penapis berubah
-                    this.$watch('search', () => this.currentPage = 1);
-                    this.$watch('statusFilter', () => this.currentPage = 1);
-                    this.$watch('zoneFilter', () => this.currentPage = 1);
-                    this.$watch('forFilter', () => this.currentPage = 1);
-                    this.$watch('typeFilter', () => this.currentPage = 1);
-                    this.$watch('ownerFilter', () => this.currentPage = 1);
-                    this.$watch('sortBy', () => this.currentPage = 1);
-                },
-                logout() {
-                    sessionStorage.removeItem('jackson_logged_in');
-                    window.location.replace('index.html');
-                },
-                formatPrice(val) {
-                    if (!val) return 'RM 0';
-                    let cleanNum = String(val).replace(/[^0-9.]/g, '');
-                    let num = parseFloat(cleanNum);
-                    if (isNaN(num)) return val;
-                    return 'RM ' + num.toLocaleString('en-US', {maximumFractionDigits: 2});
-                },
-                formatInputPrice(event) {
-                    let input = event.target;
-                    let value = input.value.replace(/[^0-9]/g, '');
-                    if (value) {
-                        value = Number(value).toLocaleString('en-US');
-                    }
-                    this.form.PRICE = value;
-                    input.value = value;
-                },
-                get uniqueOwners() {
-                    let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
-                    return [...new Set(owners)].sort();
-                },
-                get getFilteredResult() {
-                    let entries = Object.entries(this.properties);
-                    return entries.filter(([id, item]) => {
-                        const matchSearch = ((item.PROPERTY || '') + (item.OWNER || '') + (item.ZONE || '') + (item.REMARK || '')).toLowerCase().includes(this.search.toLowerCase());
-                        const matchStatus = this.statusFilter === '' || item.STATUS === this.statusFilter;
-                        const matchZone = this.zoneFilter === '' || item.ZONE === this.zoneFilter;
-                        const matchFor = this.forFilter === '' || item.FOR === this.forFilter;
-                        const matchType = this.typeFilter === '' || item.TYPE === this.typeFilter;
-                        const matchOwner = this.ownerFilter === '' || item.OWNER === this.ownerFilter;
-                        return matchSearch && matchStatus && matchZone && matchFor && matchType && matchOwner;
-                    });
-                },
-                get totalFilteredCount() {
-                    return this.getFilteredResult.length;
-                },
-                get totalPages() {
-                    return Math.ceil(this.totalFilteredCount / this.itemsPerPage) || 1;
-                },
-                get filteredProperties() {
-                    let result = this.getFilteredResult;
-                    let mapped = result.map(([id, item]) => ({ id, ...item }));
+        currentPage: 1,
+        itemsPerPage: 13,
 
-                    let sorted = mapped.sort((a, b) => {
-                        if (this.sortBy === 'latest') {
-                            return (b.createdAt || 0) - (a.createdAt || 0);
-                        } else if (this.sortBy === 'name_asc') {
-                            return (a.PROPERTY || '').localeCompare(b.PROPERTY || '');
-                        } else if (this.sortBy === 'name_desc') {
-                            return (b.PROPERTY || '').localeCompare(a.PROPERTY || '');
-                        } else if (this.sortBy === 'price_asc' || this.sortBy === 'price_desc') {
-                            let priceA = parseFloat(String(a.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
-                            let priceB = parseFloat(String(b.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
-                            return this.sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
-                        }
-                    });
+        // Status untuk button SIMPAN
+        saving: false,
 
-                    // Potong hanya 13 item sahaja untuk halaman semasa
-                    let start = (this.currentPage - 1) * this.itemsPerPage;
-                    let paginated = sorted.slice(start, start + this.itemsPerPage);
+        form: {
+            PROPERTY: '',
+            FOR: 'SELL',
+            OWNER: '',
+            PRICE: '',
+            REMARK: '',
+            STATUS: 'AVAILABLE',
+            TYPE: 'APT',
+            URL: '',
+            ZONE: 'SDK'
+        },
 
-                    return paginated.reduce((acc, curr) => {
-                        acc[curr.id] = curr;
-                        return acc;
-                    }, {});
-                },
-                showDetail(item) {
-                    this.selectedItem = item;
-                },
-                closeDetail() {
-                    this.selectedItem = null;
-                },
-                editItem(id, item) {
-                    if (!this.isAdmin) return;
-                    this.editId = id;
-                    // Salin data tanpa membawa id di dalam objek form jika ia wujud
-                    let cleanItem = { ...item };
-                    delete cleanItem.id; // Elakkan id bertindih dalam data node
-                    this.form = cleanItem;
-                    this.openAddModal = true;
-                },
-              async addItem() {
-    if (!this.isAdmin) {
-        alert('Akses Admin diperlukan.');
-        return;
-    }
+        // ==========================================
+        // AUTO TENTUKAN ZON
+        // ==========================================
+        checkZoneAuto() {
+            let text = (this.form.PROPERTY || '').toUpperCase();
 
-    try {
-        // Tukar kepada uppercase
-        if (this.form.PROPERTY) {
-            this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
-        }
+            if (
+                text.includes('KOTA KINABALU') ||
+                text.includes('TUARAN') ||
+                text.includes('MENGGATAL') ||
+                text.includes('INANAM') ||
+                text.includes('PAPAR') ||
+                text.includes('PUTATAN') ||
+                text.includes('PENAMPANG') ||
+                text.includes('KINARUT') ||
+                text.includes('TELIPOK') ||
+                text.includes('UNIVERSITY CONDO APARTMENT') ||
+                text.includes('UNIVERSITY UTAMA CONDOMINIUM') ||
+                text.includes('ELEMEN UTARA CONDO')
+            ) {
+                this.form.ZONE = 'KK';
 
-        if (this.form.OWNER) {
-            this.form.OWNER = this.form.OWNER.toUpperCase();
-        }
+            } else if (text.includes('SANDAKAN')) {
+                this.form.ZONE = 'SDK';
 
-        // Bersihkan harga
-        let price = String(this.form.PRICE || '')
-            .replace(/[^0-9.]/g, '');
+            } else if (text.includes('TAWAU')) {
+                this.form.ZONE = 'TWU';
+            }
+        },
 
-        let payload = {
-            PROPERTY: this.form.PROPERTY || '',
-            FOR: this.form.FOR || 'SELL',
-            OWNER: this.form.OWNER || '',
-            PRICE: price,
-            REMARK: this.form.REMARK || '',
-            STATUS: this.form.STATUS || 'AVAILABLE',
-            TYPE: this.form.TYPE || 'APT',
-            URL: this.form.URL || '',
-            ZONE: this.form.ZONE || 'SDK'
-        };
+        // ==========================================
+        // INIT
+        // ==========================================
+        init() {
 
-        // =========================
-        // KEMAS KINI LISTING
-        // =========================
-        if (this.editId) {
+            // 1. Paparkan data cache dahulu
+            try {
+                const cachedData = localStorage.getItem('jackson_properties');
 
-            await db.ref('properties/' + this.editId).update(payload);
-
-            console.log('Berjaya dikemaskini di Firebase:', this.editId);
-
-            alert('✅ Listing berjaya dikemaskini.');
-
-        } else {
-
-            // =========================
-            // TAMBAH LISTING BARU
-            // =========================
-
-            payload.createdAt = Date.now();
-
-            const newRef = db.ref('properties').push();
-
-            await newRef.set(payload);
-
-            console.log('Berjaya menambah listing:', newRef.key);
-
-            alert('✅ Listing baru berjaya disimpan.');
-        }
-
-        // Tutup modal HANYA selepas Firebase berjaya
-        this.closeModal();
-
-    } catch (error) {
-
-        console.error('❌ Firebase Error:', error);
-
-        alert(
-            '❌ Gagal menyimpan listing.\n\n' +
-            'Error: ' + (error.message || error)
-        );
-    }
-},
-                closeModal() {
-                    this.openAddModal = false;
-                    this.editId = null;
-                    this.form = { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK' };
-                },
-                deleteItem(id) {
-                    if (!this.isAdmin) return;
-                    if (confirm('Padam listing ini?')) {
-                        db.ref('properties/' + id).remove();
-                    }
+                if (cachedData) {
+                    this.properties = JSON.parse(cachedData);
                 }
+            } catch (error) {
+                console.error('LocalStorage error:', error);
+                this.properties = {};
+            }
+
+            // 2. Ambil data terkini dari Firebase
+            db.ref('properties').on(
+                'value',
+
+                snapshot => {
+
+                    const data = snapshot.val() || {};
+
+                    this.properties = data;
+
+                    // Simpan cache
+                    try {
+                        localStorage.setItem(
+                            'jackson_properties',
+                            JSON.stringify(data)
+                        );
+                    } catch (error) {
+                        console.error(
+                            'Gagal simpan localStorage:',
+                            error
+                        );
+                    }
+                },
+
+                error => {
+
+                    console.error(
+                        'Firebase read error:',
+                        error
+                    );
+
+                    alert(
+                        '❌ Gagal membaca database Firebase.\n\n' +
+                        'Error: ' +
+                        (error.message || error)
+                    );
+                }
+            );
+
+            // 3. Reset page apabila filter berubah
+            this.$watch(
+                'search',
+                () => this.currentPage = 1
+            );
+
+            this.$watch(
+                'statusFilter',
+                () => this.currentPage = 1
+            );
+
+            this.$watch(
+                'zoneFilter',
+                () => this.currentPage = 1
+            );
+
+            this.$watch(
+                'forFilter',
+                () => this.currentPage = 1
+            );
+
+            this.$watch(
+                'typeFilter',
+                () => this.currentPage = 1
+            );
+
+            this.$watch(
+                'ownerFilter',
+                () => this.currentPage = 1
+            );
+
+            this.$watch(
+                'sortBy',
+                () => this.currentPage = 1
+            );
+        },
+
+        // ==========================================
+        // LOGOUT
+        // ==========================================
+        logout() {
+
+            sessionStorage.removeItem(
+                'jackson_logged_in'
+            );
+
+            window.location.replace(
+                'index.html'
+            );
+        },
+
+        // ==========================================
+        // FORMAT HARGA
+        // ==========================================
+        formatPrice(val) {
+
+            if (!val) {
+                return 'RM 0';
+            }
+
+            let cleanNum = String(val)
+                .replace(/[^0-9.]/g, '');
+
+            let num = parseFloat(cleanNum);
+
+            if (isNaN(num)) {
+                return val;
+            }
+
+            return 'RM ' +
+                num.toLocaleString(
+                    'en-US',
+                    {
+                        maximumFractionDigits: 2
+                    }
+                );
+        },
+
+        // ==========================================
+        // FORMAT INPUT HARGA
+        // ==========================================
+        formatInputPrice(event) {
+
+            let input = event.target;
+
+            let value = input.value
+                .replace(/[^0-9]/g, '');
+
+            if (value) {
+
+                value = Number(value)
+                    .toLocaleString('en-US');
+            }
+
+            this.form.PRICE = value;
+
+            input.value = value;
+        },
+
+        // ==========================================
+        // SENARAI OWNER
+        // ==========================================
+        get uniqueOwners() {
+
+            let owners = Object.values(
+                this.properties
+            )
+            .map(item => item.OWNER)
+            .filter(Boolean);
+
+            return [
+                ...new Set(owners)
+            ].sort();
+        },
+
+        // ==========================================
+        // FILTER
+        // ==========================================
+        get getFilteredResult() {
+
+            let entries = Object.entries(
+                this.properties
+            );
+
+            return entries.filter(
+                ([id, item]) => {
+
+                    const matchSearch =
+                        (
+                            (item.PROPERTY || '') +
+                            (item.OWNER || '') +
+                            (item.ZONE || '') +
+                            (item.REMARK || '')
+                        )
+                        .toLowerCase()
+                        .includes(
+                            this.search.toLowerCase()
+                        );
+
+                    const matchStatus =
+                        this.statusFilter === '' ||
+                        item.STATUS === this.statusFilter;
+
+                    const matchZone =
+                        this.zoneFilter === '' ||
+                        item.ZONE === this.zoneFilter;
+
+                    const matchFor =
+                        this.forFilter === '' ||
+                        item.FOR === this.forFilter;
+
+                    const matchType =
+                        this.typeFilter === '' ||
+                        item.TYPE === this.typeFilter;
+
+                    const matchOwner =
+                        this.ownerFilter === '' ||
+                        item.OWNER === this.ownerFilter;
+
+                    return (
+                        matchSearch &&
+                        matchStatus &&
+                        matchZone &&
+                        matchFor &&
+                        matchType &&
+                        matchOwner
+                    );
+                }
+            );
+        },
+
+        // ==========================================
+        // JUMLAH RESULT
+        // ==========================================
+        get totalFilteredCount() {
+
+            return this.getFilteredResult.length;
+        },
+
+        // ==========================================
+        // JUMLAH PAGE
+        // ==========================================
+        get totalPages() {
+
+            return Math.ceil(
+                this.totalFilteredCount /
+                this.itemsPerPage
+            ) || 1;
+        },
+
+        // ==========================================
+        // PAGINATION + SORT
+        // ==========================================
+        get filteredProperties() {
+
+            let result =
+                this.getFilteredResult;
+
+            let mapped =
+                result.map(
+                    ([id, item]) => ({
+                        id,
+                        ...item
+                    })
+                );
+
+            let sorted =
+                mapped.sort((a, b) => {
+
+                    if (this.sortBy === 'latest') {
+
+                        return (
+                            (b.createdAt || 0) -
+                            (a.createdAt || 0)
+                        );
+
+                    } else if (
+                        this.sortBy === 'name_asc'
+                    ) {
+
+                        return (
+                            (a.PROPERTY || '')
+                            .localeCompare(
+                                b.PROPERTY || ''
+                            )
+                        );
+
+                    } else if (
+                        this.sortBy === 'name_desc'
+                    ) {
+
+                        return (
+                            (b.PROPERTY || '')
+                            .localeCompare(
+                                a.PROPERTY || ''
+                            )
+                        );
+
+                    } else if (
+                        this.sortBy === 'price_asc' ||
+                        this.sortBy === 'price_desc'
+                    ) {
+
+                        let priceA =
+                            parseFloat(
+                                String(a.PRICE || '0')
+                                    .replace(
+                                        /[^0-9.]/g,
+                                        ''
+                                    )
+                            ) || 0;
+
+                        let priceB =
+                            parseFloat(
+                                String(b.PRICE || '0')
+                                    .replace(
+                                        /[^0-9.]/g,
+                                        ''
+                                    )
+                            ) || 0;
+
+                        return (
+                            this.sortBy === 'price_asc'
+                                ? priceA - priceB
+                                : priceB - priceA
+                        );
+                    }
+
+                    return 0;
+                });
+
+            // Pagination
+            let start =
+                (this.currentPage - 1) *
+                this.itemsPerPage;
+
+            let paginated =
+                sorted.slice(
+                    start,
+                    start + this.itemsPerPage
+                );
+
+            return paginated.reduce(
+                (acc, curr) => {
+
+                    acc[curr.id] = curr;
+
+                    return acc;
+
+                },
+                {}
+            );
+        },
+
+        // ==========================================
+        // DETAIL
+        // ==========================================
+        showDetail(item) {
+
+            this.selectedItem = item;
+        },
+
+        closeDetail() {
+
+            this.selectedItem = null;
+        },
+
+        // ==========================================
+        // EDIT LISTING
+        // ==========================================
+        editItem(id, item) {
+
+            if (!this.isAdmin) {
+                return;
+            }
+
+            this.editId = id;
+
+            // Salin data
+            let cleanItem = {
+                ...item
+            };
+
+            // Jangan masukkan id ke dalam form
+            delete cleanItem.id;
+
+            // Pastikan semua field wujud
+            this.form = {
+                PROPERTY: cleanItem.PROPERTY || '',
+                FOR: cleanItem.FOR || 'SELL',
+                OWNER: cleanItem.OWNER || '',
+                PRICE: cleanItem.PRICE || '',
+                REMARK: cleanItem.REMARK || '',
+                STATUS: cleanItem.STATUS || 'AVAILABLE',
+                TYPE: cleanItem.TYPE || 'APT',
+                URL: cleanItem.URL || '',
+                ZONE: cleanItem.ZONE || 'SDK'
+            };
+
+            this.openAddModal = true;
+        },
+
+        // ==========================================
+        // TAMBAH / KEMASKINI LISTING
+        // ==========================================
+        async addItem() {
+
+            if (!this.isAdmin) {
+
+                alert(
+                    '❌ Akses Admin diperlukan.'
+                );
+
+                return;
+            }
+
+            // Elakkan double click
+            if (this.saving) {
+                return;
+            }
+
+            this.saving = true;
+
+            try {
+
+                // ----------------------------------
+                // CLEAN DATA
+                // ----------------------------------
+
+                let property =
+                    (this.form.PROPERTY || '')
+                    .trim()
+                    .toUpperCase();
+
+                let owner =
+                    (this.form.OWNER || '')
+                    .trim()
+                    .toUpperCase();
+
+                if (!property) {
+
+                    alert(
+                        '⚠️ Sila masukkan Nama Hartanah / Projek.'
+                    );
+
+                    this.saving = false;
+
+                    return;
+                }
+
+                // Bersihkan harga
+                let price =
+                    String(this.form.PRICE || '')
+                    .replace(/[^0-9.]/g, '');
+
+                // ----------------------------------
+                // PAYLOAD
+                // ----------------------------------
+
+                let payload = {
+
+                    PROPERTY: property,
+
+                    FOR:
+                        this.form.FOR ||
+                        'SELL',
+
+                    OWNER: owner,
+
+                    PRICE: price,
+
+                    REMARK:
+                        this.form.REMARK ||
+                        '',
+
+                    STATUS:
+                        this.form.STATUS ||
+                        'AVAILABLE',
+
+                    TYPE:
+                        this.form.TYPE ||
+                        'APT',
+
+                    URL:
+                        this.form.URL ||
+                        '',
+
+                    ZONE:
+                        this.form.ZONE ||
+                        'SDK'
+                };
+
+                // ==================================
+                // KEMASKINI
+                // ==================================
+
+                if (this.editId) {
+
+                    console.log(
+                        'Mengemaskini listing:',
+                        this.editId
+                    );
+
+                    await db
+                        .ref(
+                            'properties/' +
+                            this.editId
+                        )
+                        .update(payload);
+
+                    console.log(
+                        '✅ Firebase update berjaya'
+                    );
+
+                    alert(
+                        '✅ Listing berjaya dikemaskini.'
+                    );
+
+                }
+
+                // ==================================
+                // TAMBAH BARU
+                // ==================================
+
+                else {
+
+                    payload.createdAt =
+                        Date.now();
+
+                    console.log(
+                        'Menambah listing baru:',
+                        payload
+                    );
+
+                    let newRef =
+                        db
+                        .ref('properties')
+                        .push();
+
+                    await newRef.set(
+                        payload
+                    );
+
+                    console.log(
+                        '✅ Firebase push berjaya:',
+                        newRef.key
+                    );
+
+                    alert(
+                        '✅ Listing baru berjaya disimpan.'
+                    );
+                }
+
+                // ----------------------------------
+                // TUTUP MODAL SELEPAS BERJAYA
+                // ----------------------------------
+
+                this.closeModal();
+
+            } catch (error) {
+
+                console.error(
+                    '❌ FIREBASE ERROR:',
+                    error
+                );
+
+                let errorMessage =
+                    error &&
+                    error.message
+                        ? error.message
+                        : String(error);
+
+                alert(
+                    '❌ GAGAL SIMPAN LISTING\n\n' +
+                    'Firebase Error:\n' +
+                    errorMessage
+                );
+
+                // Modal kekal terbuka
+                // supaya user boleh cuba semula
+
+            } finally {
+
+                this.saving = false;
+            }
+        },
+
+        // ==========================================
+        // CLOSE MODAL
+        // ==========================================
+        closeModal() {
+
+            this.openAddModal = false;
+
+            this.editId = null;
+
+            this.saving = false;
+
+            this.form = {
+
+                PROPERTY: '',
+
+                FOR: 'SELL',
+
+                OWNER: '',
+
+                PRICE: '',
+
+                REMARK: '',
+
+                STATUS: 'AVAILABLE',
+
+                TYPE: 'APT',
+
+                URL: '',
+
+                ZONE: 'SDK'
+            };
+        },
+
+        // ==========================================
+        // DELETE
+        // ==========================================
+        async deleteItem(id) {
+
+            if (!this.isAdmin) {
+                return;
+            }
+
+            if (!confirm(
+                'Padam listing ini?'
+            )) {
+                return;
+            }
+
+            try {
+
+                await db
+                    .ref(
+                        'properties/' + id
+                    )
+                    .remove();
+
+                alert(
+                    '✅ Listing berjaya dipadam.'
+                );
+
+            } catch (error) {
+
+                console.error(
+                    'Delete error:',
+                    error
+                );
+
+                alert(
+                    '❌ Gagal padam listing.\n\n' +
+                    (error.message || error)
+                );
             }
         }
+    }
+}
     </script>
 </body>
 </html>
