@@ -480,22 +480,45 @@
                 editItem(id, item) {
                     if (!this.isAdmin) return;
                     this.editId = id;
-                    this.form = { ...item };
+                    // Salin data tanpa membawa id di dalam objek form jika ia wujud
+                    let cleanItem = { ...item };
+                    delete cleanItem.id; // Elakkan id bertindih dalam data node
+                    this.form = cleanItem;
                     this.openAddModal = true;
                 },
-                addItem() {
+               addItem() {
                     if (!this.isAdmin) return;
+                    
                     if (this.form.PROPERTY) {
                         this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
                     }
                     if (this.form.OWNER) {
                         this.form.OWNER = this.form.OWNER.toUpperCase();
                     }
+
+                    // Sediakan data untuk dihantar (pastikan tiada atribut 'id' di dalam data node)
+                    let payload = { ...this.form };
+                    delete payload.id;
+
                     if (this.editId) {
-                        db.ref('properties/' + this.editId).set(this.form);
+                        // Proses Kemaskini (Update)
+                        db.ref('properties/' + this.editId).update(payload)
+                          .then(() => {
+                              console.log("Berjaya dikemaskini di Firebase!");
+                          })
+                          .catch((error) => {
+                              console.error("Ralat semasa kemaskini:", error);
+                          });
                     } else {
-                        this.form.createdAt = Date.now();
-                        db.ref('properties').push(this.form);
+                        // Proses Tambah Baharu
+                        payload.createdAt = Date.now();
+                        db.ref('properties').push(payload)
+                          .then(() => {
+                              console.log("Berjaya menambah listing baharu!");
+                          })
+                          .catch((error) => {
+                              console.error("Ralat semasa menambah:", error);
+                          });
                     }
                     this.closeModal();
                 },
