@@ -486,42 +486,79 @@
                     this.form = cleanItem;
                     this.openAddModal = true;
                 },
-               addItem() {
-                    if (!this.isAdmin) return;
-                    
-                    if (this.form.PROPERTY) {
-                        this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
-                    }
-                    if (this.form.OWNER) {
-                        this.form.OWNER = this.form.OWNER.toUpperCase();
-                    }
+              async addItem() {
+    if (!this.isAdmin) {
+        alert('Akses Admin diperlukan.');
+        return;
+    }
 
-                    // Sediakan data untuk dihantar (pastikan tiada atribut 'id' di dalam data node)
-                    let payload = { ...this.form };
-                    delete payload.id;
+    try {
+        // Tukar kepada uppercase
+        if (this.form.PROPERTY) {
+            this.form.PROPERTY = this.form.PROPERTY.toUpperCase();
+        }
 
-                    if (this.editId) {
-                        // Proses Kemaskini (Update)
-                        db.ref('properties/' + this.editId).update(payload)
-                          .then(() => {
-                              console.log("Berjaya dikemaskini di Firebase!");
-                          })
-                          .catch((error) => {
-                              console.error("Ralat semasa kemaskini:", error);
-                          });
-                    } else {
-                        // Proses Tambah Baharu
-                        payload.createdAt = Date.now();
-                        db.ref('properties').push(payload)
-                          .then(() => {
-                              console.log("Berjaya menambah listing baharu!");
-                          })
-                          .catch((error) => {
-                              console.error("Ralat semasa menambah:", error);
-                          });
-                    }
-                    this.closeModal();
-                },
+        if (this.form.OWNER) {
+            this.form.OWNER = this.form.OWNER.toUpperCase();
+        }
+
+        // Bersihkan harga
+        let price = String(this.form.PRICE || '')
+            .replace(/[^0-9.]/g, '');
+
+        let payload = {
+            PROPERTY: this.form.PROPERTY || '',
+            FOR: this.form.FOR || 'SELL',
+            OWNER: this.form.OWNER || '',
+            PRICE: price,
+            REMARK: this.form.REMARK || '',
+            STATUS: this.form.STATUS || 'AVAILABLE',
+            TYPE: this.form.TYPE || 'APT',
+            URL: this.form.URL || '',
+            ZONE: this.form.ZONE || 'SDK'
+        };
+
+        // =========================
+        // KEMAS KINI LISTING
+        // =========================
+        if (this.editId) {
+
+            await db.ref('properties/' + this.editId).update(payload);
+
+            console.log('Berjaya dikemaskini di Firebase:', this.editId);
+
+            alert('✅ Listing berjaya dikemaskini.');
+
+        } else {
+
+            // =========================
+            // TAMBAH LISTING BARU
+            // =========================
+
+            payload.createdAt = Date.now();
+
+            const newRef = db.ref('properties').push();
+
+            await newRef.set(payload);
+
+            console.log('Berjaya menambah listing:', newRef.key);
+
+            alert('✅ Listing baru berjaya disimpan.');
+        }
+
+        // Tutup modal HANYA selepas Firebase berjaya
+        this.closeModal();
+
+    } catch (error) {
+
+        console.error('❌ Firebase Error:', error);
+
+        alert(
+            '❌ Gagal menyimpan listing.\n\n' +
+            'Error: ' + (error.message || error)
+        );
+    }
+},
                 closeModal() {
                     this.openAddModal = false;
                     this.editId = null;
