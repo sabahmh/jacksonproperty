@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paparan Listing Hartanah Sabah</title>
+    <link rel="icon" type="image/png" href="jack.png">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans pb-10 select-none text-[11px]" x-data="publicPropertyApp()">
+    
+    <!-- Header Ringkas (Tanpa Login / Tanpa Admin) -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-2 py-1 shadow-2xs">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-1.5">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-5 h-5 object-contain rounded-xs">
+                <div>
+                    <h1 class="font-bold text-slate-900 leading-none text-xs">🏠 Listing Jackson (Viewer)</h1>
+                    <span class="text-[8px] font-semibold text-emerald-600">👀 Mod Paparan & Kemaskini Status</span>
+                </div>
+            </div>
+            <div class="text-[10px] text-slate-500 font-medium">
+                Sabah Property Network
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-1.5 space-y-1.5">
+        <!-- Carian & Filter Mikro -->
+        <div class="bg-white p-1.5 rounded shadow-2xs border border-slate-200 space-y-1">
+            <div class="relative">
+                <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-1 pr-6 bg-slate-50 border border-slate-200 rounded text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <template x-if="search">
+                    <button @click="search = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs px-1" title="Padam carian">&times;</button>
+                </template>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-1">
+                <select x-model="statusFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Status</option>
+                    <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="BOOKED">BOOKED</option>
+                    <option value="SOLD">SOLD</option>
+                    <option value="HOLD">HOLD</option>
+                </select>
+                <select x-model="zoneFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Zon</option>
+                    <option value="SDK">SDK</option>
+                    <option value="KK">KK</option>
+                    <option value="TWU">TWU</option>
+                    <option value="LDU">LDU</option>
+                    <option value="SPA">SPA</option>
+                    <option value="RNU">RNU</option>
+                </select>
+                <select x-model="forFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Urusan</option>
+                    <option value="SELL">SELL</option>
+                    <option value="RENT">RENT</option>
+                </select>
+                <select x-model="typeFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Jenis</option>
+                    <option value="APT">APT</option>
+                    <option value="LANDED">LANDED</option>
+                    <option value="COMMERCIAL">COMMERCIAL</option>
+                </select>
+                <select x-model="ownerFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Owner</option>
+                    <template x-for="own in uniqueOwners">
+                        <option :value="own" x-text="own"></option>
+                    </template>
+                </select>
+                <select x-model="sortBy" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="latest">Terkini</option>
+                    <option value="name_asc">Nama (A-Z)</option>
+                    <option value="name_desc">Nama (Z-A)</option>
+                    <option value="price_asc">Harga ⬆</option>
+                    <option value="price_desc">Harga ⬇</option>
+                </select>
+            </div>
+            <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
+            <div class="flex justify-between items-center pt-1 px-0.5 text-[10px] text-slate-500 border-t border-slate-100">
+                <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong></span>
+                <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
+            </div>
+        </div>
+
+        <!-- Senarai Listing -->
+        <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+            <template x-for="(item, id) in filteredProperties" :key="id">
+                <div @click="showDetail(item)" class="px-2 py-1.5 flex items-center justify-between gap-1.5 hover:bg-slate-50 transition cursor-pointer">
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                        <div class="flex flex-col gap-0.5 shrink-0">
+                            <span class="px-1 py-0 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase text-center" x-text="item.ZONE"></span>
+                            <span class="px-1 py-0 text-[7px] font-medium rounded bg-slate-100 text-slate-600 uppercase text-center" x-text="item.TYPE"></span>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-slate-900 truncate text-[11px] uppercase" x-text="item.PROPERTY"></span>
+                                <span class="text-[8px] font-bold text-slate-400 shrink-0" x-text="'[' + item.FOR + ']'"></span>
+                            </div>
+                            <div class="flex items-center gap-1.5 text-[9px] text-slate-500 leading-tight">
+                                <span class="truncate">Owner: <strong class="text-slate-700" x-text="item.OWNER || '-'"></strong></span>
+                                <template x-if="item.REMARK">
+                                    <span class="text-amber-600 bg-amber-50 px-1 rounded truncate max-w-[120px]" x-text="item.REMARK"></span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0 text-right">
+                        <div>
+                            <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
+                            <div class="flex items-center justify-end gap-1 mt-0.5">
+                                <!-- Butang Interaktif Tukar Status Terus -->
+                                <select @click.stop @change="updateStatus(id, $event.target.value)" 
+                                    :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : (item.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
+                                    class="px-1 py-0.5 text-[8px] font-bold rounded uppercase border cursor-pointer outline-none">
+                                    <option value="AVAILABLE" :selected="item.STATUS === 'AVAILABLE'">AVAILABLE</option>
+                                    <option value="BOOKED" :selected="item.STATUS === 'BOOKED'">BOOKED</option>
+                                    <option value="SOLD" :selected="item.STATUS === 'SOLD'">SOLD</option>
+                                    <option value="HOLD" :selected="item.STATUS === 'HOLD'">HOLD</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-1 border-l border-slate-100 pl-1.5">
+                            <template x-if="item.URL">
+                                <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs p-0.5" title="Pautan" @click.stop>🔗</a>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            <template x-if="Object.keys(filteredProperties).length === 0">
+                <div class="p-6 text-center text-slate-400 text-xs">
+                    Tiada rekod hartanah ditemui.
+                </div>
+            </template>
+        </div>
+
+        <!-- 📄 NAVIGASI PAGINATION -->
+        <div class="flex justify-between items-center bg-white px-3 py-2 rounded shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1">
+            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
+                ⬅ Sebelumnya
+            </button>
+            
+            <span class="text-slate-600 font-medium">
+                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> dari <strong class="text-slate-900" x-text="totalPages"></strong>
+            </span>
+
+            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
+                Seterusnya ➡
+            </button>
+        </div>
+
+        <!-- MODAL DETAIL / NOTA -->
+        <div x-show="selectedItem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;" @click.self="closeDetail()">
+            <div class="bg-white rounded-xl max-w-sm w-full p-4 shadow-2xl border border-slate-100 space-y-3 max-h-[85vh] flex flex-col">
+                
+                <!-- Header Modal -->
+                <div class="flex justify-between items-start border-b pb-2 gap-2">
+                    <h3 class="font-bold text-slate-900 text-xs uppercase leading-snug break-words" x-text="selectedItem?.PROPERTY"></h3>
+                    <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-base p-1 -mr-1 -mt-1 leading-none">&times;</button>
+                </div>
+
+                <!-- Kandungan Utama -->
+                <div class="space-y-1.5 text-[11px] text-slate-700 overflow-y-auto pr-1">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
+                        <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Zon:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Owner / Agen:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.OWNER || '-'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Harga:</span>
+                        <span class="font-bold text-blue-600 text-xs" x-text="formatPrice(selectedItem?.PRICE)"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Status Semasa:</span>
+                        <span class="font-bold uppercase px-1.5 py-0.5 rounded text-[9px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
+                    </div>
+                    
+                    <div class="pt-1">
+                        <span class="text-slate-500 font-medium block mb-1">Nota / Remark:</span>
+                        <div class="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-900 text-[11px] leading-relaxed break-words max-h-32 overflow-y-auto whitespace-pre-line" x-text="selectedItem?.REMARK || 'Tiada nota dimasukkan.'"></div>
+                    </div>
+
+                    <template x-if="selectedItem?.URL">
+                        <div class="pt-1">
+                            <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold text-[11px] transition">🔗 Buka Pautan Luar</a>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Butang Tutup Bawah -->
+                <div class="pt-1 border-t border-slate-100">
+                    <button @click="closeDetail()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Tutup</button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
+            authDomain: "listing-2a59c.firebaseapp.com",
+            databaseURL: "https://jacksonlisting-5b878-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "listing-2a59c",
+            storageBucket: "listing-2a59c.firebasestorage.app",
+            messagingSenderId: "363739620416",
+            appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
+            measurementId: "G-SZ47HNR9PT"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        function publicPropertyApp() {
+            return {
+                search: '',
+                statusFilter: '',
+                zoneFilter: '',
+                forFilter: '',
+                typeFilter: '',
+                ownerFilter: '',
+                sortBy: 'latest',
+                properties: {},
+                selectedItem: null,
+                currentPage: 1,
+                itemsPerPage: 13,
+
+                init() {
+                    const cachedData = localStorage.getItem('jackson_properties');
+                    if (cachedData) {
+                        this.properties = JSON.parse(cachedData);
+                    }
+
+                    db.ref('properties').on('value', snapshot => {
+                        const data = snapshot.val() || {};
+                        this.properties = data;
+                        localStorage.setItem('jackson_properties', JSON.stringify(data));
+                        // Kemaskini selectedItem jika modal terbuka dan status berubah di cloud
+                        if (this.selectedItem && data[this.selectedItem.id]) {
+                            this.selectedItem = { id: this.selectedItem.id, ...data[this.selectedItem.id] };
+                        }
+                    });
+
+                    this.$watch('search', () => this.currentPage = 1);
+                    this.$watch('statusFilter', () => this.currentPage = 1);
+                    this.$watch('zoneFilter', () => this.currentPage = 1);
+                    this.$watch('forFilter', () => this.currentPage = 1);
+                    this.$watch('typeFilter', () => this.currentPage = 1);
+                    this.$watch('ownerFilter', () => this.currentPage = 1);
+                    this.$watch('sortBy', () => this.currentPage = 1);
+                },
+                formatPrice(val) {
+                    if (!val) return 'RM 0';
+                    let cleanNum = String(val).replace(/[^0-9.]/g, '');
+                    let num = parseFloat(cleanNum);
+                    if (isNaN(num)) return val;
+                    return 'RM ' + num.toLocaleString('en-US', {maximumFractionDigits: 2});
+                },
+                get uniqueOwners() {
+                    let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
+                    return [...new Set(owners)].sort();
+                },
+                get getFilteredResult() {
+                    let entries = Object.entries(this.properties);
+                    return entries.filter(([id, item]) => {
+                        const matchSearch = ((item.PROPERTY || '') + (item.OWNER || '') + (item.ZONE || '') + (item.REMARK || '')).toLowerCase().includes(this.search.toLowerCase());
+                        const matchStatus = this.statusFilter === '' || item.STATUS === this.statusFilter;
+                        const matchZone = this.zoneFilter === '' || item.ZONE === this.zoneFilter;
+                        const matchFor = this.forFilter === '' || item.FOR === this.forFilter;
+                        const matchType = this.typeFilter === '' || item.TYPE === this.typeFilter;
+                        const matchOwner = this.ownerFilter === '' || item.OWNER === this.ownerFilter;
+                        return matchSearch && matchStatus && matchZone && matchFor && matchType && matchOwner;
+                    });
+                },
+                get totalFilteredCount() {
+                    return this.getFilteredResult.length;
+                },
+                get totalPages() {
+                    return Math.ceil(this.totalFilteredCount / this.itemsPerPage) || 1;
+                },
+                get filteredProperties() {
+                    let result = this.getFilteredResult;
+                    let mapped = result.map(([id, item]) => ({ id, ...item }));
+
+                    let sorted = mapped.sort((a, b) => {
+                        if (this.sortBy === 'latest') {
+                            return (b.createdAt || 0) - (a.createdAt || 0);
+                        } else if (this.sortBy === 'name_asc') {
+                            return (a.PROPERTY || '').localeCompare(b.PROPERTY || '');
+                        } else if (this.sortBy === 'name_desc') {
+                            return (b.PROPERTY || '').localeCompare(a.PROPERTY || '');
+                        } else if (this.sortBy === 'price_asc' || this.sortBy === 'price_desc') {
+                            let priceA = parseFloat(String(a.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
+                            let priceB = parseFloat(String(b.PRICE || '0').replace(/[^0-9.]/g, '')) || 0;
+                            return this.sortBy === 'price_asc' ? priceA - priceB : priceB - priceA;
+                        }
+                    });
+
+                    let start = (this.currentPage - 1) * this.itemsPerPage;
+                    let paginated = sorted.slice(start, start + this.itemsPerPage);
+
+                    return paginated.reduce((acc, curr) => {
+                        acc[curr.id] = curr;
+                        return acc;
+                    }, {});
+                },
+                showDetail(item) {
+                    this.selectedItem = item;
+                },
+                closeDetail() {
+                    this.selectedItem = null;
+                },
+                updateStatus(id, newStatus) {
+                    db.ref('properties/' + id + '/STATUS').set(newStatus).then(() => {
+                        // Kemaskini tempatan segera untuk respons pantas
+                        if (this.properties[id]) {
+                            this.properties[id].STATUS = newStatus;
+                        }
+                    }).catch(error => {
+                        alert('Gagal mengemaskini status: ' + error.message);
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
