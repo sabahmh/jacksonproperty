@@ -14,13 +14,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans h-screen overflow-hidden select-none text-[10px]" x-data="publicPropertyApp()">
+<body class="bg-slate-100 text-slate-800 font-sans pb-6 select-none text-[10px]" x-data="publicPropertyApp()">
     
-    <!-- Kontena Utama Skrin Penuh -->
-    <div class="max-w-md mx-auto h-full flex flex-col justify-between p-1.5 gap-1.5">
+    <div class="max-w-md mx-auto p-2 space-y-1.5">
 
         <!-- Header Ringkas -->
-        <header class="bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-2xs flex justify-between items-center shrink-0">
+        <header class="bg-white border border-slate-200 px-2.5 py-1.5 rounded-md shadow-2xs flex justify-between items-center">
             <div class="flex items-center gap-1.5">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-5 h-5 object-contain rounded-xs">
                 <div>
@@ -34,7 +33,7 @@
         </header>
 
         <!-- Carian & Filter Mikro (Padat) -->
-        <div class="bg-white p-1.5 rounded-md shadow-2xs border border-slate-200 space-y-1 shrink-0">
+        <div class="bg-white p-1.5 rounded-md shadow-2xs border border-slate-200 space-y-1">
             <div class="relative">
                 <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-1 pr-6 bg-slate-50 border border-slate-200 rounded text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <template x-if="search">
@@ -85,8 +84,8 @@
             </div>
         </div>
 
-        <!-- Senarai 13 Listing (Fit Flex Area) -->
-        <div class="flex-1 flex flex-col gap-1 overflow-hidden">
+        <!-- Senarai Tepat 13 Listing Per Page -->
+        <div class="space-y-1">
             <template x-for="(item, id) in filteredProperties" :key="id">
                 <div @click="showDetail(item)" class="bg-white px-2 py-1.5 rounded shadow-2xs border border-slate-200 hover:border-blue-300 transition cursor-pointer flex items-center justify-between gap-2">
                     
@@ -106,16 +105,14 @@
                         </div>
                     </div>
 
-                    <!-- Kanan: Harga & Status (Inline Dropdown) -->
+                    <!-- Kanan: Harga & Status -->
                     <div class="flex items-center gap-2 shrink-0">
                         <div class="font-bold text-blue-600 text-[10px]" x-text="formatPrice(item.PRICE)"></div>
                         
-                        <!-- Pautan jika ada -->
                         <template x-if="item.URL">
                             <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-[9px] px-1 py-0.5 bg-blue-50 rounded" @click.stop title="Pautan">🔗</a>
                         </template>
 
-                        <!-- Dropdown Tukar Status Pantas -->
                         <div @click.stop>
                             <select @change="updateStatus(id, $event.target.value)" 
                                 :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : (item.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
@@ -132,25 +129,25 @@
             </template>
             
             <template x-if="Object.keys(filteredProperties).length === 0">
-                <div class="bg-white p-6 rounded text-center text-slate-400 text-xs border border-slate-200 my-auto">
+                <div class="bg-white p-6 rounded text-center text-slate-400 text-xs border border-slate-200">
                     Tiada rekod hartanah ditemui.
                 </div>
             </template>
         </div>
 
-        <!-- 📄 NAVIGASI PAGINATION & INFO BAWAH -->
-        <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-md shadow-2xs border border-slate-200 text-[9px] shrink-0">
-            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
-                ⬅ Prev
+        <!-- 📄 NAVIGASI PAGINATION (Sentiasa Kelihatan di Bawah) -->
+        <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1" style="display: none;">
+            <button @click="currentPage > 1 ? currentPage-- : window.scrollTo({top: 0, behavior: 'smooth'})" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
+                ⬅ Sebelumnya
             </button>
             
             <span class="text-slate-600 font-medium">
-                Hal <strong class="text-slate-900" x-text="currentPage"></strong> / <strong class="text-slate-900" x-text="totalPages"></strong> 
+                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> / <strong class="text-slate-900" x-text="totalPages"></strong> 
                 (<span x-text="totalFilteredCount"></span> item)
             </span>
 
-            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
-                Next ➡
+            <button @click="currentPage < totalPages ? currentPage++; window.scrollTo({top: 0, behavior: 'smooth'}) : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
+                Seterusnya ➡
             </button>
         </div>
 
@@ -233,7 +230,7 @@
                 properties: {},
                 selectedItem: null,
                 currentPage: 1,
-                itemsPerPage: 13, // Tepat 13 listing seiaap halaman
+                itemsPerPage: 13, // Tetapan tetap 13 listing setiap halaman
 
                 init() {
                     const cachedData = localStorage.getItem('jackson_properties');
