@@ -14,7 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-4 select-none text-[11px]" x-data="publicPropertyApp()">
+<body class="bg-slate-100 text-slate-800 font-sans pb-2 select-none text-[11px]" x-data="publicPropertyApp()">
     
     <!-- Header Ringkas & Kompak -->
     <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-2 py-0.5 shadow-2xs">
@@ -85,12 +85,12 @@
             </div>
             <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
             <div class="flex justify-between items-center px-0.5 text-[9px] text-slate-500 border-t border-slate-100 pt-0.5">
-                <span>Paparan Teratas (Max 12): <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod dijumpai</span>
+                <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod</span>
                 <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
             </div>
         </div>
 
-        <!-- Senarai Listing (Kompak) -->
+        <!-- Senarai Listing (Kompak & Fit to Screen) -->
         <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
             <template x-for="(item, id) in filteredProperties" :key="id">
                 <div @click="showDetail(item)" class="px-2 py-1 flex items-center justify-between gap-1 hover:bg-slate-50 transition cursor-pointer">
@@ -141,6 +141,21 @@
                     Tiada rekod hartanah ditemui.
                 </div>
             </template>
+        </div>
+
+        <!-- 📄 NAVIGASI PAGINATION (15 Per Page) -->
+        <div class="flex justify-between items-center bg-white px-2 py-1 rounded shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1">
+            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-0.5 border rounded bg-slate-50 font-semibold text-slate-700">
+                ⬅ Sebelumnya
+            </button>
+            
+            <span class="text-slate-600 font-medium">
+                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> dari <strong class="text-slate-900" x-text="totalPages"></strong>
+            </span>
+
+            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-0.5 border rounded bg-slate-50 font-semibold text-slate-700">
+                Seterusnya ➡
+            </button>
         </div>
 
         <!-- MODAL DETAIL / NOTA -->
@@ -223,6 +238,8 @@
                 sortBy: 'latest',
                 properties: {},
                 selectedItem: null,
+                currentPage: 1,
+                itemsPerPage: 15, // Ditetapkan kepada 15 listing per halaman
 
                 init() {
                     const cachedData = localStorage.getItem('jackson_properties');
@@ -238,6 +255,14 @@
                             this.selectedItem = { id: this.selectedItem.id, ...data[this.selectedItem.id] };
                         }
                     });
+
+                    this.$watch('search', () => this.currentPage = 1);
+                    this.$watch('statusFilter', () => this.currentPage = 1);
+                    this.$watch('zoneFilter', () => this.currentPage = 1);
+                    this.$watch('forFilter', () => this.currentPage = 1);
+                    this.$watch('typeFilter', () => this.currentPage = 1);
+                    this.$watch('ownerFilter', () => this.currentPage = 1);
+                    this.$watch('sortBy', () => this.currentPage = 1);
                 },
                 formatPrice(val) {
                     if (!val) return 'RM 0';
@@ -265,6 +290,9 @@
                 get totalFilteredCount() {
                     return this.getFilteredResult.length;
                 },
+                get totalPages() {
+                    return Math.ceil(this.totalFilteredCount / this.itemsPerPage) || 1;
+                },
                 get filteredProperties() {
                     let result = this.getFilteredResult;
                     let mapped = result.map(([id, item]) => ({ id, ...item }));
@@ -283,10 +311,10 @@
                         }
                     });
 
-                    // Hadkan terus kepada 12 teratas sahaja tanpa pagination
-                    let sliced = sorted.slice(0, 12);
+                    let start = (this.currentPage - 1) * this.itemsPerPage;
+                    let paginated = sorted.slice(start, start + this.itemsPerPage);
 
-                    return sliced.reduce((acc, curr) => {
+                    return paginated.reduce((acc, curr) => {
                         acc[curr.id] = curr;
                         return acc;
                     }, {});
