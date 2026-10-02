@@ -14,12 +14,13 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-8 select-none text-[10px]" x-data="publicPropertyApp()">
+<body class="bg-slate-100 text-slate-800 font-sans h-screen overflow-hidden select-none text-[10px]" x-data="publicPropertyApp()">
     
-    <div class="max-w-md mx-auto p-2 space-y-1.5">
+    <!-- Wrapper Utama: Fit to Screen (1 Skrin Penuh Handphone) -->
+    <div class="max-w-md mx-auto h-full flex flex-col p-2 space-y-1.5">
 
         <!-- Header Ringkas -->
-        <header class="bg-white border border-slate-200 px-2.5 py-1.5 rounded-md shadow-2xs flex justify-between items-center">
+        <header class="bg-white border border-slate-200 px-2.5 py-1.5 rounded-md shadow-2xs flex justify-between items-center shrink-0">
             <div class="flex items-center gap-1.5">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-5 h-5 object-contain rounded-xs">
                 <div>
@@ -33,7 +34,7 @@
         </header>
 
         <!-- Carian & Filter Mikro (Padat) -->
-        <div class="bg-white p-1.5 rounded-md shadow-2xs border border-slate-200 space-y-1">
+        <div class="bg-white p-1.5 rounded-md shadow-2xs border border-slate-200 space-y-1 shrink-0">
             <div class="relative">
                 <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-1 pr-6 bg-slate-50 border border-slate-200 rounded text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <template x-if="search">
@@ -84,8 +85,8 @@
             </div>
         </div>
 
-        <!-- Senarai Tepat 13 Listing Per Page -->
-        <div class="space-y-1">
+        <!-- Senarai Tepat 13 Listing Per Page (Flex-1 & Scrollable di tengah jika perlu) -->
+        <div class="flex-1 overflow-y-auto space-y-1 pr-0.5">
             <template x-for="(item, id) in filteredProperties" :key="id">
                 <div @click="showDetail(item)" class="bg-white px-2 py-1.5 rounded shadow-2xs border border-slate-200 hover:border-blue-300 transition cursor-pointer flex items-center justify-between gap-2">
                     
@@ -135,8 +136,8 @@
             </template>
         </div>
 
-        <!-- 📄 NAVIGASI PAGINATION (Sentiasa Kelihatan Tanpa Isu Sembunyi) -->
-        <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md shadow-2xs border border-slate-200 text-[10px]">
+        <!-- 📄 NAVIGASI PAGINATION (Sentiasa Kekal di Bawah Skrin & Fit) -->
+        <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md shadow-2xs border border-slate-200 text-[10px] shrink-0">
             <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
                 ⬅ Sebelumnya
             </button>
@@ -230,7 +231,7 @@
                 properties: {},
                 selectedItem: null,
                 currentPage: 1,
-                itemsPerPage: 13, // Tetapan tetap 13 listing setiap halaman
+                itemsPerPage: 13,
 
                 init() {
                     const cachedData = localStorage.getItem('jackson_properties');
