@@ -14,7 +14,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-6 select-none text-[10px]" x-data="publicPropertyApp()">
+<body class="bg-slate-100 text-slate-800 font-sans pb-8 select-none text-[10px]" x-data="publicPropertyApp()">
     
     <div class="max-w-md mx-auto p-2 space-y-1.5">
 
@@ -135,18 +135,18 @@
             </template>
         </div>
 
-        <!-- 📄 NAVIGASI PAGINATION (Sentiasa Kelihatan di Bawah) -->
-        <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1" style="display: none;">
-            <button @click="currentPage > 1 ? currentPage-- : window.scrollTo({top: 0, behavior: 'smooth'})" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
+        <!-- 📄 NAVIGASI PAGINATION (Sentiasa Kelihatan Tanpa Isu Sembunyi) -->
+        <div class="flex justify-between items-center bg-white px-3 py-2 rounded-md shadow-2xs border border-slate-200 text-[10px]">
+            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
                 ⬅ Sebelumnya
             </button>
             
             <span class="text-slate-600 font-medium">
-                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> / <strong class="text-slate-900" x-text="totalPages"></strong> 
+                Hal <strong class="text-slate-900" x-text="currentPage"></strong> / <strong class="text-slate-900" x-text="totalPages"></strong> 
                 (<span x-text="totalFilteredCount"></span> item)
             </span>
 
-            <button @click="currentPage < totalPages ? currentPage++; window.scrollTo({top: 0, behavior: 'smooth'}) : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
+            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded bg-slate-50 font-semibold text-slate-700">
                 Seterusnya ➡
             </button>
         </div>
