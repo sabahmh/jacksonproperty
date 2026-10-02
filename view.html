@@ -14,44 +14,44 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans pb-12 select-none text-[11px]" x-data="publicPropertyApp()">
+<body class="bg-slate-100 text-slate-800 font-sans h-screen overflow-hidden select-none text-[10px]" x-data="publicPropertyApp()">
     
-    <!-- Header Ringkas -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-3 py-2 shadow-2xs">
-        <div class="max-w-md mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-6 h-6 object-contain rounded-xs">
+    <!-- Kontena Utama Skrin Penuh -->
+    <div class="max-w-md mx-auto h-full flex flex-col justify-between p-1.5 gap-1.5">
+
+        <!-- Header Ringkas -->
+        <header class="bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-2xs flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-1.5">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-5 h-5 object-contain rounded-xs">
                 <div>
-                    <h1 class="font-bold text-slate-900 leading-tight text-xs">🏠 Listing Jackson (Viewer)</h1>
-                    <span class="text-[9px] font-semibold text-emerald-600">👀 Mod Paparan & Kemaskini Status</span>
+                    <h1 class="font-bold text-slate-900 leading-tight text-[11px]">🏠 Listing Jackson (Viewer)</h1>
+                    <span class="text-[8px] font-semibold text-emerald-600">👀 Mod Paparan & Status</span>
                 </div>
             </div>
-            <div class="text-[9px] text-slate-500 font-bold tracking-tight text-right">
+            <div class="text-[8px] text-slate-500 font-bold tracking-tight text-right">
                 SABAH MABUK HARTANAH
             </div>
-        </div>
-    </header>
+        </header>
 
-    <main class="max-w-md mx-auto p-2 space-y-2">
-        <!-- Carian & Filter Mikro -->
-        <div class="bg-white p-2 rounded-lg shadow-2xs border border-slate-200 space-y-2">
+        <!-- Carian & Filter Mikro (Padat) -->
+        <div class="bg-white p-1.5 rounded-md shadow-2xs border border-slate-200 space-y-1 shrink-0">
             <div class="relative">
-                <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-3 py-1.5 pr-8 bg-slate-50 border border-slate-200 rounded-md text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-1 pr-6 bg-slate-50 border border-slate-200 rounded text-[10px] focus:outline-none focus:ring-1 focus:ring-blue-500">
                 <template x-if="search">
-                    <button @click="search = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-sm px-1" title="Padam carian">&times;</button>
+                    <button @click="search = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs px-1" title="Padam carian">&times;</button>
                 </template>
             </div>
             
-            <div class="grid grid-cols-2 gap-1.5">
-                <select x-model="statusFilter" class="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-                    <option value="">Semua Status</option>
+            <div class="grid grid-cols-6 gap-1">
+                <select x-model="statusFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[9px]">
+                    <option value="">Status</option>
                     <option value="AVAILABLE">AVAILABLE</option>
                     <option value="BOOKED">BOOKED</option>
                     <option value="SOLD">SOLD</option>
                     <option value="HOLD">HOLD</option>
                 </select>
-                <select x-model="zoneFilter" class="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-                    <option value="">Semua Zon</option>
+                <select x-model="zoneFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[9px]">
+                    <option value="">Zon</option>
                     <option value="SDK">SDK</option>
                     <option value="KK">KK</option>
                     <option value="TWU">TWU</option>
@@ -59,78 +59,68 @@
                     <option value="SPA">SPA</option>
                     <option value="RNU">RNU</option>
                 </select>
-                <select x-model="forFilter" class="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-                    <option value="">Semua Urusan</option>
+                <select x-model="forFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[9px]">
+                    <option value="">Urusan</option>
                     <option value="SELL">SELL</option>
                     <option value="RENT">RENT</option>
                 </select>
-                <select x-model="typeFilter" class="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-                    <option value="">Semua Jenis</option>
+                <select x-model="typeFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[9px]">
+                    <option value="">Jenis</option>
                     <option value="APT">APT</option>
                     <option value="LANDED">LANDED</option>
                     <option value="COMMERCIAL">COMMERCIAL</option>
                 </select>
-                <select x-model="ownerFilter" class="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-                    <option value="">Semua Owner</option>
+                <select x-model="ownerFilter" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[9px]">
+                    <option value="">Owner</option>
                     <template x-for="own in uniqueOwners">
                         <option :value="own" x-text="own"></option>
                     </template>
                 </select>
-                <select x-model="sortBy" class="px-2 py-1.5 bg-slate-50 border border-slate-200 rounded-md text-[10px]">
-                    <option value="latest">Urutan: Terkini</option>
-                    <option value="name_asc">Nama (A-Z)</option>
+                <select x-model="sortBy" class="px-1 py-1 bg-slate-50 border border-slate-200 rounded text-[9px]">
+                    <option value="latest">Terkini</option>
+                    <option value="name_asc">A-Z</option>
                     <option value="price_asc">Harga ⬆</option>
                     <option value="price_desc">Harga ⬇</option>
                 </select>
             </div>
-
-            <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
-            <div class="flex justify-between items-center pt-1 px-0.5 text-[10px] text-slate-500 border-t border-slate-100">
-                <span>Jumlah Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong></span>
-                <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
-            </div>
         </div>
 
-        <!-- Senarai Listing (Mobile Optimized Stack) -->
-        <div class="space-y-2">
+        <!-- Senarai 13 Listing (Fit Flex Area) -->
+        <div class="flex-1 flex flex-col gap-1 overflow-hidden">
             <template x-for="(item, id) in filteredProperties" :key="id">
-                <div @click="showDetail(item)" class="bg-white p-2.5 rounded-lg shadow-2xs border border-slate-200 hover:border-blue-300 transition cursor-pointer space-y-2">
+                <div @click="showDetail(item)" class="bg-white px-2 py-1.5 rounded shadow-2xs border border-slate-200 hover:border-blue-300 transition cursor-pointer flex items-center justify-between gap-2">
                     
-                    <!-- Baris Atas: Badge & Nama Hartanah -->
-                    <div class="flex items-start justify-between gap-2">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="px-1.5 py-0.5 text-[8px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase" x-text="item.ZONE"></span>
-                            <span class="px-1.5 py-0.5 text-[8px] font-medium rounded bg-slate-100 text-slate-600 uppercase" x-text="item.TYPE"></span>
-                            <span class="px-1.5 py-0.5 text-[8px] font-bold rounded bg-blue-50 text-blue-600 uppercase" x-text="item.FOR"></span>
+                    <!-- Kiri: Info Ringkas -->
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-1">
+                            <span class="px-1 py-0.2 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase" x-text="item.ZONE"></span>
+                            <span class="px-1 py-0.2 text-[7px] font-medium rounded bg-slate-100 text-slate-600 uppercase" x-text="item.TYPE"></span>
+                            <span class="px-1 py-0.2 text-[7px] font-bold rounded bg-blue-50 text-blue-600 uppercase" x-text="item.FOR"></span>
+                            <h2 class="font-bold text-slate-900 text-[10px] uppercase truncate" x-text="item.PROPERTY"></h2>
                         </div>
+                        <div class="text-[9px] text-slate-500 truncate mt-0.5">
+                            Owner: <span class="text-slate-700 font-medium" x-text="item.OWNER || '-'"></span>
+                            <template x-if="item.REMARK">
+                                <span class="text-amber-700 ml-1">| Nota: <span x-text="item.REMARK"></span></span>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Kanan: Harga & Status (Inline Dropdown) -->
+                    <div class="flex items-center gap-2 shrink-0">
+                        <div class="font-bold text-blue-600 text-[10px]" x-text="formatPrice(item.PRICE)"></div>
                         
-                        <!-- Pautan Luar -->
+                        <!-- Pautan jika ada -->
                         <template x-if="item.URL">
-                            <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs px-1.5 py-0.5 bg-blue-50 rounded" title="Pautan Luar" @click.stop>🔗 Pautan</a>
+                            <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-[9px] px-1 py-0.5 bg-blue-50 rounded" @click.stop title="Pautan">🔗</a>
                         </template>
-                    </div>
 
-                    <!-- Tajuk Hartanah -->
-                    <div>
-                        <h2 class="font-bold text-slate-900 text-xs uppercase leading-snug" x-text="item.PROPERTY"></h2>
-                        <div class="text-[10px] text-slate-500 mt-0.5">
-                            Owner: <strong class="text-slate-700" x-text="item.OWNER || '-'"></strong>
-                        </div>
-                        <template x-if="item.REMARK">
-                            <div class="mt-1 text-amber-800 bg-amber-50 border border-amber-100 p-1 rounded text-[10px] truncate" x-text="item.REMARK"></div>
-                        </template>
-                    </div>
-
-                    <!-- Baris Bawah: Harga & Tukar Status Pantas -->
-                    <div class="flex items-center justify-between pt-1.5 border-t border-slate-100">
-                        <div class="font-bold text-blue-600 text-xs" x-text="formatPrice(item.PRICE)"></div>
-                        
-                        <!-- Dropdown Tukar Status -->
+                        <!-- Dropdown Tukar Status Pantas -->
                         <div @click.stop>
                             <select @change="updateStatus(id, $event.target.value)" 
                                 :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : (item.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
-                                class="px-2 py-1 text-[9px] font-bold rounded-md uppercase border cursor-pointer outline-none shadow-2xs">
-                                <option value="AVAILABLE" :selected="item.STATUS === 'AVAILABLE'">AVAILABLE</option>
+                                class="px-1.5 py-0.5 text-[8px] font-bold rounded uppercase border cursor-pointer outline-none shadow-2xs">
+                                <option value="AVAILABLE" :selected="item.STATUS === 'AVAILABLE'">AVAIL</option>
                                 <option value="BOOKED" :selected="item.STATUS === 'BOOKED'">BOOKED</option>
                                 <option value="SOLD" :selected="item.STATUS === 'SOLD'">SOLD</option>
                                 <option value="HOLD" :selected="item.STATUS === 'HOLD'">HOLD</option>
@@ -142,80 +132,79 @@
             </template>
             
             <template x-if="Object.keys(filteredProperties).length === 0">
-                <div class="bg-white p-8 rounded-lg text-center text-slate-400 text-xs border border-slate-200">
+                <div class="bg-white p-6 rounded text-center text-slate-400 text-xs border border-slate-200 my-auto">
                     Tiada rekod hartanah ditemui.
                 </div>
             </template>
         </div>
 
-        <!-- 📄 NAVIGASI PAGINATION -->
-        <div class="flex justify-between items-center bg-white px-3 py-2.5 rounded-lg shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1">
-            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded-md bg-slate-50 font-semibold text-slate-700">
-                ⬅ Sebelumnya
+        <!-- 📄 NAVIGASI PAGINATION & INFO BAWAH -->
+        <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-md shadow-2xs border border-slate-200 text-[9px] shrink-0">
+            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
+                ⬅ Prev
             </button>
             
             <span class="text-slate-600 font-medium">
-                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> / <strong class="text-slate-900" x-text="totalPages"></strong>
+                Hal <strong class="text-slate-900" x-text="currentPage"></strong> / <strong class="text-slate-900" x-text="totalPages"></strong> 
+                (<span x-text="totalFilteredCount"></span> item)
             </span>
 
-            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2.5 py-1.5 border rounded-md bg-slate-50 font-semibold text-slate-700">
-                Seterusnya ➡
+            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-1 border rounded bg-slate-50 font-semibold text-slate-700">
+                Next ➡
             </button>
         </div>
 
         <!-- MODAL DETAIL / NOTA -->
         <div x-show="selectedItem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;" @click.self="closeDetail()">
-            <div class="bg-white rounded-xl max-w-sm w-full p-4 shadow-2xl border border-slate-100 space-y-3 max-h-[85vh] flex flex-col">
+            <div class="bg-white rounded-xl max-w-sm w-full p-3.5 shadow-2xl border border-slate-100 space-y-2.5 max-h-[85vh] flex flex-col text-[11px]">
                 
-                <!-- Header Modal -->
-                <div class="flex justify-between items-start border-b pb-2 gap-2">
+                <div class="flex justify-between items-start border-b pb-1.5 gap-2">
                     <h3 class="font-bold text-slate-900 text-xs uppercase leading-snug break-words" x-text="selectedItem?.PROPERTY"></h3>
-                    <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-lg p-1 -mr-1 -mt-1 leading-none">&times;</button>
+                    <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-base px-1 leading-none">&times;</button>
                 </div>
 
-                <!-- Kandungan Utama -->
-                <div class="space-y-2 text-[11px] text-slate-700 overflow-y-auto pr-1">
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                        <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
+                <div class="space-y-1.5 text-slate-700 overflow-y-auto pr-1">
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Urusan / Jenis:</span>
                         <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                        <span class="text-slate-500 font-medium">Zon:</span>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Zon:</span>
                         <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                        <span class="text-slate-500 font-medium">Owner / Agen:</span>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Owner / Agen:</span>
                         <span class="font-bold uppercase" x-text="selectedItem?.OWNER || '-'"></span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                        <span class="text-slate-500 font-medium">Harga:</span>
-                        <span class="font-bold text-blue-600 text-xs" x-text="formatPrice(selectedItem?.PRICE)"></span>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Harga:</span>
+                        <span class="font-bold text-blue-600" x-text="formatPrice(selectedItem?.PRICE)"></span>
                     </div>
-                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                        <span class="text-slate-500 font-medium">Status Semasa:</span>
-                        <span class="font-bold uppercase px-1.5 py-0.5 rounded text-[9px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
+                    <div class="flex justify-between border-b border-slate-100 pb-1">
+                        <span class="text-slate-500">Status:</span>
+                        <span class="font-bold uppercase px-1 rounded text-[8px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
                     </div>
                     
-                    <div class="pt-1">
-                        <span class="text-slate-500 font-medium block mb-1">Nota / Remark:</span>
-                        <div class="p-2.5 bg-amber-50 border border-amber-100 rounded-lg text-amber-900 text-[11px] leading-relaxed break-words max-h-32 overflow-y-auto whitespace-pre-line" x-text="selectedItem?.REMARK || 'Tiada nota dimasukkan.'"></div>
+                    <div>
+                        <span class="text-slate-500 block mb-0.5">Nota / Remark:</span>
+                        <div class="p-2 bg-amber-50 border border-amber-100 rounded text-amber-900 leading-relaxed break-words max-h-24 overflow-y-auto whitespace-pre-line" x-text="selectedItem?.REMARK || 'Tiada nota.'"></div>
                     </div>
 
                     <template x-if="selectedItem?.URL">
-                        <div class="pt-1">
-                            <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold text-[11px] transition">🔗 Buka Pautan Luar</a>
+                        <div>
+                            <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded font-semibold transition">🔗 Buka Pautan Luar</a>
                         </div>
                     </template>
                 </div>
 
-                <!-- Butang Tutup Bawah -->
                 <div class="pt-1 border-t border-slate-100">
-                    <button @click="closeDetail()" class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Tutup</button>
+                    <button @click="closeDetail()" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded font-semibold transition">Tutup</button>
                 </div>
 
             </div>
         </div>
-    </main>
+
+    </div>
 
     <script>
         const firebaseConfig = {
@@ -244,7 +233,7 @@
                 properties: {},
                 selectedItem: null,
                 currentPage: 1,
-                itemsPerPage: 13, // Tetapan 13 listing setiap halaman dikekalkan
+                itemsPerPage: 13, // Tepat 13 listing seiaap halaman
 
                 init() {
                     const cachedData = localStorage.getItem('jackson_properties');
