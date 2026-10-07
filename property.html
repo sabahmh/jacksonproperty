@@ -74,7 +74,6 @@
     .hidden { display: none !important; }
     .empty { text-align: center; padding: 40px 20px; color: #777; grid-column: 1 / -1; }
     .manage-title { margin-top: 20px; font-size: 18px; }
-    #imageStatus { font-size: 11px; color: #666; margin-top: 2px; display: block; }
   </style>
 </head>
 
@@ -167,11 +166,10 @@
           <input type="text" id="propertyLocation" placeholder="Bandar Indah">
         </div>
         <div>
-          <label>Gambar Property</label>
+          <label>Gambar Property (Fail)</label>
           <input type="file" id="propertyImageFile" accept="image/*" style="padding: 7px; font-size: 11px;">
         </div>
       </div>
-      <span id="imageStatus"></span>
 
       <label>Description Pendek</label>
       <textarea id="propertyDescription" placeholder="Masukkan description..."></textarea>
@@ -213,7 +211,7 @@ let properties = [];
 /* =========================================
    FIREBASE AUTHENTICATION LOGIN
 ========================================= */
-async function login() {
+function login() {
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("password").value;
 
@@ -335,140 +333,103 @@ function backToWebsite() {
 }
 
 /* =========================================
-   FUNGSI COMPRESS & TUKAR FILE KEPADA BASE64
+   SAVE / UPDATE PROPERTY (VERSI ASAL NETLIFY)
 ========================================= */
-function compressAndConvertImage(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+function saveProperty() {
+  const zone = document.getElementById("propertyZone").value;
+  const name = document.getElementById("propertyName").value.trim().toUpperCase();
+  const price = document.getElementById("propertyPrice").value.replace(/[^0-9]/g, "");
+  const location = document.getElementById("propertyLocation").value.trim();
+  const description = document.getElementById("propertyDescription").value.trim();
+  const status = document.getElementById("propertyStatus").value;
+  const imageFile = document.getElementById("propertyImageFile").files[0];
 
-        const MAX_WIDTH = 1200;
-        const MAX_HEIGHT = 1200;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round((height * MAX_WIDTH) / width);
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round((width * MAX_HEIGHT) / height);
-            height = MAX_HEIGHT;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-        const base64Data = dataUrl.split(',')[1];
-        resolve(base64Data);
-      };
-      img.onerror = (error) => reject(error);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-}
-
-document.getElementById("propertyImageFile").addEventListener("change", function(event) {
-  if (event.target.files[0]) {
-    document.getElementById("imageStatus").innerText = "✅ Fail dipilih. Akan dioptimumkan & dimuat naik automatik.";
+  if (!name || !price || !location) {
+    alert("Sila isi Nama Property, Harga dan Lokasi.");
+    return;
   }
-});
 
-/* =========================================
-   SAVE / UPDATE PROPERTY (ROBUST ERROR HANDLING)
-========================================= */
-async function saveProperty() {
+  if (editingId === null && !imageFile) {
+    alert("Sila pilih gambar property.");
+    return;
+  }
+
   const publishBtn = document.querySelector(".publish-button");
-  
-  try {
-    const zoneEl = document.getElementById("propertyZone");
-    const nameEl = document.getElementById("propertyName");
-    const priceEl = document.getElementById("propertyPrice");
-    const locationEl = document.getElementById("propertyLocation");
-    const descriptionEl = document.getElementById("propertyDescription");
-    const statusEl = document.getElementById("propertyStatus");
-    const imageFileInput = document.getElementById("propertyImageFile");
+  publishBtn.innerText = "⏳ Sedang Proses...";
+  publishBtn.disabled = true;
 
-    const zone = zoneEl ? zoneEl.value : "Sandakan";
-    const name = nameEl ? nameEl.value.trim().toUpperCase() : "";
-    const priceRaw = priceEl ? priceEl.value : "";
-    const price = priceRaw.replace(/[^0-9]/g, "");
-    const location = locationEl ? locationEl.value.trim() : "";
-    const description = descriptionEl ? descriptionEl.value.trim() : "";
-    const status = statusEl ? statusEl.value : "Available";
-
-    if (!name || !price || !location) {
-      alert("Sila isi Nama Property, Harga dan Lokasi.");
-      return;
-    }
-
-    if (publishBtn) publishBtn.disabled = true;
-    let imageUrl = currentImageUrl;
-
-    if (imageFileInput && imageFileInput.files && imageFileInput.files.length > 0) {
-      if (publishBtn) publishBtn.innerText = "⏳ Sedang optimumkan saiz gambar...";
-      const base64Image = await compressAndConvertImage(imageFileInput.files[0]);
-
-      if (publishBtn) publishBtn.innerText = "⏳ Sedang upload gambar ke ImgBB...";
+  if (imageFile) {
+    const reader = new FileReader();
+    reader.readAsDataURL(imageFile);
+    reader.onload = function () {
+      const base64Image = reader.result.split(',')[1];
+      
       const formData = new FormData();
       formData.append("key", IMGBB_API_KEY);
       formData.append("image", base64Image);
 
-      const response = await fetch("https://api.imgbb.com/1/upload", {
+      fetch("https://api.imgbb.com/1/upload", {
         method: "POST",
         body: formData
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success) {
+          saveDataToFirebase(zone, result.data.url, name, price, location, description, status);
+        } else {
+          alert("Gagal upload gambar ke ImgBB.");
+          resetButton(publishBtn);
+        }
+      })
+      .catch(error => {
+        console.error("Ralat ImgBB:", error);
+        alert("Ralat rangkaian semasa upload gambar.");
+        resetButton(publishBtn);
       });
-
-      const result = await response.json();
-      if (result && result.success) {
-        imageUrl = result.data.url;
-      } else {
-        throw new Error("Gagal upload ke ImgBB. Sila semak sambungan internet atau API Key anda.");
-      }
-    }
-
-    if (publishBtn) publishBtn.innerText = "⏳ Sedang simpan ke Database...";
-
-    const propertyData = {
-      zone: zone,
-      image: imageUrl,
-      name: name,
-      price: Number(price),
-      location: location,
-      description: description,
-      status: status,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-
-    if (editingId !== null) {
-      await db.collection("properties").doc(editingId).update(propertyData);
-      alert("Property berjaya dikemas kini!");
-    } else {
-      await db.collection("properties").add(propertyData);
-      alert("Property berjaya dipublish!");
-    }
-    cancelEdit();
-  } catch (error) {
-    console.error("Ralat Terperinci: ", error);
-    alert("Ralat berlaku: " + (error.message || error));
-  } finally {
-    if (publishBtn) {
-      publishBtn.innerText = "🚀 PUBLISH PROPERTY";
-      publishBtn.disabled = false;
-    }
+  } else {
+    saveDataToFirebase(zone, currentImageUrl, name, price, location, description, status);
   }
+}
+
+function saveDataToFirebase(zone, imageUrl, name, price, location, description, status) {
+  const propertyData = {
+    zone: zone,
+    image: imageUrl,
+    name: name,
+    price: Number(price),
+    location: location,
+    description: description,
+    status: status,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if (editingId !== null) {
+    db.collection("properties").doc(editingId).update(propertyData)
+      .then(() => {
+        alert("Property berjaya dikemas kini!");
+        cancelEdit();
+      })
+      .catch(error => {
+        alert("Gagal kemas kini: " + error.message);
+        resetButton(document.querySelector(".publish-button"));
+      });
+  } else {
+    db.collection("properties").add(propertyData)
+      .then(() => {
+        alert("Property berjaya dipublish!");
+        cancelEdit();
+      })
+      .catch(error => {
+        alert("Gagal publish: " + error.message);
+        resetButton(document.querySelector(".publish-button"));
+      });
+  }
+}
+
+function resetButton(btn) {
+  btn.innerText = "🚀 PUBLISH PROPERTY";
+  btn.disabled = false;
 }
 
 /* =========================================
@@ -514,7 +475,6 @@ function editProperty(id) {
   document.getElementById("propertyDescription").value = property.description || "";
   document.getElementById("propertyStatus").value = property.status || "Available";
   document.getElementById("propertyImageFile").value = "";
-  document.getElementById("imageStatus").innerText = "Gunakan gambar sedia ada.";
 
   document.getElementById("formTitle").innerText = "✏️ Edit Property";
   document.getElementById("cancelEditButton").classList.remove("hidden");
@@ -533,7 +493,7 @@ function cancelEdit() {
   document.getElementById("propertyLocation").value = "";
   document.getElementById("propertyDescription").value = "";
   document.getElementById("propertyStatus").value = "Available";
-  document.getElementById("imageStatus").innerText = "";
+  resetButton(document.querySelector(".publish-button"));
 }
 
 async function deleteProperty(id) {
