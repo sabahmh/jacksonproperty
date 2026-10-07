@@ -2,39 +2,30 @@
 <html lang="ms">
 <head>
   <meta charset="UTF-8">
-<!-- This site is hosted on Netlify. Anyone can build and deploy a site
-     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=bcea4e00-7e0c-47fe-908f-1a1cb8191c35
-     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Jackson Property | Cari Rumah Impian Anda</title>
-
-  <!-- Firebase SDK -->
+  
+  <!-- Firebase SDK (Auth & Firestore) -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
   <style>
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; color: #222; }
-
     header { background: #111; color: #fff; padding: 14px 16px; position: sticky; top: 0; z-index: 100; }
     .header-content { max-width: 1000px; margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
     .brand-wrapper { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .property-logo { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #fff; flex-shrink: 0; }
     .brand h1 { margin: 0; font-size: 21px; white-space: nowrap; }
     .brand p { margin: 4px 0 0; font-size: 13px; color: #ccc; }
-
     button, .button { border: none; border-radius: 10px; padding: 12px 15px; font-size: 14px; font-weight: bold; cursor: pointer; }
     .admin-photo { width: 32px; height: 32px; object-fit: cover; border-radius: 50%; cursor: pointer; flex-shrink: 0; border: 1.5px solid #fff; }
-
     .container { max-width: 1000px; margin: auto; padding: 20px 16px; }
-
     .zone-buttons { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
     .zone-button { background: #fff; color: #222; border: 1px solid #ddd; white-space: nowrap; }
     .zone-button.active { background: #111; color: #fff; }
-
     .section-title { margin: 15px 0; font-size: 20px; }
-
     .property-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
     .property-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
     .property-image { width: 100%; height: 220px; object-fit: cover; display: block; background: #ddd; }
@@ -43,39 +34,33 @@
     .price { font-size: 23px; font-weight: bold; margin: 8px 0; }
     .location { color: #666; margin: 8px 0; }
     .description { line-height: 1.5; color: #444; font-size: 14px; white-space: pre-line; }
-
     .status { display: inline-block; padding: 6px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 8px; }
     .available { background: #e7f7eb; color: #187a37; }
     .booked { background: #fff4d6; color: #996300; }
     .sold { background: #ffe3e3; color: #b02020; }
-
     .property-actions { display: flex; gap: 8px; margin-top: 16px; }
     .whatsapp { background: #25D366; color: #fff; flex: 1; text-align: center; text-decoration: none; }
-
+    
     #adminPage { display: none; }
     .panel { background: #fff; border-radius: 14px; padding: 20px; max-width: 650px; margin: auto; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
     .login-panel { max-width: 380px; margin-top: 40px; }
-
     label { display: block; font-size: 14px; font-weight: bold; margin-top: 12px; }
     input, textarea, select { width: 100%; margin-top: 6px; padding: 13px; border: 1px solid #ddd; border-radius: 9px; font-size: 15px; }
     textarea { resize: vertical; }
-
-    /* Paksa paparan input nama jadi huruf besar */
     #propertyName { text-transform: uppercase; }
-
     .publish-button { width: 100%; margin-top: 20px; background: #111; color: #fff; }
     .edit-button { width: 100%; background: #111; color: #fff; margin-top: 10px; }
     .delete-button { width: 100%; background: #ffe5e5; color: #b02020; margin-top: 8px; }
     .cancel-button { width: 100%; margin-top: 10px; background: #eee; color: #222; }
-
+    .logout-button { background: #b02020; color: #fff; margin-left: auto; }
     .top-admin-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; }
     .hidden { display: none !important; }
     .empty { text-align: center; padding: 50px 20px; color: #777; grid-column: 1 / -1; }
     .manage-title { margin-top: 30px; }
     #imageStatus { font-size: 13px; color: #666; margin-top: 4px; display: block; }
+    #loadingScreen { text-align: center; padding: 20px; font-weight: bold; color: #555; }
   </style>
 </head>
-
 <body>
 
 <!-- HEADER -->
@@ -100,7 +85,6 @@
       <button class="zone-button" onclick="changeZone('Kota Kinabalu', this)">Kota Kinabalu</button>
       <button class="zone-button" onclick="changeZone('Tawau', this)">Tawau</button>
     </div>
-
     <h2 class="section-title" id="zoneTitle">Property di Sandakan</h2>
     <div class="property-grid" id="propertyList"></div>
   </div>
@@ -108,61 +92,54 @@
 
 <!-- ADMIN PAGE -->
 <main id="adminPage">
-  <!-- LOGIN -->
-  <div id="loginBox" class="panel login-panel">
+  <div id="loadingScreen">Memeriksa sesi log masuk...</div>
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection" class="panel login-panel hidden">
     <h2>🔐 Admin Login</h2>
-    
     <label>Email Admin</label>
     <input type="email" id="adminEmail" placeholder="Masukkan e-mel anda" autocomplete="email">
-
     <label>Password</label>
     <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" onkeydown="if(event.key === 'Enter') login()">
-    
     <button class="publish-button" onclick="login()">LOGIN</button>
   </div>
 
-  <!-- ADMIN DASHBOARD -->
-  <div id="adminDashboard" class="container hidden">
+  <!-- PORTAL / DASHBOARD SECTION -->
+  <div id="portalSection" class="container hidden">
     <div class="panel">
       <div class="top-admin-actions">
         <h2 id="formTitle">➕ Tambah Property</h2>
-        <button onclick="backToWebsite()">Website</button>
+        <div>
+          <button onclick="backToWebsite()">Website</button>
+          <button class="logout-button" onclick="logout()">Log Keluar</button>
+        </div>
       </div>
-
       <label>Zone</label>
       <select id="propertyZone">
         <option value="Sandakan" selected>Sandakan</option>
         <option value="Kota Kinabalu">Kota Kinabalu</option>
         <option value="Tawau">Tawau</option>
       </select>
-
       <label>Gambar Property</label>
       <input type="file" id="propertyImageFile" accept="image/*">
       <span id="imageStatus"></span>
-
       <label>Nama Property</label>
       <input type="text" id="propertyName" placeholder="Contoh: TAMAN MAWAR FASA 7" oninput="this.value = this.value.toUpperCase()">
-
       <label>Harga</label>
       <input type="text" id="propertyPrice" inputmode="numeric" placeholder="Contoh: 190000">
-
       <label>Lokasi</label>
       <input type="text" id="propertyLocation" placeholder="Contoh: Bandar Indah, Sandakan">
-
       <label>Description Pendek</label>
       <textarea id="propertyDescription" rows="4" placeholder="Masukkan description pendek"></textarea>
-
       <label>Status</label>
       <select id="propertyStatus">
         <option value="Available">Available</option>
         <option value="Booked">Booked</option>
         <option value="Sold">Sold</option>
       </select>
-
       <button class="publish-button" onclick="saveProperty()">🚀 PUBLISH PROPERTY</button>
       <button id="cancelEditButton" class="cancel-button hidden" onclick="cancelEdit()">Cancel Edit</button>
     </div>
-
     <h2 class="manage-title">Manage Listing</h2>
     <div class="property-grid" id="manageList"></div>
   </div>
@@ -173,19 +150,20 @@
    SETTINGS & FIREBASE CONFIG
 ========================================= */
 const WHATSAPP_NUMBER = "60138885020";
-const IMGBB_API_KEY = "6815963ad0d9b786c3629c9a638a9f2c";
+const IMGBB_API_KEY = "6c2f224bc6526cb2c326211aa6439e76";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
-  authDomain: "listing-2a59c.firebaseapp.com",
-  projectId: "listing-2a59c",
-  storageBucket: "listing-2a59c.firebasestorage.app",
-  messagingSenderId: "363739620416",
-  appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
-  measurementId: "G-SZ47HNR9PT"
+    apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
+    authDomain: "listing-2a59c.firebaseapp.com",
+    projectId: "listing-2a59c",
+    storageBucket: "listing-2a59c.firebasestorage.app",
+    messagingSenderId: "363739620416",
+    appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
+    measurementId: "G-SZ47HNR9PT"
 };
 
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.firestore();
 
 let selectedZone = "Sandakan";
@@ -194,9 +172,23 @@ let currentImageUrl = "https://placehold.co/800x500?text=Property+Photo";
 let properties = [];
 
 /* =========================================
-   FIREBASE AUTHENTICATION LOGIN
+   FIREBASE AUTH STATE & LOGIN
 ========================================= */
-async function login() {
+firebase.auth().onAuthStateChanged((user) => {
+    document.getElementById('loadingScreen').style.display = 'none';
+    if (user) {
+        sessionStorage.setItem('jackson_logged_in', 'true');
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('portalSection').classList.remove('hidden');
+        loadPropertiesFromFirebase();
+    } else {
+        sessionStorage.removeItem('jackson_logged_in');
+        document.getElementById('portalSection').classList.add('hidden');
+        document.getElementById('loginSection').classList.remove('hidden');
+    }
+});
+
+function login() {
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("password").value;
 
@@ -205,13 +197,10 @@ async function login() {
     return;
   }
 
-  firebase.auth().signInWithEmailAndPassword(email, password)
-    .then((userCredential) => {
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => {
       document.getElementById("adminEmail").value = "";
       document.getElementById("password").value = "";
-      document.getElementById("loginBox").classList.add("hidden");
-      document.getElementById("adminDashboard").classList.remove("hidden");
-      loadPropertiesFromFirebase();
     })
     .catch((error) => {
       alert("Log masuk gagal. E-mel atau password salah.");
@@ -219,8 +208,15 @@ async function login() {
     });
 }
 
+function logout() {
+  auth.signOut().then(() => {
+    alert("Anda telah berjaya log keluar.");
+    backToWebsite();
+  });
+}
+
 /* =========================================
-   FIREBASE REAL-TIME SYNC
+   FIREBASE REAL-TIME SYNC (FIRESTORE)
 ========================================= */
 function loadPropertiesFromFirebase() {
   db.collection("properties").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
@@ -318,7 +314,7 @@ function backToWebsite() {
 }
 
 /* =========================================
-   FUNGSI TUKAR FILE KEPADA BASE64 UNTUK API
+   FUNGSI TUKAR FILE KEPADA BASE64
 ========================================= */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -336,7 +332,7 @@ document.getElementById("propertyImageFile").addEventListener("change", function
 });
 
 /* =========================================
-   SAVE / UPDATE PROPERTY (AUTO UPLOAD TO IMGBB)
+   SAVE / UPDATE PROPERTY (FIRESTORE + IMGBB)
 ========================================= */
 async function saveProperty() {
   const zone = document.getElementById("propertyZone").value;
@@ -399,10 +395,11 @@ async function saveProperty() {
       await db.collection("properties").add(propertyData);
       alert("Property berjaya dipublish!");
     }
+    
     cancelEdit();
   } catch (error) {
-       console.error("Ralat Terperinci: ", error);
-    alert("Ralat: " + error.message);
+    console.error("Ralat: ", error);
+    alert(error.message || "Gagal memproses data.");
   } finally {
     publishBtn.innerText = "🚀 PUBLISH PROPERTY";
     publishBtn.disabled = false;
@@ -439,7 +436,7 @@ function renderManageListings() {
 function editProperty(id) {
   const property = properties.find(item => item.id === id);
   if (!property) return;
-  
+
   editingId = id;
   currentImageUrl = property.image;
 
@@ -479,12 +476,13 @@ async function deleteProperty(id) {
     alert("Property telah dipadam.");
   } catch (error) {
     console.error("Ralat memadam:", error);
+    alert("Gagal memadam property.");
   }
 }
 
-// Muat turun data awam apabila laman web dibuka
+// Muat turun data awam apabila laman dibuka
 loadPublicProperties();
 </script>
 
 </body>
-</html><script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="bcea4e00-7e0c-47fe-908f-1a1cb8191c35" data-app-host="app.netlify.com"></script>
+</html>
