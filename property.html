@@ -401,8 +401,8 @@ async function saveProperty() {
     }
     cancelEdit();
   } catch (error) {
-    console.error("Ralat: ", error);
-    alert(error.message || "Gagal memproses data.");
+       console.error("Ralat Terperinci: ", error);
+    alert("Ralat: " + error.message);
   } finally {
     publishBtn.innerText = "🚀 PUBLISH PROPERTY";
     publishBtn.disabled = false;
