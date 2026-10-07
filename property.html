@@ -17,63 +17,62 @@
     * { box-sizing: border-box; }
     body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; color: #222; }
 
-    header { background: #111; color: #fff; padding: 12px 16px; position: sticky; top: 0; z-index: 100; }
+    header { background: #111; color: #fff; padding: 14px 16px; position: sticky; top: 0; z-index: 100; }
     .header-content { max-width: 1000px; margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-    .brand-wrapper { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .property-logo { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; background: #fff; flex-shrink: 0; }
-    .brand h1 { margin: 0; font-size: 18px; white-space: nowrap; }
-    .brand p { margin: 2px 0 0; font-size: 11px; color: #ccc; }
+    .brand-wrapper { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .property-logo { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #fff; flex-shrink: 0; }
+    .brand h1 { margin: 0; font-size: 21px; white-space: nowrap; }
+    .brand p { margin: 4px 0 0; font-size: 13px; color: #ccc; }
 
-    button, .button { border: none; border-radius: 8px; padding: 10px 12px; font-size: 13px; font-weight: bold; cursor: pointer; }
-    .admin-photo { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; cursor: pointer; flex-shrink: 0; border: 1.5px solid #fff; }
+    button, .button { border: none; border-radius: 10px; padding: 12px 15px; font-size: 14px; font-weight: bold; cursor: pointer; }
+    .admin-photo { width: 32px; height: 32px; object-fit: cover; border-radius: 50%; cursor: pointer; flex-shrink: 0; border: 1.5px solid #fff; }
 
-    .container { max-width: 1000px; margin: auto; padding: 15px 12px; }
+    .container { max-width: 1000px; margin: auto; padding: 20px 16px; }
 
-    .zone-buttons { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; }
-    .zone-button { background: #fff; color: #222; border: 1px solid #ddd; white-space: nowrap; padding: 8px 12px; font-size: 12px; }
+    .zone-buttons { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
+    .zone-button { background: #fff; color: #222; border: 1px solid #ddd; white-space: nowrap; }
     .zone-button.active { background: #111; color: #fff; }
 
-    .section-title { margin: 10px 0; font-size: 18px; }
+    .section-title { margin: 15px 0; font-size: 20px; }
 
-    .property-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
-    .property-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-    .property-image { width: 100%; height: 180px; object-fit: cover; display: block; background: #ddd; }
-    .property-content { padding: 12px; }
-    .property-name { margin: 6px 0; font-size: 17px; }
-    .price { font-size: 20px; font-weight: bold; margin: 6px 0; }
-    .location { color: #666; margin: 6px 0; font-size: 13px; }
-    .description { line-height: 1.4; color: #444; font-size: 13px; white-space: pre-line; }
+    .property-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .property-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
+    .property-image { width: 100%; height: 220px; object-fit: cover; display: block; background: #ddd; }
+    .property-content { padding: 16px; }
+    .property-name { margin: 8px 0; font-size: 19px; }
+    .price { font-size: 23px; font-weight: bold; margin: 8px 0; }
+    .location { color: #666; margin: 8px 0; }
+    .description { line-height: 1.5; color: #444; font-size: 14px; white-space: pre-line; }
 
-    .status { display: inline-block; padding: 4px 8px; border-radius: 15px; font-size: 11px; font-weight: bold; margin-top: 4px; }
+    .status { display: inline-block; padding: 6px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 8px; }
     .available { background: #e7f7eb; color: #187a37; }
     .booked { background: #fff4d6; color: #996300; }
     .sold { background: #ffe3e3; color: #b02020; }
 
-    .property-actions { display: flex; gap: 6px; margin-top: 12px; }
-    .whatsapp { background: #25D366; color: #fff; flex: 1; text-align: center; text-decoration: none; padding: 10px; font-size: 13px; }
+    .property-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .whatsapp { background: #25D366; color: #fff; flex: 1; text-align: center; text-decoration: none; }
 
     #adminPage { display: none; }
-    .panel { background: #fff; border-radius: 12px; padding: 15px; max-width: 650px; margin: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .panel { background: #fff; border-radius: 14px; padding: 20px; max-width: 650px; margin: auto; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
     .login-panel { max-width: 380px; margin-top: 40px; }
 
-    label { display: block; font-size: 12px; font-weight: bold; margin-top: 8px; color: #444; }
-    input, textarea, select { width: 100%; margin-top: 3px; padding: 9px 10px; border: 1px solid #ddd; border-radius: 7px; font-size: 13px; }
-    textarea { resize: vertical; height: 60px; }
+    label { display: block; font-size: 14px; font-weight: bold; margin-top: 12px; }
+    input, textarea, select { width: 100%; margin-top: 6px; padding: 13px; border: 1px solid #ddd; border-radius: 9px; font-size: 15px; }
+    textarea { resize: vertical; }
 
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-
+    /* Paksa paparan input nama jadi huruf besar */
     #propertyName { text-transform: uppercase; }
 
-    .publish-button { width: 100%; margin-top: 12px; background: #111; color: #fff; padding: 11px; font-size: 14px; }
-    .edit-button { width: 100%; background: #111; color: #fff; margin-top: 8px; padding: 8px; }
-    .delete-button { width: 100%; background: #ffe5e5; color: #b02020; margin-top: 6px; padding: 8px; }
-    .cancel-button { width: 100%; margin-top: 6px; background: #eee; color: #222; padding: 8px; }
+    .publish-button { width: 100%; margin-top: 20px; background: #111; color: #fff; }
+    .edit-button { width: 100%; background: #111; color: #fff; margin-top: 10px; }
+    .delete-button { width: 100%; background: #ffe5e5; color: #b02020; margin-top: 8px; }
+    .cancel-button { width: 100%; margin-top: 10px; background: #eee; color: #222; }
 
-    .top-admin-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 10px; }
-    .top-admin-actions h2 { font-size: 18px; margin: 0; }
+    .top-admin-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; }
     .hidden { display: none !important; }
-    .empty { text-align: center; padding: 40px 20px; color: #777; grid-column: 1 / -1; }
-    .manage-title { margin-top: 20px; font-size: 18px; }
+    .empty { text-align: center; padding: 50px 20px; color: #777; grid-column: 1 / -1; }
+    .manage-title { margin-top: 30px; }
+    #imageStatus { font-size: 13px; color: #666; margin-top: 4px; display: block; }
   </style>
 </head>
 
@@ -127,52 +126,38 @@
     <div class="panel">
       <div class="top-admin-actions">
         <h2 id="formTitle">➕ Tambah Property</h2>
-        <button onclick="backToWebsite()" style="padding: 8px 12px; font-size: 12px;">Website</button>
+        <button onclick="backToWebsite()">Website</button>
       </div>
 
-      <div class="form-row">
-        <div>
-          <label>Zone</label>
-          <select id="propertyZone">
-            <option value="Sandakan" selected>Sandakan</option>
-            <option value="Kota Kinabalu">Kota Kinabalu</option>
-            <option value="Tawau">Tawau</option>
-          </select>
-        </div>
-        <div>
-          <label>Status</label>
-          <select id="propertyStatus">
-            <option value="Available">Available</option>
-            <option value="Booked">Booked</option>
-            <option value="Sold">Sold</option>
-          </select>
-        </div>
-      </div>
+      <label>Zone</label>
+      <select id="propertyZone">
+        <option value="Sandakan" selected>Sandakan</option>
+        <option value="Kota Kinabalu">Kota Kinabalu</option>
+        <option value="Tawau">Tawau</option>
+      </select>
 
-      <div class="form-row">
-        <div>
-          <label>Nama Property</label>
-          <input type="text" id="propertyName" placeholder="CONTOH: MAWAR FASA 7" oninput="this.value = this.value.toUpperCase()">
-        </div>
-        <div>
-          <label>Harga (RM)</label>
-          <input type="text" id="propertyPrice" inputmode="numeric" placeholder="190000">
-        </div>
-      </div>
+      <label>Gambar Property</label>
+      <input type="file" id="propertyImageFile" accept="image/*">
+      <span id="imageStatus"></span>
 
-      <div class="form-row">
-        <div>
-          <label>Lokasi</label>
-          <input type="text" id="propertyLocation" placeholder="Bandar Indah">
-        </div>
-        <div>
-          <label>Gambar Property (Fail)</label>
-          <input type="file" id="propertyImageFile" accept="image/*" style="padding: 7px; font-size: 11px;">
-        </div>
-      </div>
+      <label>Nama Property</label>
+      <input type="text" id="propertyName" placeholder="Contoh: TAMAN MAWAR FASA 7" oninput="this.value = this.value.toUpperCase()">
+
+      <label>Harga</label>
+      <input type="text" id="propertyPrice" inputmode="numeric" placeholder="Contoh: 190000">
+
+      <label>Lokasi</label>
+      <input type="text" id="propertyLocation" placeholder="Contoh: Bandar Indah, Sandakan">
 
       <label>Description Pendek</label>
-      <textarea id="propertyDescription" placeholder="Masukkan description..."></textarea>
+      <textarea id="propertyDescription" rows="4" placeholder="Masukkan description pendek"></textarea>
+
+      <label>Status</label>
+      <select id="propertyStatus">
+        <option value="Available">Available</option>
+        <option value="Booked">Booked</option>
+        <option value="Sold">Sold</option>
+      </select>
 
       <button class="publish-button" onclick="saveProperty()">🚀 PUBLISH PROPERTY</button>
       <button id="cancelEditButton" class="cancel-button hidden" onclick="cancelEdit()">Cancel Edit</button>
@@ -211,7 +196,7 @@ let properties = [];
 /* =========================================
    FIREBASE AUTHENTICATION LOGIN
 ========================================= */
-function login() {
+async function login() {
   const email = document.getElementById("adminEmail").value.trim();
   const password = document.getElementById("password").value;
 
@@ -221,7 +206,7 @@ function login() {
   }
 
   firebase.auth().signInWithEmailAndPassword(email, password)
-    .then(() => {
+    .then((userCredential) => {
       document.getElementById("adminEmail").value = "";
       document.getElementById("password").value = "";
       document.getElementById("loginBox").classList.add("hidden");
@@ -230,7 +215,7 @@ function login() {
     })
     .catch((error) => {
       alert("Log masuk gagal. E-mel atau password salah.");
-      console.error(error);
+      console.error(error.message);
     });
 }
 
@@ -262,7 +247,7 @@ function loadPublicProperties() {
    HELPERS & FORMATTING
 ========================================= */
 function formatPrice(price) {
-  const number = String(price || "").replace(/[^0-9]/g, "");
+  const number = String(price).replace(/[^0-9]/g, "");
   if (!number) return "RM0";
   return "RM" + Number(number).toLocaleString("en-MY");
 }
@@ -282,7 +267,7 @@ function getStatusClass(status) {
 }
 
 function escapeHTML(text) {
-  return String(text || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 /* =========================================
@@ -298,7 +283,7 @@ function renderPublicListings() {
   }
 
   list.innerHTML = filtered.map(property => {
-    const message = encodeURIComponent(`Hi Jackson, saya berminat dengan property ${property.name || ""}. Boleh bagi maklumat lanjut?`);
+    const message = encodeURIComponent(`Hi Jackson, saya berminat dengan property ${property.name}. Boleh bagi maklumat lanjut?`);
     return `
     <div class="property-card">
       <img class="property-image" src="${escapeHTML(property.image)}" alt="${escapeHTML(property.name)}" loading="lazy">
@@ -333,103 +318,95 @@ function backToWebsite() {
 }
 
 /* =========================================
-   SAVE / UPDATE PROPERTY (VERSI ASAL NETLIFY)
+   FUNGSI TUKAR FILE KEPADA BASE64 UNTUK API
 ========================================= */
-function saveProperty() {
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+  });
+}
+
+document.getElementById("propertyImageFile").addEventListener("change", function(event) {
+  if (event.target.files[0]) {
+    document.getElementById("imageStatus").innerText = "✅ Fail dipilih. Akan dimuat naik automatik semasa publish.";
+  }
+});
+
+/* =========================================
+   SAVE / UPDATE PROPERTY (AUTO UPLOAD TO IMGBB)
+========================================= */
+async function saveProperty() {
   const zone = document.getElementById("propertyZone").value;
   const name = document.getElementById("propertyName").value.trim().toUpperCase();
   const price = document.getElementById("propertyPrice").value.replace(/[^0-9]/g, "");
   const location = document.getElementById("propertyLocation").value.trim();
   const description = document.getElementById("propertyDescription").value.trim();
   const status = document.getElementById("propertyStatus").value;
-  const imageFile = document.getElementById("propertyImageFile").files[0];
+  const imageFileInput = document.getElementById("propertyImageFile");
 
   if (!name || !price || !location) {
     alert("Sila isi Nama Property, Harga dan Lokasi.");
     return;
   }
 
-  if (editingId === null && !imageFile) {
-    alert("Sila pilih gambar property.");
-    return;
-  }
-
   const publishBtn = document.querySelector(".publish-button");
-  publishBtn.innerText = "⏳ Sedang Proses...";
   publishBtn.disabled = true;
 
-  if (imageFile) {
-    const reader = new FileReader();
-    reader.readAsDataURL(imageFile);
-    reader.onload = function () {
-      const base64Image = reader.result.split(',')[1];
-      
+  try {
+    let imageUrl = currentImageUrl;
+
+    if (imageFileInput.files.length > 0) {
+      publishBtn.innerText = "⏳ Sedang upload gambar ke ImgBB...";
+      const base64Image = await fileToBase64(imageFileInput.files[0]);
+
       const formData = new FormData();
       formData.append("key", IMGBB_API_KEY);
       formData.append("image", base64Image);
 
-      fetch("https://api.imgbb.com/1/upload", {
+      const response = await fetch("https://api.imgbb.com/1/upload", {
         method: "POST",
         body: formData
-      })
-      .then(response => response.json())
-      .then(result => {
-        if (result.success) {
-          saveDataToFirebase(zone, result.data.url, name, price, location, description, status);
-        } else {
-          alert("Gagal upload gambar ke ImgBB.");
-          resetButton(publishBtn);
-        }
-      })
-      .catch(error => {
-        console.error("Ralat ImgBB:", error);
-        alert("Ralat rangkaian semasa upload gambar.");
-        resetButton(publishBtn);
       });
+
+      const result = await response.json();
+      if (result.success) {
+        imageUrl = result.data.url;
+      } else {
+        throw new Error("Gagal upload ke ImgBB. Sila semak API Key anda.");
+      }
+    }
+
+    publishBtn.innerText = "⏳ Sedang simpan ke Database...";
+
+    const propertyData = {
+      zone: zone,
+      image: imageUrl,
+      name: name,
+      price: Number(price),
+      location: location,
+      description: description,
+      status: status,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-  } else {
-    saveDataToFirebase(zone, currentImageUrl, name, price, location, description, status);
+
+    if (editingId !== null) {
+      await db.collection("properties").doc(editingId).update(propertyData);
+      alert("Property berjaya dikemas kini!");
+    } else {
+      await db.collection("properties").add(propertyData);
+      alert("Property berjaya dipublish!");
+    }
+    cancelEdit();
+  } catch (error) {
+       console.error("Ralat Terperinci: ", error);
+    alert("Ralat: " + error.message);
+  } finally {
+    publishBtn.innerText = "🚀 PUBLISH PROPERTY";
+    publishBtn.disabled = false;
   }
-}
-
-function saveDataToFirebase(zone, imageUrl, name, price, location, description, status) {
-  const propertyData = {
-    zone: zone,
-    image: imageUrl,
-    name: name,
-    price: Number(price),
-    location: location,
-    description: description,
-    status: status,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  if (editingId !== null) {
-    db.collection("properties").doc(editingId).update(propertyData)
-      .then(() => {
-        alert("Property berjaya dikemas kini!");
-        cancelEdit();
-      })
-      .catch(error => {
-        alert("Gagal kemas kini: " + error.message);
-        resetButton(document.querySelector(".publish-button"));
-      });
-  } else {
-    db.collection("properties").add(propertyData)
-      .then(() => {
-        alert("Property berjaya dipublish!");
-        cancelEdit();
-      })
-      .catch(error => {
-        alert("Gagal publish: " + error.message);
-        resetButton(document.querySelector(".publish-button"));
-      });
-  }
-}
-
-function resetButton(btn) {
-  btn.innerText = "🚀 PUBLISH PROPERTY";
-  btn.disabled = false;
 }
 
 /* =========================================
@@ -437,8 +414,6 @@ function resetButton(btn) {
 ========================================= */
 function renderManageListings() {
   const list = document.getElementById("manageList");
-  if (!list) return;
-
   if (properties.length === 0) {
     list.innerHTML = `<div class="empty">Belum ada listing.</div>`;
     return;
@@ -468,13 +443,14 @@ function editProperty(id) {
   editingId = id;
   currentImageUrl = property.image;
 
-  document.getElementById("propertyZone").value = property.zone || "Sandakan";
-  document.getElementById("propertyName").value = property.name || "";
-  document.getElementById("propertyPrice").value = property.price || "";
-  document.getElementById("propertyLocation").value = property.location || "";
-  document.getElementById("propertyDescription").value = property.description || "";
-  document.getElementById("propertyStatus").value = property.status || "Available";
+  document.getElementById("propertyZone").value = property.zone;
+  document.getElementById("propertyName").value = property.name;
+  document.getElementById("propertyPrice").value = property.price;
+  document.getElementById("propertyLocation").value = property.location;
+  document.getElementById("propertyDescription").value = property.description;
+  document.getElementById("propertyStatus").value = property.status;
   document.getElementById("propertyImageFile").value = "";
+  document.getElementById("imageStatus").innerText = "Gunakan gambar sedia ada (pilih fail baru jika mahu tukar).";
 
   document.getElementById("formTitle").innerText = "✏️ Edit Property";
   document.getElementById("cancelEditButton").classList.remove("hidden");
@@ -493,7 +469,7 @@ function cancelEdit() {
   document.getElementById("propertyLocation").value = "";
   document.getElementById("propertyDescription").value = "";
   document.getElementById("propertyStatus").value = "Available";
-  resetButton(document.querySelector(".publish-button"));
+  document.getElementById("imageStatus").innerText = "";
 }
 
 async function deleteProperty(id) {
@@ -503,7 +479,6 @@ async function deleteProperty(id) {
     alert("Property telah dipadam.");
   } catch (error) {
     console.error("Ralat memadam:", error);
-    alert("Gagal memadam property.");
   }
 }
 
@@ -512,4 +487,4 @@ loadPublicProperties();
 </script>
 
 </body>
-</html>
+</html><script async src="/.netlify/scripts/hud?variant=public" data-nf-variant="public" data-netlify-site-id="bcea4e00-7e0c-47fe-908f-1a1cb8191c35" data-app-host="app.netlify.com"></script>
