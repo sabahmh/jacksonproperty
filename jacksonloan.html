@@ -1,4 +1,10 @@
-<!DOCTYPE html><html lang="ms"><head>    <meta charset="UTF-8">    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">    <title>Kalkulator Loan DSR</title>    <style>
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Kalkulator Loan DSR</title>
+    <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100%; width: 100%; margin: 0; padding: 0; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%); font-family: Roboto, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11px; overflow: hidden; }
         .container { height: 100%; width: 100%; display: flex; flex-direction: column; background: #ffffff; padding: 6px 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
@@ -9,18 +15,23 @@
         
         h3 { margin: 2px 0; font-size: 0.95em; text-align: center; color: #2c3e50; font-weight: 600; flex-shrink: 0; }
         
-        .select-wrapper { position: relative; flex-shrink: 0; margin: 2px 0; }
+        .controls-row { display: flex; gap: 6px; flex-shrink: 0; margin: 2px 0; }
+        .select-wrapper { position: relative; flex: 1; }
         select { width: 100%; padding: 4px 8px; border: 1.5px solid #cbd5e1; border-radius: 6px; font-size: 11px; background: #f8fafc; color: #334155; font-weight: 500; appearance: none; height: 26px; }
         select:focus { outline: none; border-color: #2563eb; background: #fff; }
         .select-wrapper::after { content: '▼'; font-size: 8px; color: #64748b; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; flex: 1; min-height: 0; overflow: hidden; margin-top: 2px; }
-        .col { display: flex; flex-direction: column; min-height: 0; height: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 6px; }
+        .grid { display: grid; gap: 6px; flex: 1; min-height: 0; overflow: hidden; margin-top: 2px; }
+        .grid-1 { grid-template-columns: 1fr; }
+        .grid-2 { grid-template-columns: 1fr 1fr; }
+        .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+        .col { display: flex; flex-direction: column; min-height: 0; height: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 6px; overflow: hidden; }
         
         h4 { margin: 2px 0 3px 0; font-size: 0.75em; color: #1e293b; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 2px; text-align: center; font-weight: 700; flex-shrink: 0; letter-spacing: 0.5px; }
-        .sec-title { font-weight: 700; color: #2563eb; margin: 3px 0 2px 0; font-size: 0.7em; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
+        .sec-title { font-weight: 700; color: #2563eb; margin: 3px 0 2px 0; font-size: 0.65em; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
         
-        .inputs-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; }
+        .inputs-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; overflow-y: auto; }
         
         input { width: 100%; padding: 0px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; height: 100%; min-height: 16px; background: #ffffff; color: #0f172a; transition: all 0.2s ease; }
         input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); background: #fff; }
@@ -35,66 +46,126 @@
         .result p { margin: 2px 0; display: flex; justify-content: space-between; font-weight: 600; font-size: 11px; color: #334155; }
         .result span { color: #1e293b; font-weight: 700; }
         .highlight { color: #16a34a !important; font-size: 1.15em !important; font-weight: 800 !important; text-shadow: 0 1px 1px rgba(0,0,0,0.02); }
-    </style></head><body>
-<div class="container">    
+    </style>
+</head>
+<body>
+<div class="container">
     <div class="brand">
         <img src="maxxan.jpg" alt="Logo">
         <span>Jackson Property</span>
     </div>
-    <h3>Kalkulator Loan Gabung Gaji</h3>    
-    <div class="select-wrapper">
-        <select id="tempoh" onchange="updateInputs()">        
-            <option value="3">Purata 3 Bulan Gaji</option>
-            <option value="6">Purata 6 Bulan Gaji</option>    
-        </select>
+    <h3>Kalkulator Loan Gabung Gaji</h3>
+    
+    <div class="controls-row">
+        <div class="select-wrapper">
+            <select id="jumlahPemohon" onchange="updateInputs()">
+                <option value="1" selected>1 Pemohon</option>
+                <option value="2">2 Pemohon</option>
+                <option value="3">3 Pemohon</option>
+            </select>
+        </div>
+        <div class="select-wrapper">
+            <select id="tempoh" onchange="updateInputs()">
+                <option value="3">Purata 3 Bulan Gaji</option>
+                <option value="6">Purata 6 Bulan Gaji</option>
+            </select>
+        </div>
     </div>
-    <div class="grid">        
-        <div class="col">            
+
+    <div id="gridContainer" class="grid grid-1">
+        <div class="col" id="colP1">
             <h4>PEMOHON 1</h4>
             <div class="inputs-wrapper" id="wrapP1"></div>
-        </div>        
-        <div class="col">            
+        </div>
+        <div class="col" id="colP2">
             <h4>PEMOHON 2</h4>
             <div class="inputs-wrapper" id="wrapP2"></div>
-        </div>    
+        </div>
+        <div class="col" id="colP3">
+            <h4>PEMOHON 3</h4>
+            <div class="inputs-wrapper" id="wrapP3"></div>
+        </div>
     </div>
-    <div class="result">        
+
+    <div class="result">
         <p>Gaji Gabungan: <span id="jpb">0.00</span></p>
         <p>Jumlah Komitmen: <span id="totalKom">0.00</span></p>
         <p>Ansuran Maks (DSR 60%): <span id="ansuran">0.00</span></p>
-        <p>Max Loan: <span class="highlight">RM <span id="loan" class="highlight">0.00</span></span></p>    
+        <p>Max Loan: <span class="highlight">RM <span id="loan" class="highlight">0.00</span></span></p>
     </div>
 </div>
+
 <script>
 const komitmenList = ["Kereta", "Peribadi", "Kad Kredit", "PTPTN", "Koperasi", "ASB/Rumah", "BNPL", "Lain-lain"];
-function formatRupiah(num) { return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
-function updateInputs() {    
-    let n = parseInt(document.getElementById('tempoh').value);    
-    let htmlContent = '';
+
+function formatRupiah(num) { 
+    return num.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); 
+}
+
+function updateInputs() {
+    let jmlPemohon = parseInt(document.getElementById('jumlahPemohon').value);
+    let n = parseInt(document.getElementById('tempoh').value);
     
-    for(let i=1; i<=n; i++) {
+    // Kemaskini kelas grid CSS
+    let gridContainer = document.getElementById('gridContainer');
+    gridContainer.className = `grid grid-${jmlPemohon}`;
+    
+    // Jana HTML kandungan input untuk setiap pemohon
+    let htmlContent = '';
+    for(let i = 1; i <= n; i++) {
         htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="gaji" placeholder="Gaji B${i}" oninput="kira()"></div>`;
     }
     htmlContent += `<div class="sec-title">KOMITMEN</div>`;
     komitmenList.forEach(k => {
         htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="kom" placeholder="${k}" oninput="kira()"></div>`;
     });
+
+    // Papar/sembunyi kolum berdasarkan pilihan bilangan pemohon
+    for(let p = 1; p <= 3; p++) {
+        let colElem = document.getElementById(`colP${p}`);
+        let wrapElem = document.getElementById(`wrapP${p}`);
         
-    document.getElementById('wrapP1').innerHTML = htmlContent;    
-    document.getElementById('wrapP2').innerHTML = htmlContent;    
+        if (p <= jmlPemohon) {
+            colElem.style.display = 'flex';
+            wrapElem.innerHTML = htmlContent;
+        } else {
+            colElem.style.display = 'none';
+            wrapElem.innerHTML = ''; // Kosongkan nilai supaya tidak dikira
+        }
+    }
+    
     kira();
 }
-function kira() {    
-    let n = parseInt(document.getElementById('tempoh').value);    
-    let pGaji = 0, pKom = 0;    
-    document.querySelectorAll('.gaji').forEach(i => pGaji += parseFloat(i.value) || 0);    
-    document.querySelectorAll('.kom').forEach(i => pKom += parseFloat(i.value) || 0);        
-    let jpb = pGaji / n;    
-    let ansuran = Math.max((jpb * 0.60) - pKom, 0);        
-    document.getElementById('jpb').innerText = formatRupiah(jpb);    
-    document.getElementById('totalKom').innerText = formatRupiah(pKom);    
-    document.getElementById('ansuran').innerText = formatRupiah(ansuran);    
+
+function kira() {
+    let n = parseInt(document.getElementById('tempoh').value);
+    let jmlPemohon = parseInt(document.getElementById('jumlahPemohon').value);
+    
+    let totalGajiGabungan = 0;
+    let totalKomitmenGabungan = 0;
+
+    // Gelung mengikut pemohon yang aktif sahaja
+    for(let p = 1; p <= jmlPemohon; p++) {
+        let col = document.getElementById(`colP${p}`);
+        let pGaji = 0, pKom = 0;
+        
+        col.querySelectorAll('.gaji').forEach(i => pGaji += parseFloat(i.value) || 0);
+        col.querySelectorAll('.kom').forEach(i => pKom += parseFloat(i.value) || 0);
+        
+        // Purata gaji pemohon ini dibahagikan dengan tempoh (3 atau 6 bulan)
+        totalGajiGabungan += (pGaji / n);
+        totalKomitmenGabungan += pKom;
+    }
+
+    let ansuran = Math.max((totalGajiGabungan * 0.60) - totalKomitmenGabungan, 0);
+
+    document.getElementById('jpb').innerText = formatRupiah(totalGajiGabungan);
+    document.getElementById('totalKom').innerText = formatRupiah(totalKomitmenGabungan);
+    document.getElementById('ansuran').innerText = formatRupiah(ansuran);
     document.getElementById('loan').innerText = formatRupiah(ansuran * 200);
 }
+
 updateInputs();
-</script></body></html>
+</script>
+</body>
+</html>
