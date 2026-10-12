@@ -21,21 +21,22 @@
         select:focus { outline: none; border-color: #2563eb; background: #fff; }
         .select-wrapper::after { content: '▼'; font-size: 8px; color: #64748b; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 
-        .grid { display: grid; gap: 6px; flex: 1; min-height: 0; overflow: hidden; margin-top: 2px; }
+        .grid { display: grid; gap: 4px; flex: 1; min-height: 0; overflow: hidden; margin-top: 2px; }
         .grid-1 { grid-template-columns: 1fr; }
         .grid-2 { grid-template-columns: 1fr 1fr; }
         .grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+        .grid-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
         .col { display: flex; flex-direction: column; min-height: 0; height: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 4px 6px; overflow: hidden; }
         
-        h4 { margin: 2px 0 3px 0; font-size: 0.75em; color: #1e293b; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 2px; text-align: center; font-weight: 700; flex-shrink: 0; letter-spacing: 0.5px; }
-        .sec-title { font-weight: 700; color: #2563eb; margin: 3px 0 2px 0; font-size: 0.65em; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
+        h4 { margin: 2px 0 3px 0; font-size: 0.7em; color: #1e293b; border-bottom: 1.5px solid #cbd5e1; padding-bottom: 2px; text-align: center; font-weight: 700; flex-shrink: 0; letter-spacing: 0.5px; }
+        .sec-title { font-weight: 700; color: #2563eb; margin: 3px 0 2px 0; font-size: 0.6em; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.3px; }
         
         .inputs-wrapper { flex: 1; display: flex; flex-direction: column; justify-content: space-between; min-height: 0; overflow-y: auto; }
         
-        input { width: 100%; padding: 0px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 11px; height: 100%; min-height: 16px; background: #ffffff; color: #0f172a; transition: all 0.2s ease; }
+        input { width: 100%; padding: 0px 6px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 10.5px; height: 100%; min-height: 15px; background: #ffffff; color: #0f172a; transition: all 0.2s ease; }
         input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1); background: #fff; }
-        input::placeholder { color: #94a3b8; font-size: 10px; }
+        input::placeholder { color: #94a3b8; font-size: 9.5px; }
         
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
@@ -62,6 +63,7 @@
                 <option value="1" selected>1 Pemohon</option>
                 <option value="2">2 Pemohon</option>
                 <option value="3">3 Pemohon</option>
+                <option value="4">4 Pemohon</option>
             </select>
         </div>
         <div class="select-wrapper">
@@ -84,6 +86,10 @@
         <div class="col" id="colP3">
             <h4>PEMOHON 3</h4>
             <div class="inputs-wrapper" id="wrapP3"></div>
+        </div>
+        <div class="col" id="colP4">
+            <h4>PEMOHON 4</h4>
+            <div class="inputs-wrapper" id="wrapP4"></div>
         </div>
     </div>
 
@@ -118,7 +124,7 @@ function updateInputs() {
         htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="kom" placeholder="${k}" oninput="kira()"></div>`;
     });
 
-    for(let p = 1; p <= 3; p++) {
+    for(let p = 1; p <= 4; p++) {
         let colElem = document.getElementById(`colP${p}`);
         let wrapElem = document.getElementById(`wrapP${p}`);
         
@@ -153,7 +159,7 @@ function kira() {
         totalGajiGabungan += purataGajiP;
         totalKomitmenGabungan += pKom;
 
-        // Formula baru: ((purata gaji - 1100) - komitmen) * 200 berasingan setiap pemohon
+        // Formula asal anda: ((purata gaji - 1100) - komitmen) * 200 berasingan setiap pemohon
         let maxLoanIndividu = ((purataGajiP - 1100) - pKom) * 200;
         
         totalMaxLoanGabungan += maxLoanIndividu;
