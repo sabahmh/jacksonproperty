@@ -90,7 +90,7 @@
     <div class="result">
         <p>Gaji Gabungan: <span id="jpb">0.00</span></p>
         <p>Jumlah Komitmen: <span id="totalKom">0.00</span></p>
-        <p>Ansuran Maks (DSR 60%): <span id="ansuran">0.00</span></p>
+        <p>Ansuran Maks (NDI): <span id="ansuran">0.00</span></p>
         <p>Max Loan: <span class="highlight">RM <span id="loan" class="highlight">0.00</span></span></p>
     </div>
 </div>
@@ -106,11 +106,9 @@ function updateInputs() {
     let jmlPemohon = parseInt(document.getElementById('jumlahPemohon').value);
     let n = parseInt(document.getElementById('tempoh').value);
     
-    // Kemaskini kelas grid CSS
     let gridContainer = document.getElementById('gridContainer');
     gridContainer.className = `grid grid-${jmlPemohon}`;
     
-    // Jana HTML kandungan input untuk setiap pemohon
     let htmlContent = '';
     for(let i = 1; i <= n; i++) {
         htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="gaji" placeholder="Gaji B${i}" oninput="kira()"></div>`;
@@ -120,7 +118,6 @@ function updateInputs() {
         htmlContent += `<div class="input-row"><input type="number" inputmode="decimal" class="kom" placeholder="${k}" oninput="kira()"></div>`;
     });
 
-    // Papar/sembunyi kolum berdasarkan pilihan bilangan pemohon
     for(let p = 1; p <= 3; p++) {
         let colElem = document.getElementById(`colP${p}`);
         let wrapElem = document.getElementById(`wrapP${p}`);
@@ -130,7 +127,7 @@ function updateInputs() {
             wrapElem.innerHTML = htmlContent;
         } else {
             colElem.style.display = 'none';
-            wrapElem.innerHTML = ''; // Kosongkan nilai supaya tidak dikira
+            wrapElem.innerHTML = ''; 
         }
     }
     
@@ -143,8 +140,8 @@ function kira() {
     
     let totalGajiGabungan = 0;
     let totalKomitmenGabungan = 0;
+    let totalMaxLoanGabungan = 0;
 
-    // Gelung mengikut pemohon yang aktif sahaja
     for(let p = 1; p <= jmlPemohon; p++) {
         let col = document.getElementById(`colP${p}`);
         let pGaji = 0, pKom = 0;
@@ -152,17 +149,22 @@ function kira() {
         col.querySelectorAll('.gaji').forEach(i => pGaji += parseFloat(i.value) || 0);
         col.querySelectorAll('.kom').forEach(i => pKom += parseFloat(i.value) || 0);
         
-        // Purata gaji pemohon ini dibahagikan dengan tempoh (3 atau 6 bulan)
-        totalGajiGabungan += (pGaji / n);
+        let purataGajiP = pGaji / n;
+        totalGajiGabungan += purataGajiP;
         totalKomitmenGabungan += pKom;
+
+        // Formula baru: ((purata gaji - 1100) - komitmen) * 200 berasingan setiap pemohon
+        let maxLoanIndividu = ((purataGajiP - 1100) - pKom) * 200;
+        
+        totalMaxLoanGabungan += maxLoanIndividu;
     }
 
-    let ansuran = Math.max((totalGajiGabungan * 0.60) - totalKomitmenGabungan, 0);
+    let ansuranGabunganKeseluruhan = totalGajiGabungan - totalKomitmenGabungan - (1100 * jmlPemohon);
 
     document.getElementById('jpb').innerText = formatRupiah(totalGajiGabungan);
     document.getElementById('totalKom').innerText = formatRupiah(totalKomitmenGabungan);
-    document.getElementById('ansuran').innerText = formatRupiah(ansuran);
-    document.getElementById('loan').innerText = formatRupiah(ansuran * 200);
+    document.getElementById('ansuran').innerText = formatRupiah(ansuranGabunganKeseluruhan);
+    document.getElementById('loan').innerText = formatRupiah(totalMaxLoanGabungan);
 }
 
 updateInputs();
