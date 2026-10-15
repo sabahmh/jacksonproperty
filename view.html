@@ -85,11 +85,8 @@
             
             <!-- 💾 BUTANG SIMPAN UTAMA DI ATAS & Carian -->
             <div class="bg-white p-1.5 rounded shadow-2xs border border-slate-200 space-y-1.5">
-                <div class="flex justify-between items-center bg-blue-50 border border-blue-200 p-1.5 rounded">
-                    <span class="text-[10px] text-blue-800 font-semibold">⚡ Ubah status pada senarai di bawah, kemudian klik butang simpan di sebelah.</span>
-                    <button @click="saveAllChanges()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-[10px] font-bold shadow transition shrink-0 flex items-center gap-1">
-                        💾 Simpan Perubahan Status
-                    </button>
+                <div class="flex items-center bg-blue-50 border border-blue-200 p-1.5 rounded">
+                    <span class="text-[10px] text-blue-800 font-semibold">⚡ Status dikemas kini secara automatik apabila anda menukar pilihan status.</span>
                 </div>
 
                 <div class="relative">
@@ -174,8 +171,9 @@
                                 <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
                                 <div class="flex items-center justify-end gap-1 mt-0.5" @click.stop>
                                     <!-- Dropdown Pilihan Status -->
-                                    <select x-model="tempStatus[id]" 
-                                        :class="(tempStatus[id] || item.STATUS) === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : ((tempStatus[id] || item.STATUS) === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
+                                    <select x-model="tempStatus[id]"
+                                        @change="saveStatus(id, $event.target.value)"
+                                        :class="(tempStatus[id] || item.STATUS) === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : ((tempStatus[id] || item.STATUS) === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')"
                                         class="px-1.5 py-0.5 text-[9px] font-bold rounded uppercase border cursor-pointer outline-none">
                                         <option value="AVAILABLE">AVAILABLE</option>
                                         <option value="BOOKED">BOOKED</option>
@@ -446,30 +444,24 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                     this.selectedItem = null;
                 },
 
-                // Fungsi untuk menyimpan semua perubahan status yang telah diubah
-                saveAllChanges() {
-                    let updates = {};
-                    let count = 0;
-
-                    // Semak rumah mana yang statusnya berbeza dengan pangkalan data asal
-                    Object.entries(this.tempStatus).forEach(([id, status]) => {
-                        if (this.properties[id] && this.properties[id].STATUS !== status) {
-                            updates['properties/' + id + '/STATUS'] = status;
-                            count++;
-                        }
-                    });
-
-                    if (count === 0) {
-                        alert('ℹ️ Tiada sebarang perubahan status dikesan untuk disimpan.');
+                // Simpan status terus ke Firebase sebaik sahaja dropdown berubah
+                async saveStatus(id, status) {
+                    const allowedStatuses = ['AVAILABLE', 'HOLD', 'BOOKED', 'SOLD'];
+                    if (!allowedStatuses.includes(status)) {
+                        alert('Status tidak sah.');
                         return;
                     }
 
-                    // Hantar kemaskini secara pukal (bulk update) ke Firebase
-                    db.ref().update(updates).then(() => {
-                        alert('✅ Berjaya! ' + count + ' status hartanah telah dikemas kini.');
-                    }).catch(error => {
-                        alert('❌ Gagal menyimpan: ' + error.message);
-                    });
+                    const oldStatus = this.properties[id]?.STATUS || 'AVAILABLE';
+                    if (oldStatus === status) return;
+
+                    try {
+                        await db.ref('properties/' + id + '/STATUS').set(status);
+                        console.log('Status berjaya dikemas kini:', id, status);
+                    } catch (error) {
+                        this.tempStatus[id] = oldStatus;
+                        alert('Gagal mengemas kini status: ' + error.message);
+                    }
                 }
             }
         }
