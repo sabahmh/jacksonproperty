@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paparan Listing Hartanah Sabah (Viewer)</title>
+    <title>Paparan Listing Hartanah Sabah</title>
     <link rel="icon" type="image/png" href="jack.png">
 
-    <!-- SEKAT DOMAIN & CLONING -->
+    <!-- SEKAT DOMAIN & CLONING: Hanya boleh run di host rasmi -->
     <script>
         (function() {
             const allowedHost = "sabahmh.github.io";
             const currentHost = window.location.hostname;
+            // Dibenarkan untuk host rasmi DAN persekitaran local testing (localhost / 127.0.0.1)
             const isLocal = currentHost === "localhost" || currentHost === "127.0.0.1" || currentHost === "";
             
             if (!isLocal && !currentHost.includes(allowedHost)) {
@@ -18,7 +19,7 @@
                     <body style="background:#0f172a; color:#f8fafc; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;">
                         <div style="text-align:center; padding:2rem; background:#1e293b; border-radius:12px; border:1px solid #334155; max-width:400px; box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.5);">
                             <h2 style="color:#f43f5e; margin-top:0; font-size:18px;">⛔ AKSES DISEKAT (UNAUTHORIZED)</h2>
-                            <p style="font-size:12px; color:#94a3b8; line-height:1.5;">Aplikasi sistem ini dilesenkan khas dan dilindungi.</p>
+                            <p style="font-size:12px; color:#94a3b8; line-height:1.5;">Aplikasi sistem ini dilesenkan khas dan dilindungi. Anda tidak dibenarkan menyalin atau hoskan fail ini di domain luar.</p>
                         </div>
                     </body>
                 `;
@@ -33,431 +34,205 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Firebase SDK (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
-    <style>
-        /* Paparan penuh dan padat untuk telefon */
-        * { box-sizing: border-box; }
-        @media (max-width: 640px) {
-            html, body {
-                width: 100%;
-                height: 100%;
-                height: 100dvh;
-                margin: 0;
-                overflow: hidden;
-                overscroll-behavior: none;
-            }
-            body { padding-bottom: 0 !important; }
-            body > div[x-show="isLoggedIn"] {
-                width: 100%;
-                height: 100%;
-                height: 100dvh;
-                display: flex;
-                flex-direction: column;
-                overflow: hidden;
-            }
-            body > div[x-show="isLoggedIn"] > header {
-                position: relative;
-                top: auto;
-                flex: 0 0 auto;
-                width: 100%;
-                padding: 5px 8px;
-                z-index: 30;
-            }
-            body > div[x-show="isLoggedIn"] > header h1 { font-size: 12px; }
-            body > div[x-show="isLoggedIn"] > main {
-                width: 100%;
-                max-width: none;
-                flex: 1 1 auto;
-                min-height: 0;
-                overflow-y: auto;
-                overflow-x: hidden;
-                padding: 5px;
-                padding-bottom: max(8px, env(safe-area-inset-bottom));
-                margin: 0;
-                gap: 5px;
-                -webkit-overflow-scrolling: touch;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child {
-                padding: 6px;
-                border-radius: 7px;
-                gap: 6px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child input {
-                min-height: 30px;
-                font-size: 12px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child select {
-                min-width: 0;
-                width: 100%;
-                min-height: 28px;
-                font-size: 10px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div {
-                padding: 7px 6px;
-                gap: 5px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div select {
-                max-width: 112px;
-                min-height: 28px;
-                font-size: 10px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div .text-\[11px\] {
-                font-size: 11px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div .text-\[9px\] {
-                font-size: 9px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div .text-\[7px\] {
-                font-size: 7px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:last-child:not(:nth-child(2)) {
-                margin-bottom: 2px;
-            }
-            /* Modal detail memenuhi skrin telefon */
-            body > div[x-show="isLoggedIn"] > main > div.fixed.inset-0 {
-                align-items: stretch;
-                justify-content: stretch;
-                padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
-            }
-            body > div[x-show="isLoggedIn"] > main > div.fixed.inset-0 > div {
-                width: 100%;
-                max-width: none;
-                max-height: 100%;
-                min-height: 0;
-                border-radius: 10px;
-                padding: 10px;
-                gap: 8px;
-            }
-        }
-
-        /* MOBILE: paparkan 15 listing dalam satu skrin tanpa scroll halaman */
-        @media (max-width: 640px) {
-            html, body {
-                height: 100%;
-                height: 100dvh;
-                overflow: hidden !important;
-            }
-            body > div[x-show="isLoggedIn"] {
-                height: 100%;
-                height: 100dvh;
-                overflow: hidden;
-            }
-            body > div[x-show="isLoggedIn"] > header {
-                padding: 3px 6px !important;
-            }
-            body > div[x-show="isLoggedIn"] > header img { width: 13px; height: 13px; }
-            body > div[x-show="isLoggedIn"] > header h1 { font-size: 10px !important; }
-            body > div[x-show="isLoggedIn"] > header button { font-size: 8px; padding: 2px 5px; }
-            body > div[x-show="isLoggedIn"] > main {
-                display: flex;
-                flex-direction: column;
-                flex: 1 1 auto;
-                min-height: 0;
-                height: calc(100dvh - 28px);
-                overflow: hidden !important;
-                padding: 3px !important;
-                gap: 3px !important;
-            }
-            /* Carian dan penapis menggunakan ruang minimum */
-            body > div[x-show="isLoggedIn"] > main > div:first-child {
-                flex: 0 0 auto;
-                padding: 4px !important;
-                gap: 3px !important;
-                border-radius: 5px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child input {
-                height: 25px;
-                min-height: 25px !important;
-                padding-top: 2px;
-                padding-bottom: 2px;
-                font-size: 10px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child .grid {
-                gap: 2px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child select {
-                height: 22px;
-                min-height: 22px !important;
-                padding: 1px 2px !important;
-                font-size: 9px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:first-child > div:last-child {
-                padding-top: 2px;
-                font-size: 8px !important;
-            }
-            /* Senarai mengambil baki skrin; tiada scroll untuk 15 rekod */
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) {
-                flex: 1 1 auto;
-                min-height: 0;
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div {
-                flex: 1 1 0;
-                min-height: 0;
-                padding: 2px 5px !important;
-                gap: 4px !important;
-                overflow: hidden;
-            }
-            /* Sembunyikan baris owner/nota supaya 15 listing muat */
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:nth-child(2) > div:nth-child(2) {
-                display: none !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child {
-                gap: 4px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:first-child {
-                flex-direction: row;
-                gap: 2px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:first-child span {
-                font-size: 7px !important;
-                line-height: 1.1;
-                padding: 1px 2px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:nth-child(2) > div:first-child span:first-child {
-                font-size: 9px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child {
-                gap: 3px !important;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child > div:first-child > div:first-child {
-                font-size: 9px !important;
-                line-height: 1;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child select {
-                font-size: 8px !important;
-                line-height: 1.1;
-                padding: 2px !important;
-                max-width: 86px;
-            }
-            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child > div:last-child {
-                display: none !important;
-            }
-        }
-    </style>
-
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans pb-2 select-none text-[11px]" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="publicPropertyApp()">
-
-    <!-- 🔐 SKRIN LOGIN -->
-    <template x-if="!isLoggedIn">
-        <div class="fixed inset-0 bg-slate-900 flex items-center justify-center p-3 z-50">
-            <div class="bg-white rounded-xl max-w-xs w-full p-4 shadow-2xl border border-slate-100 space-y-3">
-                <div class="text-center space-y-1">
-                    <h2 class="font-bold text-slate-900 text-sm">🔒 Log Masuk Viewer</h2>
-                    <p class="text-[10px] text-slate-500">Masukkan emel dan katalaluan yang sah.</p>
+    
+    <!-- Header Ringkas & Kompak -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-2 py-0.5 shadow-2xs">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-1.5">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-4 h-4 object-contain rounded-xs">
+                <div>
+                    <h1 class="font-bold text-slate-900 leading-none text-xs">🏠 Listing Jackson (Viewer)</h1>
+                    <span class="text-[8px] font-semibold text-emerald-600">👀 Mod Paparan & Kemaskini Status</span>
                 </div>
-                <form @submit.prevent="login()" class="space-y-2">
-                    <div>
-                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Emel</label>
-                        <input type="email" x-model="email" required placeholder="view@pioneer.com" class="w-full px-2 py-1 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div>
-                        <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Katalaluan</label>
-                        <input type="password" x-model="password" required placeholder="••••••••" class="w-full px-2 py-1 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500">
-                    </div>
-                    <div x-show="loginError" class="text-rose-600 text-[10px] text-center font-medium" x-text="loginError"></div>
-                    <button type="submit" class="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold transition">Log Masuk</button>
-                </form>
+            </div>
+            <div class="text-[9px] text-slate-500 font-medium">
+                SABAH MABUK HARTANAH
             </div>
         </div>
-    </template>
+    </header>
 
-    <!-- PAPARAN UTAMA -->
-    <div x-show="isLoggedIn" style="display: none;">
-        <!-- Header Ringkas & Kompak -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 px-2 py-0.5 shadow-2xs">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <div class="flex items-center gap-1.5">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Logo" class="w-4 h-4 object-contain rounded-xs">
-                    <div>
-                        <h1 class="font-bold text-slate-900 leading-none text-xs">🏠 Listing Jackson (Viewer)</h1>
-                        <span class="text-[8px] font-semibold text-emerald-600" x-text="'👤 ' + currentUserEmail"></span>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-slate-500 font-medium hidden sm:inline">SABAH MABUK HARTANAH</span>
-                    <button @click="logout()" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-0.5 rounded text-[9px] font-semibold">Log Keluar</button>
-                </div>
+    <main class="max-w-4xl mx-auto p-1 space-y-1">
+        <!-- Carian & Filter Mikro (Kompak) -->
+        <div class="bg-white p-1 rounded shadow-2xs border border-slate-200 space-y-1">
+            <div class="relative">
+                <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-0.5 pr-6 bg-slate-50 border border-slate-200 rounded text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
+                <template x-if="search">
+                    <button @click="search = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs px-1" title="Padam carian">&times;</button>
+                </template>
             </div>
-        </header>
-
-        <main class="max-w-4xl mx-auto p-1 space-y-1">
-            
-            <!-- 💾 BUTANG SIMPAN UTAMA DI ATAS & Carian -->
-            <div class="bg-white p-1.5 rounded shadow-2xs border border-slate-200 space-y-1.5">
-
-                <div class="relative">
-                    <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-0.5 pr-6 bg-slate-50 border border-slate-200 rounded text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
-                    <template x-if="search">
-                        <button @click="search = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs px-1" title="Padam carian">&times;</button>
+            <div class="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
+                <select x-model="statusFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Status</option>
+                    <option value="AVAILABLE">AVAILABLE</option>
+                    <option value="BOOKED">BOOKED</option>
+                    <option value="SOLD">SOLD</option>
+                    <option value="HOLD">HOLD</option>
+                </select>
+                <select x-model="zoneFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Zon</option>
+                    <option value="SDK">SDK</option>
+                    <option value="KK">KK</option>
+                    <option value="TWU">TWU</option>
+                    <option value="LDU">LDU</option>
+                    <option value="SPA">SPA</option>
+                    <option value="RNU">RNU</option>
+                </select>
+                <select x-model="forFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Urusan</option>
+                    <option value="SELL">SELL</option>
+                    <option value="RENT">RENT</option>
+                </select>
+                <select x-model="typeFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Jenis</option>
+                    <option value="APT">APT</option>
+                    <option value="LANDED">LANDED</option>
+                    <option value="COMMERCIAL">COMMERCIAL</option>
+                </select>
+                <select x-model="ownerFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="">Owner</option>
+                    <template x-for="own in uniqueOwners">
+                        <option :value="own" x-text="own"></option>
                     </template>
-                </div>
-                <div class="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
-                    <select x-model="statusFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
-                        <option value="">Status</option>
-                        <option value="AVAILABLE">AVAILABLE</option>
-                        <option value="BOOKED">BOOKED</option>
-                        <option value="SOLD">SOLD</option>
-                        <option value="HOLD">HOLD</option>
-                    </select>
-                    <select x-model="zoneFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
-                        <option value="">Zon</option>
-                        <option value="SDK">SDK</option>
-                        <option value="KK">KK</option>
-                        <option value="TWU">TWU</option>
-                        <option value="LDU">LDU</option>
-                        <option value="SPA">SPA</option>
-                        <option value="RNU">RNU</option>
-                    </select>
-                    <select x-model="forFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
-                        <option value="">Urusan</option>
-                        <option value="SELL">SELL</option>
-                        <option value="RENT">RENT</option>
-                    </select>
-                    <select x-model="typeFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
-                        <option value="">Jenis</option>
-                        <option value="APT">APT</option>
-                        <option value="LANDED">LANDED</option>
-                        <option value="COMMERCIAL">COMMERCIAL</option>
-                    </select>
-                    <select x-model="ownerFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
-                        <option value="">Owner</option>
-                        <template x-for="own in uniqueOwners">
-                            <option :value="own" x-text="own"></option>
-                        </template>
-                    </select>
-                    <select x-model="sortBy" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
-                        <option value="latest">Terkini</option>
-                        <option value="name_asc">Nama (A-Z)</option>
-                        <option value="name_desc">Nama (Z-A)</option>
-                        <option value="price_asc">Harga ⬆</option>
-                        <option value="price_desc">Harga ⬇</option>
-                    </select>
-                </div>
-                <div class="flex justify-between items-center px-0.5 text-[9px] text-slate-500 border-t border-slate-100 pt-0.5">
-                    <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod</span>
-                    <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
-                </div>
+                </select>
+                <select x-model="sortBy" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                    <option value="latest">Terkini</option>
+                    <option value="name_asc">Nama (A-Z)</option>
+                    <option value="name_desc">Nama (Z-A)</option>
+                    <option value="price_asc">Harga ⬆</option>
+                    <option value="price_desc">Harga ⬇</option>
+                </select>
             </div>
+            <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
+            <div class="flex justify-between items-center px-0.5 text-[9px] text-slate-500 border-t border-slate-100 pt-0.5">
+                <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod</span>
+                <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
+            </div>
+        </div>
 
-            <!-- Senarai Listing -->
-            <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
-                <template x-for="(item, id) in filteredProperties" :key="id">
-                    <div @click="showDetail(item)" class="px-2 py-1.5 flex items-center justify-between gap-1 hover:bg-slate-50 transition cursor-pointer">
-                        <div class="flex items-center gap-1.5 min-w-0 flex-1">
-                            <div class="flex flex-col gap-0.5 shrink-0">
-                                <span class="px-1 py-0 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase text-center" x-text="item.ZONE"></span>
-                                <span class="px-1 py-0 text-[7px] font-medium rounded bg-slate-100 text-slate-600 uppercase text-center" x-text="item.TYPE"></span>
-                            </div>
-                            <div class="min-w-0 flex-1">
-                                <div class="flex items-center gap-1">
-                                    <span class="font-bold text-slate-900 truncate text-[11px] uppercase" x-text="item.PROPERTY"></span>
-                                    <span class="text-[8px] font-bold text-slate-400 shrink-0" x-text="'[' + item.FOR + ']'"></span>
-                                </div>
-                                <div class="flex items-center gap-1 text-[9px] text-slate-500 leading-none">
-                                    <span class="truncate">Owner: <strong class="text-slate-700" x-text="item.OWNER || '-'"></strong></span>
-                                    <template x-if="item.REMARK">
-                                        <span class="text-amber-600 bg-amber-50 px-1 rounded truncate max-w-[120px]" x-text="item.REMARK"></span>
-                                    </template>
-                                </div>
-                            </div>
+        <!-- Senarai Listing -->
+        <div class="bg-white rounded shadow-2xs border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+            <template x-for="(item, id) in filteredProperties" :key="id">
+                <div @click="showDetail(item)" class="px-2 py-1 flex items-center justify-between gap-1 hover:bg-slate-50 transition cursor-pointer">
+                    <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                        <div class="flex flex-col gap-0.5 shrink-0">
+                            <span class="px-1 py-0 text-[7px] font-bold rounded bg-indigo-50 text-indigo-600 uppercase text-center" x-text="item.ZONE"></span>
+                            <span class="px-1 py-0 text-[7px] font-medium rounded bg-slate-100 text-slate-600 uppercase text-center" x-text="item.TYPE"></span>
                         </div>
-
-                        <div class="flex items-center gap-2 shrink-0 text-right">
-                            <div>
-                                <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
-                                <div class="flex items-center justify-end gap-1 mt-0.5" @click.stop>
-                                    <!-- Dropdown Pilihan Status -->
-                                    <select x-model="tempStatus[id]"
-                                        @change="saveStatus(id, $event.target.value)"
-                                        :class="(tempStatus[id] || item.STATUS) === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : ((tempStatus[id] || item.STATUS) === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')"
-                                        class="px-1.5 py-0.5 text-[9px] font-bold rounded uppercase border cursor-pointer outline-none">
-                                        <option value="AVAILABLE">AVAILABLE</option>
-                                        <option value="BOOKED">BOOKED</option>
-                                        <option value="SOLD">SOLD</option>
-                                        <option value="HOLD">HOLD</option>
-                                    </select>
-                                </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-1">
+                                <span class="font-bold text-slate-900 truncate text-[11px] uppercase" x-text="item.PROPERTY"></span>
+                                <span class="text-[8px] font-bold text-slate-400 shrink-0" x-text="'[' + item.FOR + ']'"></span>
                             </div>
-
-                            <div class="flex items-center gap-1 border-l border-slate-100 pl-1.5">
-                                <template x-if="item.URL">
-                                    <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs p-0.5" title="Pautan" @click.stop>🔗</a>
+                            <div class="flex items-center gap-1 text-[9px] text-slate-500 leading-none">
+                                <span class="truncate">Owner: <strong class="text-slate-700" x-text="item.OWNER || '-'"></strong></span>
+                                <template x-if="item.REMARK">
+                                    <span class="text-amber-600 bg-amber-50 px-1 rounded truncate max-w-[120px]" x-text="item.REMARK"></span>
                                 </template>
                             </div>
                         </div>
                     </div>
-                </template>
-                <template x-if="Object.keys(filteredProperties).length === 0">
-                    <div class="p-4 text-center text-slate-400 text-xs">
-                        Tiada rekod hartanah ditemui.
-                    </div>
-                </template>
-            </div>
 
-            <!-- Pagination -->
-            <div class="flex justify-between items-center bg-white px-2 py-1 rounded shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1">
-                <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-0.5 border rounded bg-slate-50 font-semibold text-slate-700">
-                    ⬅ Sebelumnya
-                </button>
-                <span class="text-slate-600 font-medium">
-                    Halaman <strong class="text-slate-900" x-text="currentPage"></strong> dari <strong class="text-slate-900" x-text="totalPages"></strong>
-                </span>
-                <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-0.5 border rounded bg-slate-50 font-semibold text-slate-700">
-                    Seterusnya ➡
-                </button>
-            </div>
-
-            <!-- MODAL DETAIL -->
-            <div x-show="selectedItem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;" @click.self="closeDetail()">
-                <div class="bg-white rounded-xl max-w-sm w-full p-3 shadow-2xl border border-slate-100 space-y-2.5 max-h-[85vh] flex flex-col">
-                    <div class="flex justify-between items-start border-b pb-1.5 gap-2">
-                        <h3 class="font-bold text-slate-900 text-xs uppercase leading-snug break-words" x-text="selectedItem?.PROPERTY"></h3>
-                        <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-base p-1 -mr-1 -mt-1 leading-none">&times;</button>
-                    </div>
-                    <div class="space-y-1 text-[11px] text-slate-700 overflow-y-auto pr-1">
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                            <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
-                            <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                            <span class="text-slate-500 font-medium">Zon:</span>
-                            <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                            <span class="text-slate-500 font-medium">Owner / Agen:</span>
-                            <span class="font-bold uppercase" x-text="selectedItem?.OWNER || '-'"></span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                            <span class="text-slate-500 font-medium">Harga:</span>
-                            <span class="font-bold text-blue-600 text-xs" x-text="formatPrice(selectedItem?.PRICE)"></span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-slate-100 pb-1">
-                            <span class="text-slate-500 font-medium">Status Semasa:</span>
-                            <span class="font-bold uppercase px-1.5 py-0.5 rounded text-[9px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
-                        </div>
-                        <div class="pt-0.5">
-                            <span class="text-slate-500 font-medium block mb-0.5">Nota / Remark:</span>
-                            <div class="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-900 text-[11px] leading-relaxed break-words max-h-32 overflow-y-auto whitespace-pre-line" x-text="selectedItem?.REMARK || 'Tiada nota dimasukkan.'"></div>
-                        </div>
-                        <template x-if="selectedItem?.URL">
-                            <div class="pt-0.5">
-                                <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold text-[11px] transition">🔗 Buka Pautan Luar</a>
+                    <div class="flex items-center gap-2 shrink-0 text-right">
+                        <div>
+                            <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
+                            <div class="flex items-center justify-end gap-1 mt-0.5">
+                                <select @click.stop @change="updateStatus(id, $event.target.value)" 
+                                    :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : (item.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
+                                    class="px-1 py-0 text-[8px] font-bold rounded uppercase border cursor-pointer outline-none">
+                                    <option value="AVAILABLE" :selected="item.STATUS === 'AVAILABLE'">AVAILABLE</option>
+                                    <option value="BOOKED" :selected="item.STATUS === 'BOOKED'">BOOKED</option>
+                                    <option value="SOLD" :selected="item.STATUS === 'SOLD'">SOLD</option>
+                                    <option value="HOLD" :selected="item.STATUS === 'HOLD'">HOLD</option>
+                                </select>
                             </div>
-                        </template>
-                    </div>
-                    <div class="pt-1 border-t border-slate-100">
-                        <button @click="closeDetail()" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Tutup</button>
+                        </div>
+
+                        <div class="flex items-center gap-1 border-l border-slate-100 pl-1.5">
+                            <template x-if="item.URL">
+                                <a :href="item.URL" target="_blank" class="text-blue-600 hover:text-blue-800 text-xs p-0.5" title="Pautan" @click.stop>🔗</a>
+                            </template>
+                        </div>
                     </div>
                 </div>
+            </template>
+            <template x-if="Object.keys(filteredProperties).length === 0">
+                <div class="p-4 text-center text-slate-400 text-xs">
+                    Tiada rekod hartanah ditemui.
+                </div>
+            </template>
+        </div>
+
+        <!-- 📄 NAVIGASI PAGINATION -->
+        <div class="flex justify-between items-center bg-white px-2 py-1 rounded shadow-2xs border border-slate-200 text-[10px]" x-show="totalPages > 1">
+            <button @click="currentPage > 1 ? currentPage-- : null" :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-0.5 border rounded bg-slate-50 font-semibold text-slate-700">
+                ⬅ Sebelumnya
+            </button>
+            
+            <span class="text-slate-600 font-medium">
+                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> dari <strong class="text-slate-900" x-text="totalPages"></strong>
+            </span>
+
+            <button @click="currentPage < totalPages ? currentPage++ : null" :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'" class="px-2 py-0.5 border rounded bg-slate-50 font-semibold text-slate-700">
+                Seterusnya ➡
+            </button>
+        </div>
+
+        <!-- MODAL DETAIL / NOTA -->
+        <div x-show="selectedItem" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 z-50" style="display: none;" @click.self="closeDetail()">
+            <div class="bg-white rounded-xl max-w-sm w-full p-3 shadow-2xl border border-slate-100 space-y-2.5 max-h-[85vh] flex flex-col">
+                
+                <!-- Header Modal -->
+                <div class="flex justify-between items-start border-b pb-1.5 gap-2">
+                    <h3 class="font-bold text-slate-900 text-xs uppercase leading-snug break-words" x-text="selectedItem?.PROPERTY"></h3>
+                    <button @click="closeDetail()" class="text-slate-400 hover:text-slate-600 font-bold text-base p-1 -mr-1 -mt-1 leading-none">&times;</button>
+                </div>
+
+                <!-- Kandungan Utama -->
+                <div class="space-y-1 text-[11px] text-slate-700 overflow-y-auto pr-1">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
+                        <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Zon:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Owner / Agen:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.OWNER || '-'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Harga:</span>
+                        <span class="font-bold text-blue-600 text-xs" x-text="formatPrice(selectedItem?.PRICE)"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Status Semasa:</span>
+                        <span class="font-bold uppercase px-1.5 py-0.5 rounded text-[9px]" :class="selectedItem?.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700' : (selectedItem?.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700')" x-text="selectedItem?.STATUS || '-'"></span>
+                    </div>
+                    
+                    <div class="pt-0.5">
+                        <span class="text-slate-500 font-medium block mb-0.5">Nota / Remark:</span>
+                        <div class="p-2 bg-amber-50 border border-amber-100 rounded-lg text-amber-900 text-[11px] leading-relaxed break-words max-h-32 overflow-y-auto whitespace-pre-line" x-text="selectedItem?.REMARK || 'Tiada nota dimasukkan.'"></div>
+                    </div>
+
+                    <template x-if="selectedItem?.URL">
+                        <div class="pt-0.5">
+                            <a :href="selectedItem.URL" target="_blank" class="block text-center w-full py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold text-[11px] transition">🔗 Buka Pautan Luar</a>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Butang Tutup Bawah -->
+                <div class="pt-1 border-t border-slate-100">
+                    <button @click="closeDetail()" class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition">Tutup</button>
+                </div>
+
             </div>
-        </main>
-    </div>
+        </div>
+    </main>
 
     <script>
         const firebaseConfig = {
@@ -472,13 +247,7 @@
         };
 
         firebase.initializeApp(firebaseConfig);
-        firebase.database().goOnline();
-        const auth = firebase.auth();
         const db = firebase.database();
-        // Saluran komunikasi pantas antara tab (0.01 saat delay)
-const syncChannel = new BroadcastChannel('property_status_sync');
-
-        const ALLOWED_EMAIL = "view@pioneer.com"; 
 
         function disableShortcuts(e) {
             if (e.key === 'F12') return false;
@@ -489,11 +258,6 @@ const syncChannel = new BroadcastChannel('property_status_sync');
 
         function publicPropertyApp() {
             return {
-                isLoggedIn: false,
-                currentUserEmail: '',
-                email: '',
-                password: '',
-                loginError: '',
                 search: '',
                 statusFilter: '',
                 zoneFilter: '',
@@ -502,24 +266,22 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                 ownerFilter: '',
                 sortBy: 'latest',
                 properties: {},
-                tempStatus: {},
                 selectedItem: null,
                 currentPage: 1,
                 itemsPerPage: 15,
 
                 init() {
-                    auth.onAuthStateChanged(user => {
-                        if (user) {
-                            if (user.email === ALLOWED_EMAIL) {
-                                this.isLoggedIn = true;
-                                this.currentUserEmail = user.email;
-                                this.loadData();
-                            } else {
-                                auth.signOut();
-                                this.loginError = 'Emel tidak dibenarkan mengakses viewer ini.';
-                            }
-                        } else {
-                            this.isLoggedIn = false;
+                    const cachedData = localStorage.getItem('jackson_properties');
+                    if (cachedData) {
+                        this.properties = JSON.parse(cachedData);
+                    }
+
+                    db.ref('properties').on('value', snapshot => {
+                        const data = snapshot.val() || {};
+                        this.properties = data;
+                        localStorage.setItem('jackson_properties', JSON.stringify(data));
+                        if (this.selectedItem && data[this.selectedItem.id]) {
+                            this.selectedItem = { id: this.selectedItem.id, ...data[this.selectedItem.id] };
                         }
                     });
 
@@ -531,52 +293,6 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                     this.$watch('ownerFilter', () => this.currentPage = 1);
                     this.$watch('sortBy', () => this.currentPage = 1);
                 },
-
-                login() {
-                    this.loginError = '';
-                    if (this.email !== ALLOWED_EMAIL) {
-                        this.loginError = 'Emel tidak sah untuk sistem ini.';
-                        return;
-                    }
-                    auth.signInWithEmailAndPassword(this.email, this.password)
-                        .catch(error => {
-                            this.loginError = 'Gagal log masuk: ' + error.message;
-                        });
-                },
-
-                logout() {
-                    auth.signOut().then(() => {
-                        this.isLoggedIn = false;
-                        localStorage.removeItem('jackson_properties');
-                    });
-                },
-
-                loadData() {
-                    const cachedData = localStorage.getItem('jackson_properties');
-                    if (cachedData) {
-                        this.properties = JSON.parse(cachedData);
-                        this.initTempStatus();
-                    }
-
-                    db.ref('properties').on('value', snapshot => {
-                        const data = snapshot.val() || {};
-                        this.properties = { ...data };
-                        this.initTempStatus();
-                        localStorage.setItem('jackson_properties', JSON.stringify(data));
-                        if (this.selectedItem && data[this.selectedItem.id]) {
-                            this.selectedItem = { id: this.selectedItem.id, ...data[this.selectedItem.id] };
-                        }
-                    });
-                },
-
-                initTempStatus() {
-                    Object.entries(this.properties).forEach(([id, item]) => {
-                        if (!this.tempStatus[id]) {
-                            this.tempStatus[id] = item.STATUS || 'AVAILABLE';
-                        }
-                    });
-                },
-
                 formatPrice(val) {
                     if (!val) return 'RM 0';
                     let cleanNum = String(val).replace(/[^0-9.]/g, '');
@@ -584,12 +300,10 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                     if (isNaN(num)) return val;
                     return 'RM ' + num.toLocaleString('en-US', {maximumFractionDigits: 2});
                 },
-
                 get uniqueOwners() {
                     let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
                     return [...new Set(owners)].sort();
                 },
-
                 get getFilteredResult() {
                     let entries = Object.entries(this.properties);
                     return entries.filter(([id, item]) => {
@@ -602,15 +316,12 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                         return matchSearch && matchStatus && matchZone && matchFor && matchType && matchOwner;
                     });
                 },
-
                 get totalFilteredCount() {
                     return this.getFilteredResult.length;
                 },
-
                 get totalPages() {
                     return Math.ceil(this.totalFilteredCount / this.itemsPerPage) || 1;
                 },
-
                 get filteredProperties() {
                     let result = this.getFilteredResult;
                     let mapped = result.map(([id, item]) => ({ id, ...item }));
@@ -637,33 +348,20 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                         return acc;
                     }, {});
                 },
-
                 showDetail(item) {
                     this.selectedItem = item;
                 },
-
                 closeDetail() {
                     this.selectedItem = null;
                 },
-
-                // Simpan status terus ke Firebase sebaik sahaja dropdown berubah
-                async saveStatus(id, status) {
-                    const allowedStatuses = ['AVAILABLE', 'HOLD', 'BOOKED', 'SOLD'];
-                    if (!allowedStatuses.includes(status)) {
-                        alert('Status tidak sah.');
-                        return;
-                    }
-
-                    const oldStatus = this.properties[id]?.STATUS || 'AVAILABLE';
-                    if (oldStatus === status) return;
-
-                    try {
-                        await db.ref('properties/' + id + '/STATUS').set(status);
-                        console.log('Status berjaya dikemas kini:', id, status);
-                    } catch (error) {
-                        this.tempStatus[id] = oldStatus;
-                        alert('Gagal mengemas kini status: ' + error.message);
-                    }
+                updateStatus(id, newStatus) {
+                    db.ref('properties/' + id + '/STATUS').set(newStatus).then(() => {
+                        if (this.properties[id]) {
+                            this.properties[id].STATUS = newStatus;
+                        }
+                    }).catch(error => {
+                        alert('Gagal mengemaskini status: ' + error.message);
+                    });
                 }
             }
         }
