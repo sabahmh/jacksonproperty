@@ -35,6 +35,104 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
+    <style>
+        /* Paparan penuh dan padat untuk telefon */
+        * { box-sizing: border-box; }
+        @media (max-width: 640px) {
+            html, body {
+                width: 100%;
+                height: 100%;
+                height: 100dvh;
+                margin: 0;
+                overflow: hidden;
+                overscroll-behavior: none;
+            }
+            body { padding-bottom: 0 !important; }
+            body > div[x-show="isLoggedIn"] {
+                width: 100%;
+                height: 100%;
+                height: 100dvh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            body > div[x-show="isLoggedIn"] > header {
+                position: relative;
+                top: auto;
+                flex: 0 0 auto;
+                width: 100%;
+                padding: 5px 8px;
+                z-index: 30;
+            }
+            body > div[x-show="isLoggedIn"] > header h1 { font-size: 12px; }
+            body > div[x-show="isLoggedIn"] > main {
+                width: 100%;
+                max-width: none;
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding: 5px;
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+                margin: 0;
+                gap: 5px;
+                -webkit-overflow-scrolling: touch;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child {
+                padding: 6px;
+                border-radius: 7px;
+                gap: 6px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child input {
+                min-height: 30px;
+                font-size: 12px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child select {
+                min-width: 0;
+                width: 100%;
+                min-height: 28px;
+                font-size: 10px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div {
+                padding: 7px 6px;
+                gap: 5px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div select {
+                max-width: 112px;
+                min-height: 28px;
+                font-size: 10px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div .text-\[11px\] {
+                font-size: 11px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div .text-\[9px\] {
+                font-size: 9px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div .text-\[7px\] {
+                font-size: 7px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:last-child:not(:nth-child(2)) {
+                margin-bottom: 2px;
+            }
+            /* Modal detail memenuhi skrin telefon */
+            body > div[x-show="isLoggedIn"] > main > div.fixed.inset-0 {
+                align-items: stretch;
+                justify-content: stretch;
+                padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+            }
+            body > div[x-show="isLoggedIn"] > main > div.fixed.inset-0 > div {
+                width: 100%;
+                max-width: none;
+                max-height: 100%;
+                min-height: 0;
+                border-radius: 10px;
+                padding: 10px;
+                gap: 8px;
+            }
+        }
+    </style>
+
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans pb-2 select-none text-[11px]" oncontextmenu="return false" onkeydown="return disableShortcuts(event)" x-data="publicPropertyApp()">
 
