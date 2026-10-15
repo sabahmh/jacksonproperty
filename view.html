@@ -164,15 +164,20 @@
                         <div class="flex items-center gap-2 shrink-0 text-right">
                             <div>
                                 <div class="font-bold text-blue-600 text-[11px] leading-tight" x-text="formatPrice(item.PRICE)"></div>
-                                <div class="flex items-center justify-end gap-1 mt-0.5">
-                                    <select @click.stop @change="updateStatus(id, $event.target.value)" 
-                                        :class="item.STATUS === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : (item.STATUS === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
-                                        class="px-1 py-0 text-[8px] font-bold rounded uppercase border cursor-pointer outline-none">
-                                        <option value="AVAILABLE" :selected="item.STATUS === 'AVAILABLE'">AVAILABLE</option>
-                                        <option value="BOOKED" :selected="item.STATUS === 'BOOKED'">BOOKED</option>
-                                        <option value="SOLD" :selected="item.STATUS === 'SOLD'">SOLD</option>
-                                        <option value="HOLD" :selected="item.STATUS === 'HOLD'">HOLD</option>
+                                <div class="flex items-center justify-end gap-1 mt-0.5" @click.stop>
+                                    <!-- Dropdown Pilihan Status -->
+                                    <select x-model="tempStatus[id]" 
+                                        :class="(tempStatus[id] || item.STATUS) === 'AVAILABLE' ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : ((tempStatus[id] || item.STATUS) === 'BOOKED' ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-rose-100 text-rose-700 border-rose-300')" 
+                                        class="px-1 py-0.5 text-[8px] font-bold rounded uppercase border cursor-pointer outline-none">
+                                        <option value="AVAILABLE">AVAILABLE</option>
+                                        <option value="BOOKED">BOOKED</option>
+                                        <option value="SOLD">SOLD</option>
+                                        <option value="HOLD">HOLD</option>
                                     </select>
+                                    <!-- 💾 Butang Simpan Status -->
+                                    <button @click="saveStatus(id)" class="px-1.5 py-0.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-[8px] font-bold transition shadow-2xs">
+                                        💾 Simpan
+                                    </button>
                                 </div>
                             </div>
 
@@ -266,7 +271,6 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // Tetapkan emel tunggal yang dibenarkan log masuk kepada view@pioneer.com
         const ALLOWED_EMAIL = "view@pioneer.com"; 
 
         function disableShortcuts(e) {
@@ -291,6 +295,7 @@
                 ownerFilter: '',
                 sortBy: 'latest',
                 properties: {},
+                tempStatus: {}, // Menyimpan status sementara sebelum ditekan butang simpan
                 selectedItem: null,
                 currentPage: 1,
                 itemsPerPage: 15,
@@ -343,14 +348,24 @@
                     const cachedData = localStorage.getItem('jackson_properties');
                     if (cachedData) {
                         this.properties = JSON.parse(cachedData);
+                        this.initTempStatus();
                     }
 
                     db.ref('properties').on('value', snapshot => {
                         const data = snapshot.val() || {};
-                        this.properties = data;
+                        this.properties = { ...data }; // Menggunakan spread operator untuk memaksa kemas kini paparan
+                        this.initTempStatus();
                         localStorage.setItem('jackson_properties', JSON.stringify(data));
                         if (this.selectedItem && data[this.selectedItem.id]) {
                             this.selectedItem = { id: this.selectedItem.id, ...data[this.selectedItem.id] };
+                        }
+                    });
+                },
+
+                initTempStatus() {
+                    Object.entries(this.properties).forEach(([id, item]) => {
+                        if (!this.tempStatus[id]) {
+                            this.tempStatus[id] = item.STATUS || 'AVAILABLE';
                         }
                     });
                 },
@@ -424,13 +439,17 @@
                     this.selectedItem = null;
                 },
 
-                updateStatus(id, newStatus) {
+                saveStatus(id) {
+                    const newStatus = this.tempStatus[id];
+                    if (!newStatus) return;
+
                     db.ref('properties/' + id + '/STATUS').set(newStatus).then(() => {
+                        alert('✅ Status berjaya dikemaskini kepada ' + newStatus);
                         if (this.properties[id]) {
                             this.properties[id].STATUS = newStatus;
                         }
                     }).catch(error => {
-                        alert('Gagal mengemaskini status: ' + error.message);
+                        alert('❌ Gagal mengemaskini status: ' + error.message);
                     });
                 }
             }
