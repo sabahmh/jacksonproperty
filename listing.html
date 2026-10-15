@@ -389,7 +389,7 @@
                     // 2. Ambil data terkini dari Firebase di latar belakang (Background Sync)
                     db.ref('properties').on('value', snapshot => {
                         const data = snapshot.val() || {};
-                        this.properties = data;
+                        this.properties = { ...data };
                         localStorage.setItem('jackson_properties', JSON.stringify(data));
                     });
 
