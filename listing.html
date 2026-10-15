@@ -329,7 +329,10 @@
         });
 
         firebase.initializeApp(firebaseConfig);
+        firebase.database().goOnline();
         const db = firebase.database();
+        // Saluran komunikasi pantas antara tab (0.01 saat delay)
+const syncChannel = new BroadcastChannel('property_status_sync');
 
         function disableShortcuts(e) {
             if (e.key === 'F12') return false;
