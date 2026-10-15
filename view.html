@@ -131,6 +131,113 @@
                 gap: 8px;
             }
         }
+
+        /* MOBILE: paparkan 15 listing dalam satu skrin tanpa scroll halaman */
+        @media (max-width: 640px) {
+            html, body {
+                height: 100%;
+                height: 100dvh;
+                overflow: hidden !important;
+            }
+            body > div[x-show="isLoggedIn"] {
+                height: 100%;
+                height: 100dvh;
+                overflow: hidden;
+            }
+            body > div[x-show="isLoggedIn"] > header {
+                padding: 3px 6px !important;
+            }
+            body > div[x-show="isLoggedIn"] > header img { width: 13px; height: 13px; }
+            body > div[x-show="isLoggedIn"] > header h1 { font-size: 10px !important; }
+            body > div[x-show="isLoggedIn"] > header button { font-size: 8px; padding: 2px 5px; }
+            body > div[x-show="isLoggedIn"] > main {
+                display: flex;
+                flex-direction: column;
+                flex: 1 1 auto;
+                min-height: 0;
+                height: calc(100dvh - 28px);
+                overflow: hidden !important;
+                padding: 3px !important;
+                gap: 3px !important;
+            }
+            /* Carian dan penapis menggunakan ruang minimum */
+            body > div[x-show="isLoggedIn"] > main > div:first-child {
+                flex: 0 0 auto;
+                padding: 4px !important;
+                gap: 3px !important;
+                border-radius: 5px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child input {
+                height: 25px;
+                min-height: 25px !important;
+                padding-top: 2px;
+                padding-bottom: 2px;
+                font-size: 10px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child .grid {
+                gap: 2px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child select {
+                height: 22px;
+                min-height: 22px !important;
+                padding: 1px 2px !important;
+                font-size: 9px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:first-child > div:last-child {
+                padding-top: 2px;
+                font-size: 8px !important;
+            }
+            /* Senarai mengambil baki skrin; tiada scroll untuk 15 rekod */
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div {
+                flex: 1 1 0;
+                min-height: 0;
+                padding: 2px 5px !important;
+                gap: 4px !important;
+                overflow: hidden;
+            }
+            /* Sembunyikan baris owner/nota supaya 15 listing muat */
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:nth-child(2) > div:nth-child(2) {
+                display: none !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child {
+                gap: 4px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:first-child {
+                flex-direction: row;
+                gap: 2px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:first-child span {
+                font-size: 7px !important;
+                line-height: 1.1;
+                padding: 1px 2px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:first-child > div:nth-child(2) > div:first-child span:first-child {
+                font-size: 9px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child {
+                gap: 3px !important;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child > div:first-child > div:first-child {
+                font-size: 9px !important;
+                line-height: 1;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child select {
+                font-size: 8px !important;
+                line-height: 1.1;
+                padding: 2px !important;
+                max-width: 86px;
+            }
+            body > div[x-show="isLoggedIn"] > main > div:nth-child(2) > div > div:last-child > div:last-child {
+                display: none !important;
+            }
+        }
     </style>
 
 </head>
