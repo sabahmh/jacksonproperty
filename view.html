@@ -275,6 +275,8 @@
         firebase.database().goOnline();
         const auth = firebase.auth();
         const db = firebase.database();
+        // Saluran komunikasi pantas antara tab (0.01 saat delay)
+const syncChannel = new BroadcastChannel('property_status_sync');
 
         const ALLOWED_EMAIL = "view@pioneer.com"; 
 
