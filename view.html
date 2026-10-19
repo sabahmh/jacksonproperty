@@ -86,7 +86,7 @@
                         <button @click="search = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs px-1" title="Padam carian">&times;</button>
                     </template>
                 </div>
-                <div class="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
+                <div class="grid grid-cols-3 sm:grid-cols-7 gap-0.5">
                     <select x-model="statusFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
                         <option value="">Status</option>
                         <option value="AVAILABLE">AVAILABLE</option>
@@ -114,6 +114,12 @@
                         <option value="LANDED">LANDED</option>
                         <option value="COMMERCIAL">COMMERCIAL</option>
                     </select>
+                    <select x-model="lotFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                        <option value="">Lot</option>
+                        <option value="INTERMEDIATE">INTERMEDIATE</option>
+                        <option value="CORNER">CORNER</option>
+                        <option value="END LOT">END LOT</option>
+                    </select>
                     <select x-model="ownerFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
                         <option value="">Owner</option>
                         <template x-for="own in uniqueOwners">
@@ -131,7 +137,7 @@
                 <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
                 <div class="flex justify-between items-center px-0.5 text-[9px] text-slate-500 border-t border-slate-100 pt-0.5">
                     <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod</span>
-                    <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
+                    <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || lotFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
                 </div>
             </div>
 
@@ -147,6 +153,9 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center gap-1">
                                     <span class="font-bold text-slate-900 truncate text-[11px] uppercase" x-text="item.PROPERTY"></span>
+                                    <template x-if="item.LOT">
+                                        <span class="px-1 py-0 text-[7px] font-bold rounded bg-purple-50 text-purple-700 uppercase" x-text="item.LOT"></span>
+                                    </template>
                                     <span class="text-[8px] font-bold text-slate-400 shrink-0" x-text="'[' + item.FOR + ']'"></span>
                                 </div>
                                 <div class="flex items-center gap-1 text-[9px] text-slate-500 leading-none">
@@ -218,6 +227,10 @@
                         <div class="flex justify-between items-center border-b border-slate-100 pb-1">
                             <span class="text-slate-500 font-medium">Urusan / Jenis:</span>
                             <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                            <span class="text-slate-500 font-medium">Lot:</span>
+                            <span class="font-bold uppercase" x-text="selectedItem?.LOT || 'INTERMEDIATE'"></span>
                         </div>
                         <div class="flex justify-between items-center border-b border-slate-100 pb-1">
                             <span class="text-slate-500 font-medium">Zon:</span>
@@ -306,7 +319,6 @@
                         return;
                     }
 
-                    // Semak ID terlebih dahulu
                     if (this.loginId.trim() !== this.VALID_ID) {
                         this.loginError = true;
                         this.errorMessage = 'ID Pengguna tidak sah!';
@@ -314,7 +326,6 @@
                         return;
                     }
 
-                    // Semak Kata Laluan melalui Hash SHA-256
                     const inputHash = await this.sha256(this.passcode);
                     
                     if (inputHash === this.SECRET_HASH) {
@@ -341,6 +352,7 @@
                 zoneFilter: '',
                 forFilter: '',
                 typeFilter: '',
+                lotFilter: '',
                 ownerFilter: '',
                 sortBy: 'latest',
                 properties: {},
@@ -368,6 +380,7 @@
                     this.$watch('zoneFilter', () => this.currentPage = 1);
                     this.$watch('forFilter', () => this.currentPage = 1);
                     this.$watch('typeFilter', () => this.currentPage = 1);
+                    this.$watch('lotFilter', () => this.currentPage = 1);
                     this.$watch('ownerFilter', () => this.currentPage = 1);
                     this.$watch('sortBy', () => this.currentPage = 1);
                 },
@@ -390,8 +403,9 @@
                         const matchZone = this.zoneFilter === '' || item.ZONE === this.zoneFilter;
                         const matchFor = this.forFilter === '' || item.FOR === this.forFilter;
                         const matchType = this.typeFilter === '' || item.TYPE === this.typeFilter;
+                        const matchLot = this.lotFilter === '' || (item.LOT || 'INTERMEDIATE') === this.lotFilter;
                         const matchOwner = this.ownerFilter === '' || item.OWNER === this.ownerFilter;
-                        return matchSearch && matchStatus && matchZone && matchFor && matchType && matchOwner;
+                        return matchSearch && matchStatus && matchZone && matchFor && matchType && matchLot && matchOwner;
                     });
                 },
                 get totalFilteredCount() {
