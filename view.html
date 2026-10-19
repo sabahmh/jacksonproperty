@@ -78,15 +78,18 @@
         </header>
 
         <main class="max-w-4xl mx-auto p-1 space-y-1 mt-1">
-            <!-- Carian & Filter Mikro (Kompak) -->
+            <!-- Carian & Filter Mikro (Kompak 2 Row) -->
             <div class="bg-white p-1 rounded shadow-2xs border border-slate-200 space-y-1">
+                <!-- Baris 1: Kotak Carian Penuh -->
                 <div class="relative">
                     <input type="text" x-model="search" placeholder="🔍 Cari nama, owner, nota..." class="w-full px-2 py-0.5 pr-6 bg-slate-50 border border-slate-200 rounded text-[11px] focus:outline-none focus:ring-1 focus:ring-blue-500">
                     <template x-if="search">
                         <button @click="search = ''" class="absolute right-1.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-xs px-1" title="Padam carian">&times;</button>
                     </template>
                 </div>
-                <div class="grid grid-cols-3 sm:grid-cols-7 gap-0.5">
+
+                <!-- Baris 2: 6 Kotak Select Filter (3x2 pada mobile, 6 sebaris pada desktop) -->
+                <div class="grid grid-cols-3 sm:grid-cols-6 gap-0.5">
                     <select x-model="statusFilter" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
                         <option value="">Status</option>
                         <option value="AVAILABLE">AVAILABLE</option>
@@ -126,18 +129,18 @@
                             <option :value="own" x-text="own"></option>
                         </template>
                     </select>
-                    <select x-model="sortBy" class="px-1 py-0.5 bg-slate-50 border border-slate-200 rounded text-[10px]">
+                </div>
+
+                <!-- Baris Tambahan untuk Susunan & Jumlah Rekod -->
+                <div class="flex justify-between items-center px-0.5 text-[9px] text-slate-500 border-t border-slate-100 pt-0.5">
+                    <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || lotFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span></span>
+                    <select x-model="sortBy" class="bg-slate-50 border border-slate-200 rounded text-[9px] px-1 py-0.5">
                         <option value="latest">Terkini</option>
                         <option value="name_asc">Nama (A-Z)</option>
                         <option value="name_desc">Nama (Z-A)</option>
                         <option value="price_asc">Harga ⬆</option>
                         <option value="price_desc">Harga ⬇</option>
                     </select>
-                </div>
-                <!-- 📊 PAPARAN JUMLAH LISTING TERKINI -->
-                <div class="flex justify-between items-center px-0.5 text-[9px] text-slate-500 border-t border-slate-100 pt-0.5">
-                    <span>Jumlah Hasil Tapisan: <strong class="text-slate-700" x-text="totalFilteredCount"></strong> rekod</span>
-                    <span x-show="search || statusFilter || zoneFilter || forFilter || typeFilter || lotFilter || ownerFilter" class="text-blue-600 font-medium">*(Ditapis)*</span>
                 </div>
             </div>
 
