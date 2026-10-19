@@ -118,6 +118,9 @@
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-1">
                                 <span class="font-bold text-slate-900 truncate text-[11px] uppercase" x-text="item.PROPERTY"></span>
+                                <template x-if="item.LOT">
+                                    <span class="px-1 py-0 text-[7px] font-bold rounded bg-purple-50 text-purple-700 uppercase" x-text="item.LOT"></span>
+                                </template>
                                 <span class="text-[8px] font-bold text-slate-400 shrink-0" x-text="'[' + item.FOR + ']'"></span>
                             </div>
                             <div class="flex items-center gap-1.5 text-[9px] text-slate-500 leading-tight">
@@ -185,7 +188,7 @@
                         <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Nama Hartanah / Projek</label>
                         <input type="text" x-model="form.PROPERTY" @input="form.PROPERTY = form.PROPERTY.toUpperCase(); checkZoneAuto()" required placeholder="Cth: TAMAN INDAH JAYA" class="w-full px-2 py-1 border rounded text-xs outline-none focus:ring-1 focus:ring-blue-500 uppercase">
                     </div>
-                    <div class="grid grid-cols-2 gap-1.5">
+                    <div class="grid grid-cols-3 gap-1.5">
                         <div>
                             <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Urusan</label>
                             <select x-model="form.FOR" class="w-full px-2 py-1 border rounded text-xs outline-none">
@@ -199,6 +202,14 @@
                                 <option value="APT">APT</option>
                                 <option value="LANDED">LANDED</option>
                                 <option value="COMMERCIAL">COMMERCIAL</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-bold text-slate-500 uppercase mb-0.5">Lot</label>
+                            <select x-model="form.LOT" class="w-full px-2 py-1 border rounded text-xs outline-none">
+                                <option value="INTERMEDIATE">INTERMEDIATE</option>
+                                <option value="CORNER">CORNER</option>
+                                <option value="END LOT">END LOT</option>
                             </select>
                         </div>
                     </div>
@@ -272,6 +283,10 @@
                         <span class="font-bold uppercase" x-text="(selectedItem?.FOR || '-') + ' / ' + (selectedItem?.TYPE || '-')"></span>
                     </div>
                     <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                        <span class="text-slate-500 font-medium">Lot:</span>
+                        <span class="font-bold uppercase" x-text="selectedItem?.LOT || 'INTERMEDIATE'"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-1">
                         <span class="text-slate-500 font-medium">Zon:</span>
                         <span class="font-bold uppercase" x-text="selectedItem?.ZONE || '-'"></span>
                     </div>
@@ -331,8 +346,7 @@
         firebase.initializeApp(firebaseConfig);
         firebase.database().goOnline();
         const db = firebase.database();
-        // Saluran komunikasi pantas antara tab (0.01 saat delay)
-const syncChannel = new BroadcastChannel('property_status_sync');
+        const syncChannel = new BroadcastChannel('property_status_sync');
 
         function disableShortcuts(e) {
             if (e.key === 'F12') return false;
@@ -357,7 +371,7 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                 selectedItem: null,
                 currentPage: 1,
                 itemsPerPage: 13,
-                form: { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK' },
+                form: { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', LOT: 'INTERMEDIATE', URL: '', ZONE: 'SDK' },
 
                 checkZoneAuto() {
                     let text = (this.form.PROPERTY || '').toUpperCase();
@@ -383,20 +397,17 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                     }
                 },
                 init() {
-                    // 1. Paparkan data sedia ada dari memori pelayar serta-merta (Instant Load)
                     const cachedData = localStorage.getItem('jackson_properties');
                     if (cachedData) {
                         this.properties = JSON.parse(cachedData);
                     }
 
-                    // 2. Ambil data terkini dari Firebase di latar belakang (Background Sync)
                     db.ref('properties').on('value', snapshot => {
                         const data = snapshot.val() || {};
                         this.properties = { ...data };
                         localStorage.setItem('jackson_properties', JSON.stringify(data));
                     });
 
-                    // 3. Reset halaman ke 1 setiap kali carian atau penapis berubah
                     this.$watch('search', () => this.currentPage = 1);
                     this.$watch('statusFilter', () => this.currentPage = 1);
                     this.$watch('zoneFilter', () => this.currentPage = 1);
@@ -465,7 +476,6 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                         }
                     });
 
-                    // Potong hanya 13 item sahaja untuk halaman semasa
                     let start = (this.currentPage - 1) * this.itemsPerPage;
                     let paginated = sorted.slice(start, start + this.itemsPerPage);
 
@@ -483,7 +493,7 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                 editItem(id, item) {
                     if (!this.isAdmin) return;
                     this.editId = id;
-                    this.form = { ...item };
+                    this.form = { LOT: 'INTERMEDIATE', ...item }; // Memastikan nilai LOT wujud walaupun data lama tiada medan LOT
                     this.openAddModal = true;
                 },
                 addItem() {
@@ -505,7 +515,7 @@ const syncChannel = new BroadcastChannel('property_status_sync');
                 closeModal() {
                     this.openAddModal = false;
                     this.editId = null;
-                    this.form = { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', URL: '', ZONE: 'SDK' };
+                    this.form = { PROPERTY: '', FOR: 'SELL', OWNER: '', PRICE: '', REMARK: '', STATUS: 'AVAILABLE', TYPE: 'APT', LOT: 'INTERMEDIATE', URL: '', ZONE: 'SDK' };
                 },
                 deleteItem(id) {
                     if (!this.isAdmin) return;
