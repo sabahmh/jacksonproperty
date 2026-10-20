@@ -420,7 +420,13 @@
 
                     this.$watch('search', () => this.currentPage = 1);
                     this.$watch('statusFilter', () => this.currentPage = 1);
-                    this.$watch('zoneFilter', () => this.currentPage = 1);
+                    this.$watch('zoneFilter', () => {
+                        this.currentPage = 1;
+                        // Jika owner yang dipilih tiada dalam zon baru, reset ownerFilter
+                        if (this.ownerFilter && !this.uniqueOwners.includes(this.ownerFilter)) {
+                            this.ownerFilter = '';
+                        }
+                    });
                     this.$watch('forFilter', () => this.currentPage = 1);
                     this.$watch('typeFilter', () => this.currentPage = 1);
                     this.$watch('lotFilter', () => this.currentPage = 1);
@@ -448,7 +454,11 @@
                     input.value = value;
                 },
                 get uniqueOwners() {
-                    let owners = Object.values(this.properties).map(item => item.OWNER).filter(Boolean);
+                    let items = Object.values(this.properties);
+                    if (this.zoneFilter) {
+                        items = items.filter(item => item.ZONE === this.zoneFilter);
+                    }
+                    let owners = items.map(item => item.OWNER).filter(Boolean);
                     return [...new Set(owners)].sort();
                 },
                 get getFilteredResult() {
