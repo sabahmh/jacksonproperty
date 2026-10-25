@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masterplan Hartanah - Taman Sri Gum Gum, Sandakan</title>
+
+    <!-- Firebase Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --available: #10b981;
+            --reserved: #f59e0b;
+            --sold: #ef4444;
+            --unavailable: #64748b;
+            --bumi: #10b981;
+            --non-bumi: #8b5cf6;
+            --corner: #0ea5e9;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 6px;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .brand-logo {
+            max-width: 32px;
+            max-height: 32px;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        .header-title { min-width: 0; }
+        .header-title h2 { margin: 0; font-size: 13px; font-weight: 700; }
+        .header-title p { color: var(--text-muted); margin: 0; font-size: 9px; }
+
+        .admin-bar { display: flex; gap: 4px; flex-shrink: 0; }
+
+        .mode-btn {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background: #2563eb;
+            border-color: #3b82f6;
+        }
+
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-width: 100%;
+        }
+
+        .map-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .map-container {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            border-radius: 4px;
+            overflow: auto;
+            background: #000;
+            max-height: 220px;
+        }
+
+        .map-container img {
+            display: block;
+            width: 100%;
+            height: auto;
+            min-width: 500px;
+            filter: contrast(1.1) brightness(1.05);
+        }
+
+        .map-placeholder {
+            min-height: 90px;
+            padding: 18px;
+            color: #cbd5e1;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard-section {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+            min-height: 300px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .stat-card {
+            background: #0f172a;
+            padding: 2px 4px;
+            border-radius: 4px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .stat-card span { font-size: 12px; font-weight: bold; }
+        .stat-card.avail span { color: var(--available); }
+        .stat-card.res span { color: var(--reserved); }
+        .stat-card.sold span { color: var(--sold); }
+        .stat-card.unavail span { color: var(--unavailable); }
+        .stat-card label { font-size: 8px; color: var(--text-muted); }
+
+        .controls-bar {
+            display: grid;
+            grid-template-columns: 1.2fr 1.1fr 1fr 1fr;
+            gap: 3px;
+            margin-bottom: 6px;
+        }
+
+        .controls-bar input, .controls-bar select {
+            min-width: 0;
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 6px 3px;
+            border-radius: 4px;
+            font-size: 9.5px;
+            outline: none;
+            text-overflow: ellipsis;
+        }
+
+        .card-list {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding-right: 2px;
+        }
+
+        .lot-card {
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            cursor: default;
+        }
+
+        .lot-info { min-width: 0; }
+        .lot-info .lot-title {
+            margin: 0 0 2px 0;
+            font-size: 15px;
+            font-weight: 800;
+            color: #38bdf8;
+        }
+
+        .lot-info .lot-price {
+            font-size: 15px;
+            font-weight: bold;
+            color: #f8fafc;
+            overflow-wrap: anywhere;
+        }
+
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+
+        .badge-row { display: flex; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .badge-available   { background: rgba(16, 185, 129, 0.2); color: var(--available); border: 1px solid var(--available); }
+        .badge-reserved    { background: rgba(245, 158, 11, 0.2); color: var(--reserved); border: 1px solid var(--reserved); }
+        .badge-sold        { background: rgba(239, 68, 68, 0.2); color: var(--sold); border: 1px solid var(--sold); }
+        .badge-unavailable { background: rgba(100, 116, 139, 0.2); color: var(--unavailable); border: 1px solid var(--unavailable); }
+        .badge-bumi        { background: rgba(16, 185, 129, 0.2); color: var(--bumi); border: 1px solid var(--bumi); }
+        .badge-nonbumi     { background: rgba(139, 92, 246, 0.2); color: var(--non-bumi); border: 1px solid var(--non-bumi); }
+        .badge-corner      { background: rgba(14, 165, 233, 0.2); color: var(--corner); border: 1px solid var(--corner); }
+
+        .empty-state {
+            color: var(--text-muted);
+            font-size: 12px;
+            text-align: center;
+            padding: 18px 8px;
+        }
+
+        .connection-status {
+            font-size: 9px;
+            color: var(--text-muted);
+            margin-top: 5px;
+            min-height: 12px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 12px;
+        }
+
+        .modal-content {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 8px;
+            width: 85%;
+            max-width: 300px;
+            max-height: 92vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h3 { margin-top: 0; font-size: 15px; margin-bottom: 10px; }
+        .form-group { margin-bottom: 10px; text-align: left; }
+        .form-group label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 3px; }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .modal-btns { display: flex; gap: 8px; margin-top: 14px; }
+        .modal-btns button {
+            flex: 1;
+            padding: 10px 0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+        }
+
+        .btn-save { background: #2563eb; color: white; }
+        .btn-save:active { background: #1d4ed8; }
+        .btn-cancel { background: #475569; color: white; }
+        .btn-cancel:active { background: #334155; }
+
+        @media (max-width: 420px) {
+            body { padding: 4px; }
+            header { padding: 6px; }
+            .header-title h2 { font-size: 12px; }
+            .mode-btn { padding: 5px 6px; }
+            .dashboard-section { padding: 6px; }
+            .controls-bar { grid-template-columns: 1.1fr 1fr 0.9fr 0.9fr; }
+            .controls-bar input, .controls-bar select { font-size: 9px; }
+            .lot-card { padding: 7px; }
+            .lot-info .lot-title, .lot-info .lot-price { font-size: 13px; }
+            .badge { font-size: 9px; padding: 2px 5px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10"
+                alt="Logo"
+                class="brand-logo"
+                onerror="this.style.display='none'">
+            <div class="header-title">
+                <h2>Taman Sri Gum Gum, Sandakan</h2>
+                <p id="modeDesc">Jackson Property</p>
+            </div>
+        </div>
+        <div class="admin-bar">
+            <button class="mode-btn active" id="btnViewMode" type="button" onclick="setMode('view')">Papar</button>
+            <button class="mode-btn" id="btnEditMode" type="button" onclick="setMode('edit')">Edit</button>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <section class="map-section" aria-label="Pelan tapak">
+            <div class="map-container" id="mapContainer">
+                <!-- Letakkan fail pelan sebenar bernama sri-gum-gum.jpg dalam folder yang sama dengan HTML. -->
+                <img src="srigumgum.jpg" alt="Pelan Tapak Taman Sri Gum Gum, Sandakan"
+                     onerror="this.style.display='none'; document.getElementById('mapFallback').style.display='flex';">
+                <div id="mapFallback" class="map-placeholder" style="display:none">
+                    Pelan tapak belum dimuatkan. Letakkan fail <strong>&nbsp;sri-gum-gum.jpg&nbsp;</strong> dalam folder yang sama.
+                </div>
+            </div>
+        </section>
+
+        <section class="dashboard-section" aria-label="Dashboard lot">
+            <div class="stats-grid">
+                <div class="stat-card avail"><span id="countAvail">0</span><label>Available</label></div>
+                <div class="stat-card res"><span id="countRes">0</span><label>Reserved</label></div>
+                <div class="stat-card sold"><span id="countSold">0</span><label>Sold</label></div>
+                <div class="stat-card unavail"><span id="countUnavail">0</span><label>Unavail</label></div>
+            </div>
+
+            <div class="controls-bar">
+                <input type="text" id="searchInput" placeholder="Cari No..." aria-label="Cari nombor lot" oninput="filterCards()">
+                <select id="filterCategory" aria-label="Tapis kategori" onchange="filterCards()">
+                    <option value="all">Kategori</option>
+                    <option value="BUMI">BUMI</option>
+                    <option value="NON-BUMI">NON-BUMI</option>
+                </select>
+                <select id="filterType" aria-label="Tapis jenis lot" onchange="filterCards()">
+                    <option value="all">Jenis</option>
+                    <option value="BIASA">Intermediate</option>
+                    <option value="CORNER">Corner</option>
+                </select>
+                <select id="filterStatus" aria-label="Tapis status" onchange="filterCards()">
+                    <option value="all">Status</option>
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                    <option value="unavailable">Unavailable</option>
+                </select>
+            </div>
+
+            <div class="card-list" id="cardListContainer"></div>
+            <div class="connection-status" id="connectionStatus">Menyambung ke Firebase...</div>
+        </section>
+    </div>
+
+    <div class="modal" id="editModal" role="dialog" aria-modal="true" aria-labelledby="modalHeading">
+        <div class="modal-content">
+            <h3 id="modalHeading">Edit Maklumat Lot <span id="modalLotTitle"></span></h3>
+            <input type="hidden" id="editLotNum">
+
+            <div class="form-group">
+                <label for="editStatus">Status Lot:</label>
+                <select id="editStatus">
+                    <option value="available">Available</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="sold">Sold</option>
+                    <option value="unavailable">Unavailable</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editPrice">Harga (RM):</label>
+                <input type="text" id="editPrice" inputmode="numeric" placeholder="Cth: 350,000" oninput="formatInputPrice(this)">
+            </div>
+
+            <div class="form-group">
+                <label for="editRemark">Kategori (BUMI / NON-BUMI):</label>
+                <select id="editRemark">
+                    <option value="BUMI">BUMI</option>
+                    <option value="NON-BUMI">NON-BUMI</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="editType">Jenis Lot (CORNER / BIASA):</label>
+                <select id="editType">
+                    <option value="BIASA">BIASA (Intermediate)</option>
+                    <option value="CORNER">CORNER</option>
+                </select>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" type="button" onclick="closeModal()">Batal</button>
+                <button class="btn-save" id="saveButton" type="button" onclick="saveLotData()">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * KONFIGURASI MUDAH DIUBAH
+         * 1) LOT_COUNT: tukar kepada jumlah lot sebenar selepas disahkan.
+         * 2) BUMI_LOT_NUMBERS / BUMI_RANGES: masukkan nombor atau julat lot BUMI sebenar.
+         * 3) CORNER_LOT_NUMBERS: masukkan nombor lot corner sebenar.
+         */
+        const PROJECT_CONFIG = {
+            projectName: "Taman Sri Gum Gum, Sandakan",
+            agentName: "Jackson Property",
+            lotCount: 70, // Jumlah lot Taman Sri Gum Gum.
+            firebasePath: "taman_sri_gum_gum/lots",
+            defaultPrice: "350,000",
+
+            // Tetapan lot Taman Sri Gum Gum berdasarkan arahan pengguna.
+            bumiLotNumbers: [],
+            bumiRanges: [{ start: 14, end: 30 }, { start: 67, end: 70 }],
+            cornerLotNumbers: [1, 4, 5, 20, 21, 38, 39, 56, 57, 70],
+            soldLotNumbers: [1, 2, 3, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 23, 24, 25, 26, 27, 28, 31, 32, 33, 34, 37, 38, 39, 42, 43, 45, 47, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 68, 69, 70]
+        };
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB8WMMi-VrGuoN-yskdc6_yPSpP2spggik",
+            authDomain: "villalestari.firebaseapp.com",
+            databaseURL: "https://villalestari-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "villalestari",
+            storageBucket: "villalestari.firebasestorage.app",
+            messagingSenderId: "1044557383917",
+            appId: "1:1044557383917:web:49bdea24da2fc7e99f24e4",
+            measurementId: "G-3X014WL37T"
+        };
+
+        // Elakkan initializeApp berganda jika kod dimuatkan dalam persekitaran sedia ada.
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.database();
+
+        const allLots = Array.from(
+            { length: Math.max(0, Number(PROJECT_CONFIG.lotCount) || 0) },
+            (_, index) => String(index + 1)
+        );
+
+        let currentMode = "view";
+        let lotsCache = {};
+        let saveInProgress = false;
+
+        function isBumiDefault(lotNum) {
+            const n = Number.parseInt(lotNum, 10);
+            if (PROJECT_CONFIG.bumiLotNumbers.includes(n)) return true;
+            return PROJECT_CONFIG.bumiRanges.some(range => n >= range.start && n <= range.end);
+        }
+
+        function isCornerDefault(lotNum) {
+            return PROJECT_CONFIG.cornerLotNumbers.includes(Number.parseInt(lotNum, 10));
+        }
+
+        function getDefaultStatus(lotNum) {
+            return PROJECT_CONFIG.soldLotNumbers.includes(Number.parseInt(lotNum, 10)) ? "sold" : "available";
+        }
+
+        function getLotData(lotNum) {
+            const cached = lotsCache[lotNum];
+            if (cached && typeof cached === "object") {
+                return {
+                    status: validStatus(cached.status) ? cached.status : getDefaultStatus(lotNum),
+                    price: cached.price != null ? String(cached.price) : PROJECT_CONFIG.defaultPrice,
+                    remark: cached.remark === "BUMI" ? "BUMI" : (cached.remark === "NON-BUMI" ? "NON-BUMI" : (isBumiDefault(lotNum) ? "BUMI" : "NON-BUMI")),
+                    type: cached.type === "CORNER" ? "CORNER" : (cached.type === "BIASA" ? "BIASA" : (isCornerDefault(lotNum) ? "CORNER" : "BIASA"))
+                };
+            }
+
+            return {
+                status: getDefaultStatus(lotNum),
+                price: PROJECT_CONFIG.defaultPrice,
+                remark: isBumiDefault(lotNum) ? "BUMI" : "NON-BUMI",
+                type: isCornerDefault(lotNum) ? "CORNER" : "BIASA"
+            };
+        }
+
+        function validStatus(status) {
+            return ["available", "reserved", "sold", "unavailable"].includes(status);
+        }
+
+        function formatNumberWithComma(value) {
+            const cleanVal = String(value ?? "").replace(/\D/g, "");
+            if (!cleanVal) return "";
+            return Number(cleanVal).toLocaleString("en-US");
+        }
+
+        function formatInputPrice(input) {
+            const oldValue = input.value;
+            const oldCursor = input.selectionStart ?? oldValue.length;
+            const digitsBeforeCursor = oldValue.slice(0, oldCursor).replace(/\D/g, "").length;
+            input.value = formatNumberWithComma(oldValue);
+
+            if (digitsBeforeCursor === 0) {
+                input.setSelectionRange(0, 0);
+                return;
+            }
+
+            let seenDigits = 0;
+            let newCursor = input.value.length;
+            for (let i = 0; i < input.value.length; i++) {
+                if (/\d/.test(input.value[i])) seenDigits++;
+                if (seenDigits >= digitsBeforeCursor) {
+                    newCursor = i + 1;
+                    break;
+                }
+            }
+            input.setSelectionRange(newCursor, newCursor);
+        }
+
+        function setMode(mode) {
+            currentMode = mode === "edit" ? "edit" : "view";
+            document.getElementById("btnViewMode").classList.toggle("active", currentMode === "view");
+            document.getElementById("btnEditMode").classList.toggle("active", currentMode === "edit");
+            document.getElementById("modeDesc").textContent =
+                currentMode === "view" ? PROJECT_CONFIG.agentName : "Mod Edit: Sentuh kad lot.";
+            document.querySelectorAll(".lot-card").forEach(card => {
+                card.style.cursor = currentMode === "edit" ? "pointer" : "default";
+            });
+        }
+
+        function saveLotFullData(lotNum, status, price, remark, type) {
+            const data = { status, price, remark, type, updatedAt: firebase.database.ServerValue.TIMESTAMP };
+            return db.ref(PROJECT_CONFIG.firebasePath + "/" + lotNum).set(data)
+                .then(() => {
+                    document.getElementById("connectionStatus").textContent = "Data berjaya disimpan.";
+                })
+                .catch(error => {
+                    alert("Gagal menyimpan data: " + error.message);
+                    throw error;
+                });
+        }
+
+        function handleCardClick(lotNum) {
+            if (currentMode === "edit") openModal(lotNum);
+        }
+
+        function openModal(lotNum) {
+            const data = getLotData(lotNum);
+            document.getElementById("modalLotTitle").textContent = lotNum;
+            document.getElementById("editLotNum").value = lotNum;
+            document.getElementById("editStatus").value = data.status;
+            document.getElementById("editPrice").value = formatNumberWithComma(data.price);
+            document.getElementById("editRemark").value = data.remark;
+            document.getElementById("editType").value = data.type;
+            document.getElementById("editModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        function saveLotData() {
+            if (saveInProgress) return;
+
+            const lotNum = document.getElementById("editLotNum").value;
+            if (!allLots.includes(lotNum)) {
+                alert("Nombor lot tidak sah.");
+                return;
+            }
+
+            const status = document.getElementById("editStatus").value;
+            const rawPrice = document.getElementById("editPrice").value;
+            const price = rawPrice ? formatNumberWithComma(rawPrice) : PROJECT_CONFIG.defaultPrice;
+            const remark = document.getElementById("editRemark").value;
+            const type = document.getElementById("editType").value;
+
+            if (!validStatus(status) || !["BUMI", "NON-BUMI"].includes(remark) || !["BIASA", "CORNER"].includes(type)) {
+                alert("Sila semak maklumat yang dipilih.");
+                return;
+            }
+
+            saveInProgress = true;
+            const saveButton = document.getElementById("saveButton");
+            saveButton.disabled = true;
+            saveButton.textContent = "Menyimpan...";
+
+            saveLotFullData(lotNum, status, price, remark, type)
+                .then(() => closeModal())
+                .catch(() => {})
+                .finally(() => {
+                    saveInProgress = false;
+                    saveButton.disabled = false;
+                    saveButton.textContent = "Simpan";
+                });
+        }
+
+        function makeBadge(className, text) {
+            const badge = document.createElement("div");
+            badge.className = "badge " + className;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function updateUI() {
+            let availCount = 0, resCount = 0, soldCount = 0, unavailCount = 0;
+            const container = document.getElementById("cardListContainer");
+            container.innerHTML = "";
+
+            allLots.forEach(lotNum => {
+                const data = getLotData(lotNum);
+
+                if (data.status === "available") availCount++;
+                else if (data.status === "reserved") resCount++;
+                else if (data.status === "sold") soldCount++;
+                else if (data.status === "unavailable") unavailCount++;
+
+                const card = document.createElement("div");
+                card.className = "lot-card";
+                card.dataset.lot = lotNum;
+                card.dataset.status = data.status;
+                card.dataset.remark = data.remark;
+                card.dataset.type = data.type;
+                card.style.cursor = currentMode === "edit" ? "pointer" : "default";
+                card.addEventListener("click", () => handleCardClick(lotNum));
+
+                const info = document.createElement("div");
+                info.className = "lot-info";
+
+                const title = document.createElement("div");
+                title.className = "lot-title";
+                title.textContent = "Lot " + lotNum;
+
+                const price = document.createElement("div");
+                price.className = "lot-price";
+                price.textContent = "RM " + formatNumberWithComma(data.price);
+
+                info.append(title, price);
+
+                const badgeGroup = document.createElement("div");
+                badgeGroup.className = "badge-group";
+                const badgeRow = document.createElement("div");
+                badgeRow.className = "badge-row";
+
+                if (data.type === "CORNER") badgeRow.appendChild(makeBadge("badge-corner", "CORNER"));
+                badgeRow.appendChild(makeBadge(data.remark === "BUMI" ? "badge-bumi" : "badge-nonbumi", data.remark));
+
+                badgeGroup.append(badgeRow, makeBadge("badge-" + data.status, data.status));
+                card.append(info, badgeGroup);
+                container.appendChild(card);
+            });
+
+            document.getElementById("countAvail").textContent = availCount;
+            document.getElementById("countRes").textContent = resCount;
+            document.getElementById("countSold").textContent = soldCount;
+            document.getElementById("countUnavail").textContent = unavailCount;
+            filterCards();
+        }
+
+        function filterCards() {
+            const query = document.getElementById("searchInput").value.toLowerCase().trim();
+            const catFilter = document.getElementById("filterCategory").value;
+            const typeFilter = document.getElementById("filterType").value;
+            const statusFilter = document.getElementById("filterStatus").value;
+            const cards = document.querySelectorAll(".lot-card");
+            let visibleCount = 0;
+
+            cards.forEach(card => {
+                const lotNum = card.dataset.lot;
+                const status = card.dataset.status;
+                const remark = card.dataset.remark;
+                const type = card.dataset.type;
+
+                const matchSearch = lotNum.includes(query);
+                const matchCat = catFilter === "all" || remark === catFilter;
+                const matchType = typeFilter === "all" || type === typeFilter;
+                const matchStatus = statusFilter === "all" || status === statusFilter;
+                const visible = matchSearch && matchCat && matchType && matchStatus;
+
+                card.style.display = visible ? "flex" : "none";
+                if (visible) visibleCount++;
+            });
+
+            let empty = document.getElementById("emptyState");
+            if (visibleCount === 0) {
+                if (!empty) {
+                    empty = document.createElement("div");
+                    empty.id = "emptyState";
+                    empty.className = "empty-state";
+                    empty.textContent = "Tiada lot yang sepadan dengan carian atau penapis.";
+                    document.getElementById("cardListContainer").appendChild(empty);
+                }
+            } else if (empty) {
+                empty.remove();
+            }
+        }
+
+        function setConnectionStatus(message) {
+            document.getElementById("connectionStatus").textContent = message;
+        }
+
+        window.addEventListener("load", function() {
+            document.getElementById("filterStatus").value = "available";
+
+            db.ref(".info/connected").on("value", snapshot => {
+                setConnectionStatus(snapshot.val() ? "Disambungkan ke Firebase." : "Tiada sambungan Firebase.");
+            });
+
+            db.ref(PROJECT_CONFIG.firebasePath).on("value", snapshot => {
+                lotsCache = snapshot.val() || {};
+                updateUI();
+            }, error => {
+                setConnectionStatus("Gagal membaca Firebase: " + error.message);
+                console.error("Firebase read error:", error);
+            });
+
+            // Tutup modal jika pengguna menekan kawasan gelap di luar kotak modal.
+            document.getElementById("editModal").addEventListener("click", event => {
+                if (event.target.id === "editModal") closeModal();
+            });
+
+            document.addEventListener("keydown", event => {
+                if (event.key === "Escape") closeModal();
+            });
+        });
+    </script>
+</body>
+</html>
