@@ -48,7 +48,7 @@ main{
   padding:14px;
 }
 
-/* Statistik 2 row */
+/* Statistik */
 .stats{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -65,6 +65,7 @@ main{
   min-width:0;
 }
 
+/* Workspace */
 .workspace{
   background:white;
   border:1px solid #dbe2ea;
@@ -73,6 +74,14 @@ main{
   padding:3px;
   position:relative;
   width:100%;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.workspace:active{
+  cursor:grabbing;
 }
 
 #stage{
@@ -81,7 +90,10 @@ main{
   max-width:100%;
   margin:0 auto;
   user-select:none;
-  touch-action:pan-y;
+  -webkit-user-select:none;
+  touch-action:none;
+  transform-origin:0 0;
+  will-change:transform;
 }
 
 #plan{
@@ -89,6 +101,8 @@ main{
   width:100%;
   height:auto;
   max-width:100%;
+  pointer-events:none;
+  -webkit-user-drag:none;
 }
 
 #overlay{
@@ -96,6 +110,8 @@ main{
   inset:0;
   width:100%;
   height:100%;
+  touch-action:none;
+  overflow:visible;
 }
 
 .lot{
@@ -154,6 +170,7 @@ main{
   margin:10px 2px;
 }
 
+/* Modal */
 .modal{
   position:fixed;
   inset:0;
@@ -181,11 +198,21 @@ main{
   margin:12px 0;
 }
 
-.actions{
-  display:flex;
-  gap:8px;
-  justify-content:flex-end;
-  margin-top:18px;
+.field input,
+.field select{
+  width:100%;
+  padding:9px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  background:#f8fafc;
+  color:#334155;
+}
+
+.field input:disabled,
+.field select:disabled{
+  opacity:1;
+  color:#334155;
+  -webkit-text-fill-color:#334155;
 }
 
 @media(max-width:600px){
@@ -205,7 +232,6 @@ main{
 
   main{padding:5px}
 
-  /* Kekalkan 4 kolum supaya statistik menjadi 2 row */
   .stats{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
@@ -264,13 +290,15 @@ main{
 <div class="stats" id="stats"></div>
 
 <!-- Pelan lot -->
-<div class="workspace">
+<div class="workspace" id="workspace">
+
   <div id="stage">
 
     <img
       id="plan"
       src="suriajaya.jpg"
       alt="Site Plan Phase 1"
+      draggable="false"
     >
 
     <svg
@@ -280,11 +308,14 @@ main{
     ></svg>
 
   </div>
+
 </div>
 
 <p class="note">
   Paparan sahaja — klik lot untuk melihat maklumat.
   Data diselaraskan secara realtime melalui Firebase Firestore.
+  <br>
+  Telefon: Gerakkan pelan dengan satu jari dan zoom menggunakan dua jari.
 </p>
 
 </main>
@@ -333,10 +364,15 @@ main{
 
 </div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
+
+/* =====================================
+   FIREBASE CONFIGURATION
+===================================== */
 
 const firebaseConfig = {
   apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
@@ -352,7 +388,7 @@ let db, lotsRef;
 
 const COLLECTION = 'suriajaya_lots';
 
-try {
+try{
 
   if(!firebase.apps.length){
     firebase.initializeApp(firebaseConfig);
@@ -366,7 +402,7 @@ try {
 
   console.error('Firebase initialization error:',err);
 
-  setTimeout(() => {
+  setTimeout(()=>{
 
     setSyncStatus(
       'Firebase gagal dimulakan: '+(err.message || err),
@@ -378,21 +414,23 @@ try {
 }
 
 
+/* =====================================
+   GLOBAL VARIABLES
+===================================== */
+
 const svg = document.getElementById('overlay');
 
 let lots = JSON.parse(
   localStorage.getItem('jpLots') || '[]'
 );
 
-let mode = 'view';
-let drawing = false;
-let start = null;
-let draft = null;
-let editingId = null;
-
 let applyingRemote = false;
 let dbReady = false;
 
+
+/* =====================================
+   FIREBASE STATUS
+===================================== */
 
 function setSyncStatus(message,color){
 
@@ -419,51 +457,31 @@ function cacheLots(){
 }
 
 
-function point(e){
+/* =====================================
+   FIREBASE REALTIME LISTENER
+===================================== */
 
-  const r = svg.getBoundingClientRect();
-
-  const vb = svg.viewBox.baseVal;
-
-  return {
-
-    x:(e.clientX-r.left)/r.width*vb.width,
-
-    y:(e.clientY-r.top)/r.height*vb.height
-
-  };
-
-}
-
-
-function persistLocalAndRender(){
-
-  cacheLots();
-
-  render();
-
-}
-
-
-// Firebase realtime listener
 if(lotsRef){
 
-  lotsRef.onSnapshot(snapshot => {
+  lotsRef.onSnapshot(snapshot=>{
 
     applyingRemote = true;
 
-    const remote = snapshot.docs.map(doc => ({
+    const remote = snapshot.docs.map(doc=>({
+
       ...doc.data(),
       id:doc.id
+
     }));
 
+    // Pindahkan data localStorage ke Firestore
+    // jika koleksi Firebase kosong
 
-    // Pindahkan data localStorage ke Firestore jika koleksi kosong
     if(snapshot.empty && lots.length){
 
       const batch = db.batch();
 
-      lots.forEach((lot,i) => {
+      lots.forEach((lot,i)=>{
 
         const id = String(
           lot.id || (Date.now()+'-'+i)
@@ -476,10 +494,9 @@ if(lotsRef){
 
       });
 
-
       batch.commit()
 
-        .then(() => {
+        .then(()=>{
 
           setSyncStatus(
             '✓ Data tempatan dimuat naik ke Firebase',
@@ -488,7 +505,7 @@ if(lotsRef){
 
         })
 
-        .catch(err => {
+        .catch(err=>{
 
           setSyncStatus(
             'Gagal muat naik: '+err.message,
@@ -497,10 +514,9 @@ if(lotsRef){
 
         })
 
-        .finally(() => {
+        .finally(()=>{
 
           applyingRemote = false;
-
           dbReady = true;
 
         });
@@ -508,7 +524,6 @@ if(lotsRef){
       return;
 
     }
-
 
     lots = remote;
 
@@ -525,8 +540,7 @@ if(lotsRef){
       '#bbf7d0'
     );
 
-
-  },error => {
+  },error=>{
 
     dbReady = false;
 
@@ -544,6 +558,10 @@ if(lotsRef){
 }
 
 
+/* =====================================
+   LOT VALIDATION
+===================================== */
+
 function pointInBounds(l){
 
   return l && [
@@ -551,29 +569,27 @@ function pointInBounds(l){
     l.y,
     l.w,
     l.h
-  ].every(v => Number.isFinite(Number(v)));
+  ].every(v=>Number.isFinite(Number(v)));
 
 }
 
+
+/* =====================================
+   RENDER LOT
+===================================== */
 
 function render(){
 
   svg.innerHTML = '';
 
-  // View Only: paparkan semua lot
-  const shown = lots;
-
-
-  shown.forEach(l => {
+  lots.forEach(l=>{
 
     if(!pointInBounds(l)) return;
-
 
     const g = document.createElementNS(
       svg.namespaceURI,
       'g'
     );
-
 
     const r = document.createElementNS(
       svg.namespaceURI,
@@ -581,15 +597,10 @@ function render(){
     );
 
     r.setAttribute('x',l.x);
-
     r.setAttribute('y',l.y);
-
     r.setAttribute('width',l.w);
-
     r.setAttribute('height',l.h);
-
     r.setAttribute('rx',1);
-
 
     r.setAttribute(
       'class',
@@ -602,9 +613,7 @@ function render(){
       )
     );
 
-
     g.appendChild(r);
-
 
     const t = document.createElementNS(
       svg.namespaceURI,
@@ -627,8 +636,8 @@ function render(){
 
     g.appendChild(t);
 
-
     // Tanda X untuk lot SOLD
+
     if(l.status === 'SOLD'){
 
       const a = document.createElementNS(
@@ -641,37 +650,32 @@ function render(){
         'line'
       );
 
-
       [
         ['x1',Number(l.x)+Number(l.w)*.2],
         ['y1',Number(l.y)+Number(l.h)*.2],
         ['x2',Number(l.x)+Number(l.w)*.8],
         ['y2',Number(l.y)+Number(l.h)*.8]
-      ].forEach(v => a.setAttribute(v[0],v[1]));
-
+      ].forEach(v=>a.setAttribute(v[0],v[1]));
 
       [
         ['x1',Number(l.x)+Number(l.w)*.8],
         ['y1',Number(l.y)+Number(l.h)*.2],
         ['x2',Number(l.x)+Number(l.w)*.2],
         ['y2',Number(l.y)+Number(l.h)*.8]
-      ].forEach(v => b.setAttribute(v[0],v[1]));
-
+      ].forEach(v=>b.setAttribute(v[0],v[1]));
 
       a.setAttribute('class','cross');
-
       b.setAttribute('class','cross');
 
       g.append(a,b);
 
     }
 
-
     g.style.cursor = 'pointer';
 
-
     // Klik lot untuk melihat maklumat
-    g.addEventListener('click',e => {
+
+    g.addEventListener('click',e=>{
 
       e.stopPropagation();
 
@@ -679,13 +683,13 @@ function render(){
 
     });
 
-
     svg.appendChild(g);
 
   });
 
 
-  // Statistik status
+  /* Statistik status */
+
   const counts = {
     AVAILABLE:0,
     HOLD:0,
@@ -693,42 +697,35 @@ function render(){
     SOLD:0
   };
 
-
-  lots.forEach(l => {
+  lots.forEach(l=>{
 
     if(counts[l.status] !== undefined){
-
       counts[l.status]++;
-
     }
 
   });
 
 
-  // Statistik lot AVAILABLE mengikut kategori
-  const bumiAvailable = lots.filter(l =>
+  /* Statistik kategori AVAILABLE */
+
+  const bumiAvailable = lots.filter(l=>
     l.status === 'AVAILABLE' &&
     l.type === 'BUMI'
   ).length;
 
-
-  const nonBumiAvailable = lots.filter(l =>
+  const nonBumiAvailable = lots.filter(l=>
     l.status === 'AVAILABLE' &&
     l.type === 'NON-BUMI'
   ).length;
 
 
-  // Row 1:
-  // AVAILABLE | HOLD | BOOKED | SOLD
-  //
-  // Row 2:
-  // BUMI | NON-BUMI | Jumlah Lot
+  /* Paparan statistik */
 
   document.getElementById('stats').innerHTML =
 
     Object.entries(counts)
 
-      .map(([k,v]) =>
+      .map(([k,v])=>
         `<div class="stat"><b>${k}</b>: ${v}</div>`
       )
 
@@ -743,17 +740,16 @@ function render(){
 }
 
 
+/* =====================================
+   MODAL LOT
+===================================== */
+
 function openModal(l){
 
   if(!l) return;
 
-
-  editingId = String(l.id);
-
-
   document.getElementById('modalTitle').textContent =
     'Maklumat Lot '+(l.num || '');
-
 
   document.getElementById('lotNum').value =
     l.num || '';
@@ -770,20 +766,19 @@ function openModal(l){
   document.getElementById('lotRemark').value =
     l.remark || '';
 
-
   // Semua medan read-only
+
   [
     'lotNum',
     'lotStatus',
     'lotPrice',
     'lotType',
     'lotRemark'
-  ].forEach(id => {
+  ].forEach(id=>{
 
     document.getElementById(id).disabled = true;
 
   });
-
 
   document.getElementById('modal').style.display = 'flex';
 
@@ -796,6 +791,258 @@ function closeModal(){
 
 }
 
+
+/* =====================================
+   PAN & ZOOM
+   MOBILE + DESKTOP
+===================================== */
+
+const workspace = document.getElementById('workspace');
+const stage = document.getElementById('stage');
+
+let scale = 1;
+
+let offsetX = 0;
+let offsetY = 0;
+
+let pointers = new Map();
+
+let startDistance = 0;
+let startScale = 1;
+
+let startX = 0;
+let startY = 0;
+
+let startOffsetX = 0;
+let startOffsetY = 0;
+
+let hasMoved = false;
+
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 5;
+
+function applyTransform(){
+
+  stage.style.transform =
+    `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
+
+}
+
+
+function getDistance(a,b){
+
+  return Math.hypot(
+    a.x-b.x,
+    a.y-b.y
+  );
+
+}
+
+
+/* Pointer down */
+
+workspace.addEventListener('pointerdown',e=>{
+
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+
+  pointers.set(e.pointerId,{
+
+    x:e.clientX,
+    y:e.clientY
+
+  });
+
+  if(pointers.size === 1){
+
+    startX = e.clientX;
+    startY = e.clientY;
+
+    startOffsetX = offsetX;
+    startOffsetY = offsetY;
+
+    hasMoved = false;
+
+  }
+
+  if(pointers.size === 2){
+
+    const p = [...pointers.values()];
+
+    startDistance = getDistance(p[0],p[1]);
+
+    startScale = scale;
+
+  }
+
+});
+
+
+/* Pointer move */
+
+window.addEventListener('pointermove',e=>{
+
+  if(!pointers.has(e.pointerId)) return;
+
+  pointers.set(e.pointerId,{
+
+    x:e.clientX,
+    y:e.clientY
+
+  });
+
+  if(pointers.size === 1){
+
+    const dx = e.clientX-startX;
+    const dy = e.clientY-startY;
+
+    if(Math.abs(dx)>4 || Math.abs(dy)>4){
+
+      hasMoved = true;
+
+    }
+
+    offsetX = startOffsetX+dx;
+    offsetY = startOffsetY+dy;
+
+    applyTransform();
+
+  }
+
+
+  /* Pinch zoom menggunakan dua jari */
+
+  if(pointers.size === 2){
+
+    const p = [...pointers.values()];
+
+    const newDistance = getDistance(p[0],p[1]);
+
+    if(startDistance > 0){
+
+      const newScale =
+        startScale*(newDistance/startDistance);
+
+      const rect = workspace.getBoundingClientRect();
+
+      const centerX =
+        (p[0].x+p[1].x)/2-rect.left;
+
+      const centerY =
+        (p[0].y+p[1].y)/2-rect.top;
+
+      const oldScale = scale;
+
+      const nextScale = Math.max(
+        MIN_SCALE,
+        Math.min(MAX_SCALE,newScale)
+      );
+
+      const ratio = nextScale/oldScale;
+
+      offsetX = centerX-(centerX-offsetX)*ratio;
+
+      offsetY = centerY-(centerY-offsetY)*ratio;
+
+      scale = nextScale;
+
+      hasMoved = true;
+
+      applyTransform();
+
+    }
+
+  }
+
+},{passive:true});
+
+
+/* Pointer up */
+
+function endPointer(e){
+
+  if(!pointers.has(e.pointerId)) return;
+
+  pointers.delete(e.pointerId);
+
+  if(pointers.size === 1){
+
+    const p = [...pointers.values()][0];
+
+    startX = p.x;
+    startY = p.y;
+
+    startOffsetX = offsetX;
+    startOffsetY = offsetY;
+
+    startDistance = 0;
+
+  }
+
+  if(pointers.size === 0){
+
+    startDistance = 0;
+
+  }
+
+}
+
+window.addEventListener('pointerup',endPointer);
+window.addEventListener('pointercancel',endPointer);
+
+
+/* Elakkan klik lot apabila pengguna sedang drag */
+
+workspace.addEventListener('click',e=>{
+
+  if(hasMoved){
+
+    e.stopPropagation();
+
+    e.preventDefault();
+
+    hasMoved = false;
+
+  }
+
+},true);
+
+
+/* Zoom menggunakan roda tetikus */
+
+workspace.addEventListener('wheel',e=>{
+
+  e.preventDefault();
+
+  const rect = workspace.getBoundingClientRect();
+
+  const x = e.clientX-rect.left;
+  const y = e.clientY-rect.top;
+
+  const oldScale = scale;
+
+  const nextScale = Math.max(
+    MIN_SCALE,
+    Math.min(
+      MAX_SCALE,
+      scale*(e.deltaY<0 ? 1.15 : 0.87)
+    )
+  );
+
+  const ratio = nextScale/oldScale;
+
+  offsetX = x-(x-offsetX)*ratio;
+  offsetY = y-(y-offsetY)*ratio;
+
+  scale = nextScale;
+
+  applyTransform();
+
+},{passive:false});
+
+
+/* =====================================
+   IMAGE SIZE
+===================================== */
 
 function updatePlanSize(){
 
@@ -815,9 +1062,14 @@ function updatePlanSize(){
 }
 
 
+/* =====================================
+   MODAL EVENTS
+===================================== */
+
 // Tutup modal apabila klik luar panel
+
 document.getElementById('modal')
-  .addEventListener('click',e => {
+  .addEventListener('click',e=>{
 
     if(e.target.id === 'modal'){
 
@@ -829,7 +1081,8 @@ document.getElementById('modal')
 
 
 // Tutup modal menggunakan Escape
-document.addEventListener('keydown',e => {
+
+document.addEventListener('keydown',e=>{
 
   if(e.key === 'Escape'){
 
@@ -840,9 +1093,19 @@ document.addEventListener('keydown',e => {
 });
 
 
+/* =====================================
+   INITIALIZATION
+===================================== */
+
 document.getElementById('plan')
   .addEventListener('load',updatePlanSize);
 
+document.getElementById('plan')
+  .addEventListener('error',()=>{
+
+    console.error('Gagal memuatkan suriajaya.jpg');
+
+  });
 
 updatePlanSize();
 
