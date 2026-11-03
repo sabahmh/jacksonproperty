@@ -62,7 +62,7 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
 <p class="note">Paparan sahaja — klik lot untuk melihat maklumat. Data diselaraskan secara realtime melalui Firebase Firestore.</p>
 </main>
 
-<div class="modal" id="modal"><div class="panel"><h2 id="modalTitle">Edit Lot</h2>
+<div class="modal" id="modal"><div class="panel"><h2 id="modalTitle">Maklumat Lot</h2>
 <div class="field"><label>Nombor / Nama Lot</label><input id="lotNum"></div>
 <div class="field"><label>Status</label><select id="lotStatus"><option>AVAILABLE</option><option>HOLD</option><option>BOOKED</option><option>SOLD</option></select></div>
 <div class="field"><label>Harga (RM)</label><input id="lotPrice" placeholder="Contoh: 299000"></div>
@@ -83,10 +83,16 @@ const firebaseConfig = {
   measurementId: "G-SZ47HNR9PT"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+let db, lotsRef;
 const COLLECTION = 'suriajaya_lots';
-const lotsRef = db.collection(COLLECTION);
+try {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  db = firebase.firestore();
+  lotsRef = db.collection(COLLECTION);
+} catch (err) {
+  console.error('Firebase initialization error:', err);
+  setTimeout(() => setSyncStatus('Firebase gagal dimulakan: ' + (err.message || err), '#fecaca'), 0);
+}
 const svg = document.getElementById('overlay');
 let lots = JSON.parse(localStorage.getItem('jpLots') || '[]');
 let mode = 'view', drawing = false, start = null, draft = null, editingId = null;
@@ -108,7 +114,7 @@ function point(e) {
 function persistLocalAndRender() { cacheLots(); render(); }
 
 // Firestore realtime listener: semua pengguna menerima perubahan secara langsung.
-lotsRef.onSnapshot(snapshot => {
+if (lotsRef) lotsRef.onSnapshot(snapshot => {
   applyingRemote = true;
   const remote = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
   if (snapshot.empty && lots.length) {
@@ -139,9 +145,8 @@ lotsRef.onSnapshot(snapshot => {
 function pointInBounds(l) { return l && [l.x,l.y,l.w,l.h].every(v => Number.isFinite(Number(v))); }
 function render() {
   svg.innerHTML = '';
-  const statusFilter = document.getElementById('filterStatus').value;
-  const typeFilter = document.getElementById('filterType').value;
-  const shown = lots.filter(l => (!statusFilter || l.status === statusFilter) && (!typeFilter || l.type === typeFilter));
+  // Paparan sahaja: tiada penapis status/kategori dalam halaman ini.
+  const shown = lots;
   shown.forEach(l => {
     if (!pointInBounds(l)) return;
     const g = document.createElementNS(svg.namespaceURI, 'g');
