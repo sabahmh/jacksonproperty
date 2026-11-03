@@ -48,7 +48,40 @@ main{
   padding:14px;
 }
 
+/* FILTER STATUS DAN JENIS LOT */
+
+.filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0;
+}
+
+.filter-group{
+  flex:1;
+  min-width:150px;
+  display:grid;
+  gap:5px;
+}
+
+.filter-group label{
+  font-size:12px;
+  font-weight:bold;
+  color:#475569;
+}
+
+.filter-group select{
+  width:100%;
+  padding:10px;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  background:#fff;
+  color:#172033;
+  font-size:14px;
+}
+
 /* Statistik */
+
 .stats{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -66,6 +99,7 @@ main{
 }
 
 /* Workspace */
+
 .workspace{
   background:white;
   border:1px solid #dbe2ea;
@@ -171,6 +205,7 @@ main{
 }
 
 /* Modal */
+
 .modal{
   position:fixed;
   inset:0;
@@ -232,6 +267,24 @@ main{
 
   main{padding:5px}
 
+  .filters{
+    gap:5px;
+    margin:6px 0;
+  }
+
+  .filter-group{
+    min-width:0;
+  }
+
+  .filter-group label{
+    font-size:10px;
+  }
+
+  .filter-group select{
+    padding:8px 5px;
+    font-size:11px;
+  }
+
   .stats{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
@@ -286,10 +339,40 @@ main{
 
 <main>
 
+<!-- FILTER STATUS DAN JENIS LOT -->
+
+<div class="filters">
+
+  <div class="filter-group">
+    <label for="filterStatus">FILTER STATUS</label>
+
+    <select id="filterStatus">
+      <option value="ALL">Semua Status</option>
+      <option value="AVAILABLE">AVAILABLE</option>
+      <option value="HOLD">HOLD</option>
+      <option value="BOOKED">BOOKED</option>
+      <option value="SOLD">SOLD</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="filterType">FILTER JENIS LOT</label>
+
+    <select id="filterType">
+      <option value="ALL">Semua Jenis</option>
+      <option value="BUMI">BUMI</option>
+      <option value="NON-BUMI">NON-BUMI</option>
+    </select>
+  </div>
+
+</div>
+
 <!-- Statistik -->
+
 <div class="stats" id="stats"></div>
 
 <!-- Pelan lot -->
+
 <div class="workspace" id="workspace">
 
   <div id="stage">
@@ -316,11 +399,14 @@ main{
   Data diselaraskan secara realtime melalui Firebase Firestore.
   <br>
   Telefon: Gerakkan pelan dengan satu jari dan zoom menggunakan dua jari.
+  <br>
+  Komputer: Seret untuk gerakkan pelan dan gunakan roda tetikus untuk zoom.
 </p>
 
 </main>
 
 <!-- Modal Maklumat Lot -->
+
 <div class="modal" id="modal">
 
   <div class="panel">
@@ -365,6 +451,7 @@ main{
 </div>
 
 <!-- Firebase -->
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
@@ -582,7 +669,33 @@ function render(){
 
   svg.innerHTML = '';
 
-  lots.forEach(l=>{
+  // Ambil pilihan filter
+
+  const selectedStatus =
+    document.getElementById('filterStatus').value;
+
+  const selectedType =
+    document.getElementById('filterType').value;
+
+  // Tapis lot berdasarkan status dan jenis
+
+  const filteredLots = lots.filter(l=>{
+
+    const matchStatus =
+      selectedStatus === 'ALL' ||
+      l.status === selectedStatus;
+
+    const matchType =
+      selectedType === 'ALL' ||
+      l.type === selectedType;
+
+    return matchStatus && matchType;
+
+  });
+
+  // Paparkan lot yang memenuhi filter sahaja
+
+  filteredLots.forEach(l=>{
 
     if(!pointInBounds(l)) return;
 
@@ -688,7 +801,10 @@ function render(){
   });
 
 
-  /* Statistik status */
+  /* =====================================
+     STATISTIK KESELURUHAN
+     Tidak dipengaruhi oleh filter
+  ===================================== */
 
   const counts = {
     AVAILABLE:0,
@@ -790,6 +906,17 @@ function closeModal(){
   document.getElementById('modal').style.display = 'none';
 
 }
+
+
+/* =====================================
+   FILTER EVENTS
+===================================== */
+
+document.getElementById('filterStatus')
+  .addEventListener('change',render);
+
+document.getElementById('filterType')
+  .addEventListener('change',render);
 
 
 /* =====================================
