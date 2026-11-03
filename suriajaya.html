@@ -51,7 +51,7 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
 }
 </style></head>
 <body>
-<header><div><h1>Jackson Property – Interactive Lot Plan</h1><small>Site Plan • Phase 1</small></div><div>Lot Management</div></header>
+<header><div><h1>Jackson Property – Interactive Lot Plan</h1><small>Site Plan • Phase 1</small></div><div>Lot Management<br><small id="syncStatus">Menyambung ke Firebase…</small></div></header>
 <main>
 <div class="toolbar">
 <button id="viewBtn" class="active" onclick="setMode('view')">👁 Papar</button>
@@ -68,6 +68,7 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
 </div></div>
 <p class="note">Nota: Klik lot untuk lihat/edit. Dalam mode Edit, gunakan “Tambah / Lukis Lot” untuk menandakan lot di atas pelan. Data demo disimpan dalam browser (localStorage); untuk perkongsian realtime online, sambungkan Firebase/hosting.</p>
 </main>
+
 <div class="modal" id="modal"><div class="panel"><h2 id="modalTitle">Edit Lot</h2>
 <div class="field"><label>Nombor / Nama Lot</label><input id="lotNum"></div>
 <div class="field"><label>Status</label><select id="lotStatus"><option>AVAILABLE</option><option>HOLD</option><option>BOOKED</option><option>SOLD</option></select></div>
@@ -76,9 +77,76 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
 <div class="field"><label>Remark</label><input id="lotRemark" placeholder="Catatan (optional)"></div>
 <div class="actions"><button class="secondary" onclick="closeModal()">Batal</button><button id="deleteBtn" class="secondary" onclick="deleteLot()">Padam</button><button onclick="saveLot()">Simpan</button></div>
 </div></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
-const svg=document.getElementById('overlay');let lots=JSON.parse(localStorage.getItem('jpLots')||'[]'),mode='view',drawing=false,start=null,draft=null,editingId=null;
-function persist(){localStorage.setItem('jpLots',JSON.stringify(lots));render()}
+const firebaseConfig = {
+  apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
+  authDomain: "listing-2a59c.firebaseapp.com",
+  databaseURL: "https://jacksonlisting-5b878-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "listing-2a59c",
+  storageBucket: "listing-2a59c.firebasestorage.app",
+  messagingSenderId: "363739620416",
+  appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
+  measurementId: "G-SZ47HNR9PT"
+};
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const lotsRef = database.ref('lotPlans/suriajaya');
+let dbReady = false;
+let isApplyingRemote = false;
+let lots = JSON.parse(localStorage.getItem('jpLots') || '[]');
+let mode='view',drawing=false,start=null,draft=null,editingId=null;
+function setSyncStatus(message, color) {
+  const el = document.getElementById('syncStatus');
+  if (el) { el.textContent = message; el.style.color = color || '#fff'; }
+}
+function persist() {
+  localStorage.setItem('jpLots', JSON.stringify(lots));
+  render();
+  if (!dbReady || isApplyingRemote) return;
+  lotsRef.set(lots).then(() => {
+    setSyncStatus('✓ Disimpan ke Firebase', '#bbf7d0');
+  }).catch(err => {
+    setSyncStatus('Ralat simpanan Firebase', '#fecaca');
+    alert('Gagal menyimpan ke Firebase: ' + err.message);
+  });
+}
+lotsRef.on('value', snapshot => {
+  const remoteLots = snapshot.val();
+  isApplyingRemote = true;
+  if (remoteLots === null) {
+    if (lots.length) {
+      lotsRef.set(lots).then(() => {
+        dbReady = true;
+        isApplyingRemote = false;
+        setSyncStatus('✓ Data tempatan dimuat naik', '#bbf7d0');
+      }).catch(err => {
+        isApplyingRemote = false;
+        setSyncStatus('Ralat Firebase', '#fecaca');
+        alert('Gagal memindahkan data lot ke Firebase: ' + err.message);
+      });
+    } else {
+      lots = [];
+      localStorage.setItem('jpLots', '[]');
+      dbReady = true;
+      isApplyingRemote = false;
+      render();
+      setSyncStatus('✓ Firebase bersedia', '#bbf7d0');
+    }
+    return;
+  }
+  lots = Array.isArray(remoteLots) ? remoteLots : Object.values(remoteLots);
+  localStorage.setItem('jpLots', JSON.stringify(lots));
+  dbReady = true;
+  isApplyingRemote = false;
+  render();
+  setSyncStatus('✓ Data diselaraskan', '#bbf7d0');
+}, err => {
+  dbReady = false;
+  setSyncStatus('Tidak dapat baca Firebase', '#fecaca');
+  alert('Gagal membaca Firebase: ' + err.message);
+});
 function setMode(m){mode=m;document.getElementById('viewBtn').classList.toggle('active',m==='view');document.getElementById('editBtn').classList.toggle('active',m==='edit');if(m==='view')toggleDraw(false);}
 function toggleDraw(force){if(mode!=='edit'){setMode('edit')}drawing=force===undefined?!drawing:force;document.getElementById('drawBtn').classList.toggle('active',drawing);document.getElementById('drawHint').style.display=drawing?'block':'none';svg.style.cursor=drawing?'crosshair':'default';}
 function point(e){let r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*826,y:(e.clientY-r.top)/r.height*1024}}
