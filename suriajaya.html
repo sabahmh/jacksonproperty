@@ -76,7 +76,7 @@ input,select{
   min-width:100px;
 }
 
-/* Statistik: 4 item row pertama, 3 item row kedua */
+/* Statistik */
 .stats{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
@@ -93,6 +93,7 @@ input,select{
   min-width:0;
 }
 
+/* Workspace dan pelan */
 .workspace{
   background:white;
   border:1px solid #dbe2ea;
@@ -101,6 +102,16 @@ input,select{
   padding:3px;
   position:relative;
   width:100%;
+
+  /* Pan dan zoom */
+  touch-action:none;
+  cursor:grab;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.workspace:active{
+  cursor:grabbing;
 }
 
 #stage{
@@ -109,7 +120,10 @@ input,select{
   max-width:100%;
   margin:0 auto;
   user-select:none;
-  touch-action:pan-y;
+  -webkit-user-select:none;
+  touch-action:none;
+  transform-origin:0 0;
+  will-change:transform;
 }
 
 #plan{
@@ -117,6 +131,8 @@ input,select{
   width:100%;
   height:auto;
   max-width:100%;
+  pointer-events:none;
+  -webkit-user-drag:none;
 }
 
 #overlay{
@@ -124,6 +140,8 @@ input,select{
   inset:0;
   width:100%;
   height:100%;
+  touch-action:none;
+  overflow:visible;
 }
 
 .lot{
@@ -182,6 +200,16 @@ input,select{
   margin:10px 2px;
 }
 
+#drawHint{
+  display:none;
+  background:#fff7ed;
+  color:#9a3412;
+  padding:10px;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+
+/* Modal */
 .modal{
   position:fixed;
   inset:0;
@@ -216,13 +244,10 @@ input,select{
   margin-top:18px;
 }
 
-#drawHint{
-  display:none;
-  background:#fff7ed;
-  color:#9a3412;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:10px;
+.field input,
+.field select{
+  width:100%;
+  min-width:0;
 }
 
 /* Paparan telefon */
@@ -261,7 +286,6 @@ input,select{
 
   #drawBtn{grid-column:span 2}
 
-  /* 4 kolum memastikan statistik kekal dalam 2 row */
   .stats{
     display:grid;
     grid-template-columns:repeat(4,minmax(0,1fr));
@@ -359,13 +383,16 @@ input,select{
 <!-- Statistik -->
 <div class="stats" id="stats"></div>
 
-<div class="workspace">
+<!-- Pelan lot -->
+<div class="workspace" id="workspace">
+
   <div id="stage">
 
     <img
       id="plan"
       src="suriajaya.jpg"
       alt="Site Plan Phase 1"
+      draggable="false"
     >
 
     <svg
@@ -375,6 +402,7 @@ input,select{
     ></svg>
 
   </div>
+
 </div>
 
 <p class="note">
@@ -382,6 +410,9 @@ input,select{
   Mode Edit — klik lot untuk mengubah maklumat.
   Gunakan “Tambah / Lukis Lot” untuk melukis lot baharu.
   Data diselaraskan secara realtime melalui Firebase Firestore.
+  <br>
+  Telefon: Swipe untuk gerakkan pelan. Pinch dua jari untuk zoom.
+  Komputer: Drag menggunakan tetikus dan scroll untuk zoom.
 </p>
 
 </main>
@@ -450,10 +481,15 @@ input,select{
 
 </div>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
+
+/* =====================================
+   FIREBASE CONFIGURATION
+===================================== */
 
 const firebaseConfig = {
   apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
@@ -473,8 +509,12 @@ const COLLECTION = 'suriajaya_lots';
 const lotsRef = db.collection(COLLECTION);
 
 const svg = document.getElementById('overlay');
+const workspace = document.getElementById('workspace');
+const stage = document.getElementById('stage');
 
-let lots = JSON.parse(localStorage.getItem('jpLots') || '[]');
+let lots = JSON.parse(
+  localStorage.getItem('jpLots') || '[]'
+);
 
 let mode = 'view';
 let drawing = false;
@@ -485,6 +525,36 @@ let editingId = null;
 let applyingRemote = false;
 let dbReady = false;
 
+
+/* =====================================
+   PAN & ZOOM VARIABLES
+===================================== */
+
+let scale = 1;
+let offsetX = 0;
+let offsetY = 0;
+
+let pointers = new Map();
+
+let startDistance = 0;
+let startScale = 1;
+
+let startX = 0;
+let startY = 0;
+
+let startOffsetX = 0;
+let startOffsetY = 0;
+
+let hasMoved = false;
+let suppressClick = false;
+
+const MIN_SCALE = 1;
+const MAX_SCALE = 5;
+
+
+/* =====================================
+   FIREBASE STATUS
+===================================== */
 
 function setSyncStatus(message,color){
 
@@ -500,10 +570,17 @@ function setSyncStatus(message,color){
 
 function cacheLots(){
 
-  localStorage.setItem('jpLots',JSON.stringify(lots));
+  localStorage.setItem(
+    'jpLots',
+    JSON.stringify(lots)
+  );
 
 }
 
+
+/* =====================================
+   MODE
+===================================== */
 
 function updateDrawUI(){
 
@@ -529,7 +606,17 @@ function setMode(m){
     .classList.toggle('active',m === 'edit');
 
   if(m === 'view'){
+
     drawing = false;
+
+    start = null;
+
+    if(draft instanceof SVGRectElement){
+      draft.remove();
+    }
+
+    draft = null;
+
   }
 
   updateDrawUI();
@@ -561,6 +648,10 @@ function toggleDraw(force){
 }
 
 
+/* =====================================
+   COORDINATES
+===================================== */
+
 function point(e){
 
   const r = svg.getBoundingClientRect();
@@ -582,7 +673,10 @@ function persistLocalAndRender(){
 }
 
 
-// Firebase realtime listener
+/* =====================================
+   FIREBASE REALTIME LISTENER
+===================================== */
+
 lotsRef.onSnapshot(snapshot => {
 
   applyingRemote = true;
@@ -591,6 +685,8 @@ lotsRef.onSnapshot(snapshot => {
     ...doc.data(),
     id:doc.id
   }));
+
+  // Upload local data jika Firebase kosong
 
   if(snapshot.empty && lots.length){
 
@@ -610,6 +706,7 @@ lotsRef.onSnapshot(snapshot => {
     });
 
     batch.commit()
+
       .then(() => {
 
         setSyncStatus(
@@ -618,6 +715,7 @@ lotsRef.onSnapshot(snapshot => {
         );
 
       })
+
       .catch(err => {
 
         setSyncStatus(
@@ -626,6 +724,7 @@ lotsRef.onSnapshot(snapshot => {
         );
 
       })
+
       .finally(() => {
 
         applyingRemote = false;
@@ -666,6 +765,10 @@ lotsRef.onSnapshot(snapshot => {
 });
 
 
+/* =====================================
+   LOT VALIDATION
+===================================== */
+
 function pointInBounds(l){
 
   return l && [
@@ -677,6 +780,10 @@ function pointInBounds(l){
 
 }
 
+
+/* =====================================
+   RENDER LOT
+===================================== */
 
 function render(){
 
@@ -750,6 +857,8 @@ function render(){
     g.appendChild(t);
 
 
+    // Tanda X untuk SOLD
+
     if(l.status === 'SOLD'){
 
       const a = document.createElementNS(
@@ -786,6 +895,8 @@ function render(){
 
     g.style.cursor = 'pointer';
 
+    // Klik lot
+
     g.addEventListener('click',e => {
 
       e.stopPropagation();
@@ -799,7 +910,8 @@ function render(){
   });
 
 
-  // Jumlah mengikut status
+  /* Statistik status */
+
   const counts = {
     AVAILABLE:0,
     HOLD:0,
@@ -816,7 +928,8 @@ function render(){
   });
 
 
-  // Jumlah lot AVAILABLE mengikut kategori
+  /* Statistik AVAILABLE mengikut kategori */
+
   const bumiAvailable = lots.filter(l =>
     l.status === 'AVAILABLE' &&
     l.type === 'BUMI'
@@ -828,15 +941,16 @@ function render(){
   ).length;
 
 
-  // Statistik disusun dalam 2 row:
-  // Row 1: AVAILABLE, HOLD, BOOKED, SOLD
-  // Row 2: BUMI, NON-BUMI, Jumlah Lot
+  /* Paparan statistik */
+
   document.getElementById('stats').innerHTML =
 
     Object.entries(counts)
+
       .map(([k,v]) =>
         `<div class="stat"><b>${k}</b>: ${v}</div>`
       )
+
       .join('') +
 
     `<div class="stat"><b>BUMI</b>: ${bumiAvailable}</div>` +
@@ -847,6 +961,10 @@ function render(){
 
 }
 
+
+/* =====================================
+   MODAL READ ONLY / EDIT
+===================================== */
 
 function setFormReadOnly(readOnly){
 
@@ -917,7 +1035,6 @@ function openModal(l,coords){
       : null
   );
 
-
   setFormReadOnly(readOnly);
 
   document.getElementById('modal').style.display = 'flex';
@@ -935,6 +1052,10 @@ function closeModal(){
 
 }
 
+
+/* =====================================
+   SAVE LOT
+===================================== */
 
 async function saveLot(){
 
@@ -959,17 +1080,16 @@ async function saveLot(){
 
   }
 
-
   const id = editingId ||
     (
       Date.now().toString()+
       Math.random().toString(36).slice(2,7)
     );
 
-
   const data = {
 
     id,
+
     num,
 
     status:
@@ -993,7 +1113,6 @@ async function saveLot(){
       firebase.firestore.FieldValue.serverTimestamp()
 
   };
-
 
   try{
 
@@ -1028,6 +1147,10 @@ async function saveLot(){
 }
 
 
+/* =====================================
+   DELETE LOT
+===================================== */
+
 async function deleteLot(){
 
   if(!editingId || mode !== 'edit') return;
@@ -1059,6 +1182,260 @@ async function deleteLot(){
 }
 
 
+/* =====================================
+   PAN & ZOOM
+   TELEFON + KOMPUTER
+===================================== */
+
+function applyTransform(){
+
+  stage.style.transform =
+    `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
+
+}
+
+
+function getDistance(a,b){
+
+  return Math.hypot(
+    a.x-b.x,
+    a.y-b.y
+  );
+
+}
+
+
+/* Pointer down: mula gerakkan pelan */
+
+workspace.addEventListener('pointerdown',e=>{
+
+  // Dalam mode lukis, drag digunakan untuk melukis lot
+  if(drawing) return;
+
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+
+  pointers.set(e.pointerId,{
+
+    x:e.clientX,
+    y:e.clientY
+
+  });
+
+  if(pointers.size === 1){
+
+    startX = e.clientX;
+    startY = e.clientY;
+
+    startOffsetX = offsetX;
+    startOffsetY = offsetY;
+
+    hasMoved = false;
+
+  }
+
+  if(pointers.size === 2){
+
+    const p = [...pointers.values()];
+
+    startDistance = getDistance(p[0],p[1]);
+
+    startScale = scale;
+
+    hasMoved = true;
+
+  }
+
+});
+
+
+/* Pointer move */
+
+window.addEventListener('pointermove',e=>{
+
+  if(drawing) return;
+
+  if(!pointers.has(e.pointerId)) return;
+
+  pointers.set(e.pointerId,{
+
+    x:e.clientX,
+    y:e.clientY
+
+  });
+
+
+  /* Satu jari / mouse: pan */
+
+  if(pointers.size === 1){
+
+    const dx = e.clientX-startX;
+    const dy = e.clientY-startY;
+
+    if(Math.abs(dx)>4 || Math.abs(dy)>4){
+
+      hasMoved = true;
+
+    }
+
+    offsetX = startOffsetX+dx;
+    offsetY = startOffsetY+dy;
+
+    applyTransform();
+
+  }
+
+
+  /* Dua jari: pinch zoom */
+
+  if(pointers.size === 2){
+
+    const p = [...pointers.values()];
+
+    const newDistance = getDistance(p[0],p[1]);
+
+    if(startDistance > 0){
+
+      const newScale =
+        startScale*(newDistance/startDistance);
+
+      const rect = workspace.getBoundingClientRect();
+
+      const centerX =
+        (p[0].x+p[1].x)/2-rect.left;
+
+      const centerY =
+        (p[0].y+p[1].y)/2-rect.top;
+
+      const nextScale = Math.max(
+        MIN_SCALE,
+        Math.min(MAX_SCALE,newScale)
+      );
+
+      const ratio = nextScale/scale;
+
+      offsetX =
+        centerX-(centerX-offsetX)*ratio;
+
+      offsetY =
+        centerY-(centerY-offsetY)*ratio;
+
+      scale = nextScale;
+
+      hasMoved = true;
+
+      applyTransform();
+
+    }
+
+  }
+
+},{passive:true});
+
+
+/* Pointer up */
+
+function endPan(e){
+
+  if(!pointers.has(e.pointerId)) return;
+
+  pointers.delete(e.pointerId);
+
+  if(pointers.size === 1){
+
+    const p = [...pointers.values()][0];
+
+    startX = p.x;
+    startY = p.y;
+
+    startOffsetX = offsetX;
+    startOffsetY = offsetY;
+
+    startDistance = 0;
+
+  }
+
+  if(pointers.size === 0){
+
+    startDistance = 0;
+
+    if(hasMoved){
+
+      suppressClick = true;
+
+      setTimeout(()=>{
+
+        suppressClick = false;
+
+        hasMoved = false;
+
+      },400);
+
+    }
+
+  }
+
+}
+
+window.addEventListener('pointerup',endPan);
+window.addEventListener('pointercancel',endPan);
+
+
+/* Halang klik lot jika pengguna sedang drag */
+
+workspace.addEventListener('click',e=>{
+
+  if(suppressClick){
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    suppressClick = false;
+    hasMoved = false;
+
+  }
+
+},true);
+
+
+/* Zoom menggunakan roda tetikus */
+
+workspace.addEventListener('wheel',e=>{
+
+  if(drawing) return;
+
+  e.preventDefault();
+
+  const rect = workspace.getBoundingClientRect();
+
+  const x = e.clientX-rect.left;
+  const y = e.clientY-rect.top;
+
+  const oldScale = scale;
+
+  const nextScale = Math.max(
+    MIN_SCALE,
+    Math.min(
+      MAX_SCALE,
+      scale*(e.deltaY<0 ? 1.15 : 0.87)
+    )
+  );
+
+  const ratio = nextScale/oldScale;
+
+  offsetX = x-(x-offsetX)*ratio;
+  offsetY = y-(y-offsetY)*ratio;
+
+  scale = nextScale;
+
+  applyTransform();
+
+},{passive:false});
+
+
+/* =====================================
+   DRAW NEW LOT
+===================================== */
+
 function pointFromEvent(e){
 
   return point(e);
@@ -1066,7 +1443,9 @@ function pointFromEvent(e){
 }
 
 
-svg.addEventListener('pointerdown',e => {
+/* Mula lukisan */
+
+svg.addEventListener('pointerdown',e=>{
 
   if(!drawing || mode !== 'edit') return;
 
@@ -1088,7 +1467,9 @@ svg.addEventListener('pointerdown',e => {
 });
 
 
-svg.addEventListener('pointermove',e => {
+/* Gerakkan semasa melukis */
+
+svg.addEventListener('pointermove',e=>{
 
   if(
     !start ||
@@ -1120,6 +1501,8 @@ svg.addEventListener('pointermove',e => {
 
 });
 
+
+/* Selesai melukis */
 
 function finishDrawing(){
 
@@ -1155,6 +1538,10 @@ svg.addEventListener('pointerup',finishDrawing);
 svg.addEventListener('pointercancel',finishDrawing);
 
 
+/* =====================================
+   PLAN IMAGE SIZE
+===================================== */
+
 function updatePlanSize(){
 
   const im = document.getElementById('plan');
@@ -1173,9 +1560,50 @@ function updatePlanSize(){
 }
 
 
+/* =====================================
+   MODAL EVENTS
+===================================== */
+
+// Tutup modal apabila klik luar panel
+
+document.getElementById('modal')
+  .addEventListener('click',e=>{
+
+    if(e.target.id === 'modal'){
+
+      closeModal();
+
+    }
+
+  });
+
+
+// Tutup modal menggunakan Escape
+
+document.addEventListener('keydown',e=>{
+
+  if(e.key === 'Escape'){
+
+    closeModal();
+
+  }
+
+});
+
+
+/* =====================================
+   INITIALIZATION
+===================================== */
+
 document.getElementById('plan')
   .addEventListener('load',updatePlanSize);
 
+document.getElementById('plan')
+  .addEventListener('error',()=>{
+
+    console.error('Gagal memuatkan suriajaya.jpg');
+
+  });
 
 updatePlanSize();
 
