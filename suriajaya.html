@@ -57,9 +57,6 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
 <button id="viewBtn" class="active" onclick="setMode('view')">👁 Papar</button>
 <button id="editBtn" onclick="setMode('edit')">✏️ Edit</button>
 <button id="drawBtn" class="secondary" onclick="toggleDraw()">＋ Tambah / Lukis Lot</button>
-<button class="secondary" onclick="exportData()">Export JSON</button>
-<button class="secondary" onclick="document.getElementById('importFile').click()">Import JSON</button>
-<input id="importFile" type="file" accept=".json" hidden onchange="importData(event)">
 <select id="filterStatus" onchange="render()"><option value="">Semua Status</option><option>AVAILABLE</option><option>HOLD</option><option>BOOKED</option><option>SOLD</option></select>
 <select id="filterType" onchange="render()"><option value="">Semua Lot</option><option>BUMI</option><option>NON-BUMI</option></select>
 </div>
@@ -99,8 +96,6 @@ function openModal(l,coords){if(mode!=='edit'&&!coords){alert('Tukar ke mode Edi
 function closeModal(){document.getElementById('modal').style.display='none';draft=null}
 function saveLot(){let num=document.getElementById('lotNum').value.trim();if(!num){alert('Masukkan nombor lot');return}let data={id:editingId||Date.now().toString(),num,status:document.getElementById('lotStatus').value,price:document.getElementById('lotPrice').value,type:document.getElementById('lotType').value,remark:document.getElementById('lotRemark').value,...draft};if(editingId)lots=lots.map(l=>l.id===editingId?data:l);else lots.push(data);closeModal();persist()}
 function deleteLot(){if(confirm('Padam lot ini?')){lots=lots.filter(l=>l.id!==editingId);closeModal();persist()}}
-function exportData(){let blob=new Blob([JSON.stringify(lots,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='jackson-property-lots.json';a.click();URL.revokeObjectURL(a.href)}
-function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{lots=JSON.parse(r.result);persist();alert('Import berjaya')}catch{alert('Fail JSON tidak sah')}};r.readAsText(f);e.target.value=''}
 document.getElementById('plan').addEventListener('load',()=>{let im=document.getElementById('plan');svg.setAttribute('viewBox',`0 0 ${im.naturalWidth} ${im.naturalHeight}`);render()});
 render();
 </script></body></html>
