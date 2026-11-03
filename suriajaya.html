@@ -1,33 +1,100 @@
+
 <!DOCTYPE html>
-<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jackson Property – Interactive Lot Plan</title>
+
 <style>
-:root{--ink:#172033;--blue:#173b72;--pink:#ec4899;--green:#16a34a;--yellow:#f59e0b;}
-*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:var(--ink);font:15px Arial,sans-serif}
-header{background:var(--blue);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-h1{font-size:20px;margin:0}header small{opacity:.85}
+:root{
+ --ink:#172033;
+ --blue:#173b72;
+ --pink:#ec4899;
+ --green:#16a34a;
+ --yellow:#f59e0b;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f9;color:var(--ink);font:15px Arial,sans-serif}
+header{
+ background:var(--blue);color:#fff;padding:16px 20px;
+ display:flex;justify-content:space-between;
+ align-items:center;gap:12px;flex-wrap:wrap
+}
+h1{font-size:20px;margin:0}
+header small{opacity:.85}
 main{max-width:1400px;margin:auto;padding:14px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-button,.btn{border:0;border-radius:8px;padding:10px 13px;background:var(--blue);color:white;cursor:pointer;font-weight:600}
-button.secondary{background:#64748b}button.active{background:#0f766e}
-input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:100px}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.stat{background:white;border:1px solid #e2e8f0;border-radius:9px;padding:8px 13px}
-.workspace{background:white;border:1px solid #dbe2ea;border-radius:10px;overflow:hidden;padding:3px;position:relative;width:100%}
-#stage{position:relative;width:100%;max-width:100%;margin:0 auto;user-select:none;touch-action:pan-y}
-#plan{display:block;width:100%;height:auto;max-width:100%;}
-#overlay{position:absolute;inset:0;width:100%;height:100%;}
-.lot{stroke:#1d4ed8;stroke-width:1.4;fill:#ffffff;fill-opacity:.08;cursor:pointer}
+.toolbar{
+ display:flex;gap:8px;flex-wrap:wrap;
+ margin-bottom:12px;align-items:center
+}
+button{
+ border:0;border-radius:8px;padding:10px 13px;
+ background:var(--blue);color:white;
+ cursor:pointer;font-weight:600
+}
+button.secondary{background:#64748b}
+button.active{background:#0f766e}
+button:disabled{opacity:.6;cursor:wait}
+input,select{
+ padding:9px;border:1px solid #cbd5e1;
+ border-radius:7px;min-width:100px
+}
+.stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.stat{
+ background:white;border:1px solid #e2e8f0;
+ border-radius:9px;padding:8px 13px
+}
+.workspace{
+ background:white;border:1px solid #dbe2ea;
+ border-radius:10px;overflow:hidden;padding:3px;
+ position:relative;width:100%
+}
+#stage{
+ position:relative;width:100%;max-width:100%;
+ margin:0 auto;user-select:none;touch-action:pan-y
+}
+#plan{display:block;width:100%;height:auto;max-width:100%}
+#overlay{
+ position:absolute;inset:0;width:100%;height:100%;
+ touch-action:pan-y
+}
+.lot{
+ stroke:#1d4ed8;stroke-width:1.4;
+ fill:#ffffff;fill-opacity:.08;cursor:pointer
+}
 .lot.bumi{fill:#ec4899;fill-opacity:.55;stroke:#be185d}
 .lot.sold{fill:#64748b;fill-opacity:.38;stroke:#334155}
 .lot.hold{fill:#fbbf24;fill-opacity:.5;stroke:#b45309}
 .lot.booked{fill:#60a5fa;fill-opacity:.5;stroke:#1d4ed8}
-.lottext{font-size:12px;font-weight:bold;fill:#111827;paint-order:stroke;stroke:white;stroke-width:2px;stroke-linejoin:round;pointer-events:none;text-anchor:middle}
+.lottext{
+ font-size:12px;font-weight:bold;fill:#111827;
+ paint-order:stroke;stroke:white;stroke-width:2px;
+ stroke-linejoin:round;pointer-events:none;text-anchor:middle
+}
 .cross{stroke:#dc2626;stroke-width:2.5;pointer-events:none}
 .note{color:#64748b;font-size:13px;margin:10px 2px}
-.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:5}
-.panel{background:white;padding:20px;border-radius:14px;width:min(420px,100%);box-shadow:0 15px 50px #0003}
-.panel h2{margin-top:0}.field{display:grid;gap:5px;margin:12px 0}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-#drawHint{display:none;background:#fff7ed;color:#9a3412;padding:10px;border-radius:8px;margin-bottom:10px}
+.modal{
+ position:fixed;inset:0;background:#0008;
+ display:none;align-items:center;justify-content:center;
+ padding:15px;z-index:5
+}
+.panel{
+ background:white;padding:20px;border-radius:14px;
+ width:min(420px,100%);box-shadow:0 15px 50px #0003
+}
+.panel h2{margin-top:0}
+.field{display:grid;gap:5px;margin:12px 0}
+.field input,.field select{width:100%}
+.actions{
+ display:flex;gap:8px;justify-content:flex-end;
+ margin-top:18px;flex-wrap:wrap
+}
+#drawHint{
+ display:none;background:#fff7ed;color:#9a3412;
+ padding:10px;border-radius:8px;margin-bottom:10px
+}
+#connection{font-size:12px;opacity:.95}
 @media(max-width:600px){
  body{font-size:13px}
  header{padding:9px 11px;gap:5px}
@@ -35,11 +102,23 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
  header small{font-size:11px}
  header>div:last-child{font-size:11px}
  main{padding:5px}
- .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-bottom:7px}
- .toolbar button,.toolbar select{width:100%;min-width:0;padding:8px 5px;font-size:12px;border-radius:7px}
+ .toolbar{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:5px;margin-bottom:7px
+ }
+ .toolbar button,.toolbar select{
+  width:100%;min-width:0;padding:8px 5px;
+  font-size:12px;border-radius:7px
+ }
  #drawBtn{grid-column:span 2}
- .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:6px 0}
- .stat{padding:6px 4px;text-align:center;font-size:10px;border-radius:6px;white-space:nowrap}
+ .stats{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:4px;margin:6px 0
+ }
+ .stat{
+  padding:6px 4px;text-align:center;
+  font-size:10px;border-radius:6px;white-space:nowrap
+ }
  .workspace{padding:1px;border-radius:6px}
  .note{font-size:11px}
  .panel{padding:15px}
@@ -49,121 +128,660 @@ input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:10
  .toolbar button,.toolbar select{font-size:11px}
  .stat{font-size:9px}
 }
-</style></head>
+</style>
+</head>
+
 <body>
-<header><div><h1>Jackson Property – Interactive Lot Plan</h1><small>Site Plan • Phase 1</small></div><div>Lot Management<br><small id="syncStatus">Menyambung ke Firebase…</small></div></header>
+
+<header>
+ <div>
+  <h1>Jackson Property – Interactive Lot Plan</h1>
+  <small>Site Plan • Phase 1</small>
+ </div>
+ <div>
+  Lot Management<br>
+  <span id="connection">Menyambung ke Firebase...</span>
+ </div>
+</header>
+
 <main>
+
 <div class="toolbar">
-<button id="viewBtn" class="active" onclick="setMode('view')">👁 Papar</button>
-<button id="editBtn" onclick="setMode('edit')">✏️ Edit</button>
-<button id="drawBtn" class="secondary" onclick="toggleDraw()">＋ Tambah / Lukis Lot</button>
-<select id="filterStatus" onchange="render()"><option value="">Semua Status</option><option>AVAILABLE</option><option>HOLD</option><option>BOOKED</option><option>SOLD</option></select>
-<select id="filterType" onchange="render()"><option value="">Semua Lot</option><option>BUMI</option><option>NON-BUMI</option></select>
+
+ <button id="viewBtn" class="active" onclick="setMode('view')">
+  👁 Papar
+ </button>
+
+ <button id="editBtn" onclick="setMode('edit')">
+  ✏️ Edit
+ </button>
+
+ <button id="drawBtn" class="secondary" onclick="toggleDraw()">
+  ＋ Tambah / Lukis Lot
+ </button>
+
+ <select id="filterStatus" onchange="render()">
+  <option value="">Semua Status</option>
+  <option>AVAILABLE</option>
+  <option>HOLD</option>
+  <option>BOOKED</option>
+  <option>SOLD</option>
+ </select>
+
+ <select id="filterType" onchange="render()">
+  <option value="">Semua Lot</option>
+  <option>BUMI</option>
+  <option>NON-BUMI</option>
+ </select>
+
 </div>
-<div id="drawHint">Mode lukis aktif: klik dan seret pada pelan untuk menandakan kawasan lot. Selepas dilepaskan, isi nombor lot dan maklumat.</div>
+
+<div id="drawHint">
+ Mode lukis aktif: klik dan seret pada pelan untuk menandakan
+ kawasan lot. Selepas dilepaskan, isi nombor lot dan maklumat.
+</div>
+
 <div class="stats" id="stats"></div>
-<div class="workspace"><div id="stage">
-<img id="plan" src="suriajaya.jpg" alt="Site Plan Phase 1">
-<svg id="overlay" viewBox="0 0 826 1024" preserveAspectRatio="none"></svg>
-</div></div>
-<p class="note">Nota: Klik lot untuk lihat/edit. Dalam mode Edit, gunakan “Tambah / Lukis Lot” untuk menandakan lot di atas pelan. Data demo disimpan dalam browser (localStorage); untuk perkongsian realtime online, sambungkan Firebase/hosting.</p>
+
+<div class="workspace">
+ <div id="stage">
+
+  <img id="plan" src="suriajaya.jpg" alt="Site Plan Phase 1">
+
+  <svg id="overlay" viewBox="0 0 826 1024"
+       preserveAspectRatio="none"></svg>
+
+ </div>
+</div>
+
+<p class="note">
+ Data lot disimpan dalam Firebase Cloud Firestore dan
+ disegerakkan secara realtime. Pastikan fail gambar
+ <b>suriajaya.jpg</b> berada dalam folder yang sama dengan HTML ini.
+</p>
+
 </main>
 
-<div class="modal" id="modal"><div class="panel"><h2 id="modalTitle">Edit Lot</h2>
-<div class="field"><label>Nombor / Nama Lot</label><input id="lotNum"></div>
-<div class="field"><label>Status</label><select id="lotStatus"><option>AVAILABLE</option><option>HOLD</option><option>BOOKED</option><option>SOLD</option></select></div>
-<div class="field"><label>Harga (RM)</label><input id="lotPrice" placeholder="Contoh: 299000"></div>
-<div class="field"><label>Kategori</label><select id="lotType"><option>BUMI</option><option>NON-BUMI</option></select></div>
-<div class="field"><label>Remark</label><input id="lotRemark" placeholder="Catatan (optional)"></div>
-<div class="actions"><button class="secondary" onclick="closeModal()">Batal</button><button id="deleteBtn" class="secondary" onclick="deleteLot()">Padam</button><button onclick="saveLot()">Simpan</button></div>
-</div></div>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+ <div class="panel">
+
+  <h2 id="modalTitle">Edit Lot</h2>
+
+  <div class="field">
+   <label>Nombor / Nama Lot</label>
+   <input id="lotNum" placeholder="Contoh: LOT 01">
+  </div>
+
+  <div class="field">
+   <label>Status</label>
+   <select id="lotStatus">
+    <option>AVAILABLE</option>
+    <option>HOLD</option>
+    <option>BOOKED</option>
+    <option>SOLD</option>
+   </select>
+  </div>
+
+  <div class="field">
+   <label>Harga (RM)</label>
+   <input id="lotPrice" placeholder="Contoh: 299000">
+  </div>
+
+  <div class="field">
+   <label>Kategori</label>
+   <select id="lotType">
+    <option>BUMI</option>
+    <option>NON-BUMI</option>
+   </select>
+  </div>
+
+  <div class="field">
+   <label>Remark</label>
+   <input id="lotRemark" placeholder="Catatan (optional)">
+  </div>
+
+  <div class="actions">
+   <button class="secondary" onclick="closeModal()">Batal</button>
+   <button id="deleteBtn" class="secondary" onclick="deleteLot()">Padam</button>
+   <button id="saveBtn" onclick="saveLot()">Simpan</button>
+  </div>
+
+ </div>
+</div>
+
+<!-- FIREBASE SDK -->
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <script>
+
+/* =====================================
+   FIREBASE CONFIGURATION
+===================================== */
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
-  authDomain: "listing-2a59c.firebaseapp.com",
-  databaseURL: "https://jacksonlisting-5b878-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "listing-2a59c",
-  storageBucket: "listing-2a59c.firebasestorage.app",
-  messagingSenderId: "363739620416",
-  appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
-  measurementId: "G-SZ47HNR9PT"
+ apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
+ authDomain: "listing-2a59c.firebaseapp.com",
+ projectId: "listing-2a59c",
+ storageBucket: "listing-2a59c.firebasestorage.app",
+ messagingSenderId: "363739620416",
+ appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
+ measurementId: "G-SZ47HNR9PT"
 };
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-const lotsRef = database.ref('lotPlans/suriajaya');
-let dbReady = false;
-let isApplyingRemote = false;
-let lots = JSON.parse(localStorage.getItem('jpLots') || '[]');
-let mode='view',drawing=false,start=null,draft=null,editingId=null;
-function setSyncStatus(message, color) {
-  const el = document.getElementById('syncStatus');
-  if (el) { el.textContent = message; el.style.color = color || '#fff'; }
+
+const COLLECTION = "suriajaya_lots";
+
+const svg = document.getElementById("overlay");
+
+let db = null;
+let lots = [];
+let mode = "view";
+let drawing = false;
+let start = null;
+let draft = null;
+let editingId = null;
+let saving = false;
+
+/* =====================================
+   FIREBASE CONNECTION
+===================================== */
+
+function setConnection(message,color){
+
+ const el=document.getElementById("connection");
+
+ el.textContent=message;
+
+ if(color) el.style.color=color;
+
 }
-function persist() {
-  localStorage.setItem('jpLots', JSON.stringify(lots));
-  render();
-  if (!dbReady || isApplyingRemote) return;
-  lotsRef.set(lots).then(() => {
-    setSyncStatus('✓ Disimpan ke Firebase', '#bbf7d0');
-  }).catch(err => {
-    setSyncStatus('Ralat simpanan Firebase', '#fecaca');
-    alert('Gagal menyimpan ke Firebase: ' + err.message);
+
+function initFirebase(){
+
+ try{
+
+  firebase.initializeApp(firebaseConfig);
+
+  db=firebase.firestore();
+
+  setConnection("Menyambung ke Firestore...","#fde68a");
+
+  db.collection(COLLECTION).onSnapshot(snapshot=>{
+
+   lots=snapshot.docs.map(doc=>({
+    id:doc.id,
+    ...doc.data()
+   }));
+
+   setConnection("● Firebase Connected • Realtime","#bbf7d0");
+
+   render();
+
+  },error=>{
+
+   console.error(error);
+
+   setConnection("Ralat Firebase: "+error.code,"#fecaca");
+
+   alert(
+    "Gagal membaca Firestore:\n"+
+    error.message+
+    "\n\nSemak Firestore Rules."
+   );
+
   });
+
+ }catch(error){
+
+  console.error(error);
+
+  setConnection("Gagal menyambung Firebase","#fecaca");
+
+  alert("Firebase error: "+error.message);
+
+ }
+
 }
-lotsRef.on('value', snapshot => {
-  const remoteLots = snapshot.val();
-  isApplyingRemote = true;
-  if (remoteLots === null) {
-    if (lots.length) {
-      lotsRef.set(lots).then(() => {
-        dbReady = true;
-        isApplyingRemote = false;
-        setSyncStatus('✓ Data tempatan dimuat naik', '#bbf7d0');
-      }).catch(err => {
-        isApplyingRemote = false;
-        setSyncStatus('Ralat Firebase', '#fecaca');
-        alert('Gagal memindahkan data lot ke Firebase: ' + err.message);
-      });
-    } else {
-      lots = [];
-      localStorage.setItem('jpLots', '[]');
-      dbReady = true;
-      isApplyingRemote = false;
-      render();
-      setSyncStatus('✓ Firebase bersedia', '#bbf7d0');
-    }
-    return;
-  }
-  lots = Array.isArray(remoteLots) ? remoteLots : Object.values(remoteLots);
-  localStorage.setItem('jpLots', JSON.stringify(lots));
-  dbReady = true;
-  isApplyingRemote = false;
-  render();
-  setSyncStatus('✓ Data diselaraskan', '#bbf7d0');
-}, err => {
-  dbReady = false;
-  setSyncStatus('Tidak dapat baca Firebase', '#fecaca');
-  alert('Gagal membaca Firebase: ' + err.message);
+
+/* =====================================
+   VIEW / EDIT MODE
+===================================== */
+
+function setMode(m){
+
+ mode=m;
+
+ document.getElementById("viewBtn")
+ .classList.toggle("active",m==="view");
+
+ document.getElementById("editBtn")
+ .classList.toggle("active",m==="edit");
+
+ if(m==="view") toggleDraw(false);
+
+}
+
+function toggleDraw(force){
+
+ if(mode!=="edit") setMode("edit");
+
+ drawing=force===undefined?!drawing:force;
+
+ document.getElementById("drawBtn")
+ .classList.toggle("active",drawing);
+
+ document.getElementById("drawHint").style.display=
+ drawing?"block":"none";
+
+ svg.style.cursor=drawing?"crosshair":"default";
+
+}
+
+/* =====================================
+   POINTER POSITION
+===================================== */
+
+function point(e){
+
+ const r=svg.getBoundingClientRect();
+
+ const vb=svg.viewBox.baseVal;
+
+ return {
+  x:(e.clientX-r.left)/r.width*vb.width,
+  y:(e.clientY-r.top)/r.height*vb.height
+ };
+
+}
+
+/* =====================================
+   DRAW LOT
+===================================== */
+
+svg.addEventListener("pointerdown",e=>{
+
+ if(!drawing)return;
+
+ e.preventDefault();
+
+ start=point(e);
+
+ draft=document.createElementNS(svg.namespaceURI,"rect");
+
+ draft.setAttribute("class","lot bumi");
+ draft.setAttribute("pointer-events","none");
+
+ svg.appendChild(draft);
+
+ svg.setPointerCapture(e.pointerId);
+
 });
-function setMode(m){mode=m;document.getElementById('viewBtn').classList.toggle('active',m==='view');document.getElementById('editBtn').classList.toggle('active',m==='edit');if(m==='view')toggleDraw(false);}
-function toggleDraw(force){if(mode!=='edit'){setMode('edit')}drawing=force===undefined?!drawing:force;document.getElementById('drawBtn').classList.toggle('active',drawing);document.getElementById('drawHint').style.display=drawing?'block':'none';svg.style.cursor=drawing?'crosshair':'default';}
-function point(e){let r=svg.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*826,y:(e.clientY-r.top)/r.height*1024}}
-svg.addEventListener('pointerdown',e=>{if(!drawing)return;e.preventDefault();start=point(e);draft=document.createElementNS('http://www.w3.org/2000/svg','rect');draft.setAttribute('class','lot bumi');svg.appendChild(draft);svg.setPointerCapture(e.pointerId)});
-svg.addEventListener('pointermove',e=>{if(!start||!draft)return;let p=point(e);draft.setAttribute('x',Math.min(start.x,p.x));draft.setAttribute('y',Math.min(start.y,p.y));draft.setAttribute('width',Math.abs(p.x-start.x));draft.setAttribute('height',Math.abs(p.y-start.y));});
-svg.addEventListener('pointerup',e=>{if(!start||!draft)return;let x=+draft.getAttribute('x'),y=+draft.getAttribute('y'),w=+draft.getAttribute('width'),h=+draft.getAttribute('height');draft.remove();start=null;draft=null;if(w<5||h<5)return;openModal(null,{x,y,w,h});});
-function render(){svg.innerHTML='';let shown=lots.filter(l=>(!document.getElementById('filterStatus').value||l.status===document.getElementById('filterStatus').value)&&(!document.getElementById('filterType').value||l.type===document.getElementById('filterType').value));
-shown.forEach(l=>{let g=document.createElementNS(svg.namespaceURI,'g');let r=document.createElementNS(svg.namespaceURI,'rect');r.setAttribute('x',l.x);r.setAttribute('y',l.y);r.setAttribute('width',l.w);r.setAttribute('height',l.h);r.setAttribute('rx',1);r.setAttribute('class','lot '+(l.status==='SOLD'?'sold':l.status==='HOLD'?'hold':l.status==='BOOKED'?'booked':l.type==='BUMI'?'bumi':''));g.appendChild(r);
-let t=document.createElementNS(svg.namespaceURI,'text');t.setAttribute('x',l.x+l.w/2);t.setAttribute('y',l.y+l.h/2+4);t.setAttribute('class','lottext');t.textContent=l.num;g.appendChild(t);
-if(l.status==='SOLD'){let a=document.createElementNS(svg.namespaceURI,'line'),b=document.createElementNS(svg.namespaceURI,'line');[['x1',l.x+l.w*.2],['y1',l.y+l.h*.2],['x2',l.x+l.w*.8],['y2',l.y+l.h*.8]].forEach(v=>a.setAttribute(v[0],v[1]));[['x1',l.x+l.w*.8],['y1',l.y+l.h*.2],['x2',l.x+l.w*.2],['y2',l.y+l.h*.8]].forEach(v=>b.setAttribute(v[0],v[1]));a.setAttribute('class','cross');b.setAttribute('class','cross');g.append(a,b)}
-g.style.cursor='pointer';g.addEventListener('click',()=>openModal(l));svg.appendChild(g)});
-let c={AVAILABLE:0,HOLD:0,BOOKED:0,SOLD:0};lots.forEach(l=>c[l.status]++);document.getElementById('stats').innerHTML=Object.entries(c).map(([k,v])=>`<div class="stat"><b>${k}</b>: ${v}</div>`).join('')+`<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
+
+svg.addEventListener("pointermove",e=>{
+
+ if(!start||!draft)return;
+
+ const p=point(e);
+
+ draft.setAttribute("x",Math.min(start.x,p.x));
+ draft.setAttribute("y",Math.min(start.y,p.y));
+ draft.setAttribute("width",Math.abs(p.x-start.x));
+ draft.setAttribute("height",Math.abs(p.y-start.y));
+
+});
+
+function finishDrawing(){
+
+ if(!start||!draft)return;
+
+ const x=Number(draft.getAttribute("x"));
+ const y=Number(draft.getAttribute("y"));
+ const w=Number(draft.getAttribute("width"));
+ const h=Number(draft.getAttribute("height"));
+
+ draft.remove();
+
+ start=null;
+ draft=null;
+
+ if(w<5||h<5)return;
+
+ openModal(null,{x,y,w,h});
+
 }
-function openModal(l,coords){if(mode!=='edit'&&!coords){alert('Tukar ke mode Edit untuk mengubah maklumat lot.');return}editingId=l?l.id:null;document.getElementById('modalTitle').textContent=l?'Lot '+l.num:'Lot Baru';document.getElementById('lotNum').value=l?l.num:'';document.getElementById('lotStatus').value=l?l.status:'AVAILABLE';document.getElementById('lotPrice').value=l?l.price:'';document.getElementById('lotType').value=l?l.type:'BUMI';document.getElementById('lotRemark').value=l?l.remark:'';document.getElementById('deleteBtn').style.display=l?'inline-block':'none';draft=coords|| (l?{x:l.x,y:l.y,w:l.w,h:l.h}:null);document.getElementById('modal').style.display='flex'}
-function closeModal(){document.getElementById('modal').style.display='none';draft=null}
-function saveLot(){let num=document.getElementById('lotNum').value.trim();if(!num){alert('Masukkan nombor lot');return}let data={id:editingId||Date.now().toString(),num,status:document.getElementById('lotStatus').value,price:document.getElementById('lotPrice').value,type:document.getElementById('lotType').value,remark:document.getElementById('lotRemark').value,...draft};if(editingId)lots=lots.map(l=>l.id===editingId?data:l);else lots.push(data);closeModal();persist()}
-function deleteLot(){if(confirm('Padam lot ini?')){lots=lots.filter(l=>l.id!==editingId);closeModal();persist()}}
-document.getElementById('plan').addEventListener('load',()=>{let im=document.getElementById('plan');svg.setAttribute('viewBox',`0 0 ${im.naturalWidth} ${im.naturalHeight}`);render()});
-render();
-</script></body></html>
+
+svg.addEventListener("pointerup",finishDrawing);
+svg.addEventListener("pointercancel",finishDrawing);
+
+/* =====================================
+   RENDER LOTS
+===================================== */
+
+function render(){
+
+ svg.innerHTML="";
+
+ const statusFilter=document.getElementById("filterStatus").value;
+ const typeFilter=document.getElementById("filterType").value;
+
+ const shown=lots.filter(l=>
+  (!statusFilter||l.status===statusFilter)&&
+  (!typeFilter||l.type===typeFilter)
+ );
+
+ shown.forEach(l=>{
+
+  const g=document.createElementNS(svg.namespaceURI,"g");
+
+  const r=document.createElementNS(svg.namespaceURI,"rect");
+
+  r.setAttribute("x",l.x);
+  r.setAttribute("y",l.y);
+  r.setAttribute("width",l.w);
+  r.setAttribute("height",l.h);
+  r.setAttribute("rx",1);
+
+  let cssClass="";
+
+  if(l.status==="SOLD")cssClass="sold";
+  else if(l.status==="HOLD")cssClass="hold";
+  else if(l.status==="BOOKED")cssClass="booked";
+  else if(l.type==="BUMI")cssClass="bumi";
+
+  r.setAttribute("class","lot "+cssClass);
+
+  g.appendChild(r);
+
+  const t=document.createElementNS(svg.namespaceURI,"text");
+
+  t.setAttribute("x",Number(l.x)+Number(l.w)/2);
+  t.setAttribute("y",Number(l.y)+Number(l.h)/2+4);
+  t.setAttribute("class","lottext");
+
+  t.textContent=l.num||"";
+
+  g.appendChild(t);
+
+  if(l.status==="SOLD"){
+
+   const a=document.createElementNS(svg.namespaceURI,"line");
+   const b=document.createElementNS(svg.namespaceURI,"line");
+
+   [
+    ["x1",l.x+l.w*.2],
+    ["y1",l.y+l.h*.2],
+    ["x2",l.x+l.w*.8],
+    ["y2",l.y+l.h*.8]
+   ].forEach(v=>a.setAttribute(v[0],v[1]));
+
+   [
+    ["x1",l.x+l.w*.8],
+    ["y1",l.y+l.h*.2],
+    ["x2",l.x+l.w*.2],
+    ["y2",l.y+l.h*.8]
+   ].forEach(v=>b.setAttribute(v[0],v[1]));
+
+   a.setAttribute("class","cross");
+   b.setAttribute("class","cross");
+
+   g.append(a,b);
+
+  }
+
+  g.style.cursor="pointer";
+
+  g.addEventListener("click",()=>openModal(l));
+
+  svg.appendChild(g);
+
+ });
+
+ const counts={
+  AVAILABLE:0,
+  HOLD:0,
+  BOOKED:0,
+  SOLD:0
+ };
+
+ lots.forEach(l=>{
+  if(counts[l.status]!==undefined)counts[l.status]++;
+ });
+
+ document.getElementById("stats").innerHTML=
+
+ Object.entries(counts).map(([k,v])=>
+  `<div class="stat"><b>${k}</b>: ${v}</div>`
+ ).join("")+
+
+ `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
+
+}
+
+/* =====================================
+   OPEN MODAL
+===================================== */
+
+function openModal(l,coords){
+
+ if(mode!=="edit"&&!coords){
+
+  alert("Tukar ke mode Edit untuk mengubah maklumat lot.");
+
+  return;
+
+ }
+
+ editingId=l?l.id:null;
+
+ document.getElementById("modalTitle").textContent=
+ l?"Lot "+l.num:"Lot Baru";
+
+ document.getElementById("lotNum").value=l?l.num:"";
+
+ document.getElementById("lotStatus").value=
+ l?l.status:"AVAILABLE";
+
+ document.getElementById("lotPrice").value=
+ l?(l.price||""):"";
+
+ document.getElementById("lotType").value=
+ l?l.type:"BUMI";
+
+ document.getElementById("lotRemark").value=
+ l?(l.remark||""):"";
+
+ document.getElementById("deleteBtn").style.display=
+ l?"inline-block":"none";
+
+ draft=coords||(l?{
+  x:l.x,y:l.y,w:l.w,h:l.h
+ }:null);
+
+ document.getElementById("modal").style.display="flex";
+
+}
+
+function closeModal(){
+
+ document.getElementById("modal").style.display="none";
+
+ draft=null;
+ editingId=null;
+
+}
+
+/* =====================================
+   SAVE LOT TO FIRESTORE
+===================================== */
+
+async function saveLot(){
+
+ if(!db){
+
+  alert("Firebase belum disambungkan.");
+
+  return;
+
+ }
+
+ if(saving)return;
+
+ const num=document.getElementById("lotNum").value.trim();
+
+ if(!num){
+
+  alert("Masukkan nombor lot.");
+
+  return;
+
+ }
+
+ if(!draft){
+
+  alert("Kawasan lot tidak sah.");
+
+  return;
+
+ }
+
+ const data={
+
+  num:num,
+
+  status:document.getElementById("lotStatus").value,
+
+  price:document.getElementById("lotPrice").value.trim(),
+
+  type:document.getElementById("lotType").value,
+
+  remark:document.getElementById("lotRemark").value.trim(),
+
+  x:Number(draft.x),
+  y:Number(draft.y),
+  w:Number(draft.w),
+  h:Number(draft.h),
+
+  updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+
+ };
+
+ saving=true;
+
+ const btn=document.getElementById("saveBtn");
+
+ btn.disabled=true;
+ btn.textContent="Menyimpan...";
+
+ try{
+
+  if(editingId){
+
+   await db.collection(COLLECTION)
+   .doc(editingId)
+   .set(data,{merge:true});
+
+  }else{
+
+   await db.collection(COLLECTION).add({
+
+    ...data,
+
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+
+   });
+
+  }
+
+  closeModal();
+
+ }catch(error){
+
+  console.error(error);
+
+  alert("Gagal menyimpan lot:\n"+error.message);
+
+ }finally{
+
+  saving=false;
+
+  btn.disabled=false;
+  btn.textContent="Simpan";
+
+ }
+
+}
+
+/* =====================================
+   DELETE LOT
+===================================== */
+
+async function deleteLot(){
+
+ if(!db||!editingId)return;
+
+ if(!confirm("Padam lot ini?"))return;
+
+ try{
+
+  await db.collection(COLLECTION)
+  .doc(editingId)
+  .delete();
+
+  closeModal();
+
+ }catch(error){
+
+  console.error(error);
+
+  alert("Gagal memadam lot:\n"+error.message);
+
+ }
+
+}
+
+/* =====================================
+   IMAGE SIZE
+===================================== */
+
+function updatePlanSize(){
+
+ const im=document.getElementById("plan");
+
+ if(im.naturalWidth&&im.naturalHeight){
+
+  svg.setAttribute(
+   "viewBox",
+   `0 0 ${im.naturalWidth} ${im.naturalHeight}`
+  );
+
+  render();
+
+ }
+
+}
+
+document.getElementById("plan")
+.addEventListener("load",updatePlanSize);
+
+document.getElementById("plan")
+.addEventListener("error",()=>{
+
+ console.error("Imej suriajaya.jpg tidak dijumpai.");
+
+});
+
+/* =====================================
+   START
+===================================== */
+
+updatePlanSize();
+
+initFirebase();
+
+</script>
+
+</body>
+</html>
