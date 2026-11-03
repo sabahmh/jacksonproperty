@@ -1,78 +1,343 @@
+
 <!DOCTYPE html>
-<html lang="ms"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Suria Jaya – View Only</title>
+
 <style>
-:root{--ink:#172033;--blue:#173b72;--pink:#ec4899;--green:#16a34a;--yellow:#f59e0b;}
-*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:var(--ink);font:15px Arial,sans-serif}
-header{background:var(--blue);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-h1{font-size:20px;margin:0}header small{opacity:.85}
-main{max-width:1400px;margin:auto;padding:14px}
-.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-button,.btn{border:0;border-radius:8px;padding:10px 13px;background:var(--blue);color:white;cursor:pointer;font-weight:600}
-button.secondary{background:#64748b}button.active{background:#0f766e}
-input,select{padding:9px;border:1px solid #cbd5e1;border-radius:7px;min-width:100px}
-.stats{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.stat{background:white;border:1px solid #e2e8f0;border-radius:9px;padding:8px 13px}
-.workspace{background:white;border:1px solid #dbe2ea;border-radius:10px;overflow:hidden;padding:3px;position:relative;width:100%}
-#stage{position:relative;width:100%;max-width:100%;margin:0 auto;user-select:none;touch-action:pan-y}
-#plan{display:block;width:100%;height:auto;max-width:100%;}
-#overlay{position:absolute;inset:0;width:100%;height:100%;}
-.lot{stroke:#1d4ed8;stroke-width:1.4;fill:#ffffff;fill-opacity:.08;cursor:pointer}
-.lot.bumi{fill:#ec4899;fill-opacity:.55;stroke:#be185d}
-.lot.sold{fill:#64748b;fill-opacity:.38;stroke:#334155}
-.lot.hold{fill:#fbbf24;fill-opacity:.5;stroke:#b45309}
-.lot.booked{fill:#60a5fa;fill-opacity:.5;stroke:#1d4ed8}
-.lottext{font-size:12px;font-weight:bold;fill:#111827;paint-order:stroke;stroke:white;stroke-width:2px;stroke-linejoin:round;pointer-events:none;text-anchor:middle}
-.cross{stroke:#dc2626;stroke-width:2.5;pointer-events:none}
-.note{color:#64748b;font-size:13px;margin:10px 2px}
-.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:5}
-.panel{background:white;padding:20px;border-radius:14px;width:min(420px,100%);box-shadow:0 15px 50px #0003}
-.panel h2{margin-top:0}.field{display:grid;gap:5px;margin:12px 0}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
-#drawHint{display:none;background:#fff7ed;color:#9a3412;padding:10px;border-radius:8px;margin-bottom:10px}
+:root{
+  --ink:#172033;
+  --blue:#173b72;
+  --pink:#ec4899;
+  --green:#16a34a;
+  --yellow:#f59e0b;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#f3f5f9;
+  color:var(--ink);
+  font:15px Arial,sans-serif;
+}
+
+header{
+  background:var(--blue);
+  color:#fff;
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+h1{
+  font-size:20px;
+  margin:0;
+}
+
+header small{opacity:.85}
+
+main{
+  max-width:1400px;
+  margin:auto;
+  padding:14px;
+}
+
+/* Statistik 2 row */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin:10px 0;
+}
+
+.stat{
+  background:white;
+  border:1px solid #e2e8f0;
+  border-radius:9px;
+  padding:8px 13px;
+  text-align:center;
+  min-width:0;
+}
+
+.workspace{
+  background:white;
+  border:1px solid #dbe2ea;
+  border-radius:10px;
+  overflow:hidden;
+  padding:3px;
+  position:relative;
+  width:100%;
+}
+
+#stage{
+  position:relative;
+  width:100%;
+  max-width:100%;
+  margin:0 auto;
+  user-select:none;
+  touch-action:pan-y;
+}
+
+#plan{
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:100%;
+}
+
+#overlay{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+.lot{
+  stroke:#1d4ed8;
+  stroke-width:1.4;
+  fill:#ffffff;
+  fill-opacity:.08;
+  cursor:pointer;
+}
+
+.lot.bumi{
+  fill:#ec4899;
+  fill-opacity:.55;
+  stroke:#be185d;
+}
+
+.lot.sold{
+  fill:#64748b;
+  fill-opacity:.38;
+  stroke:#334155;
+}
+
+.lot.hold{
+  fill:#fbbf24;
+  fill-opacity:.5;
+  stroke:#b45309;
+}
+
+.lot.booked{
+  fill:#60a5fa;
+  fill-opacity:.5;
+  stroke:#1d4ed8;
+}
+
+.lottext{
+  font-size:12px;
+  font-weight:bold;
+  fill:#111827;
+  paint-order:stroke;
+  stroke:white;
+  stroke-width:2px;
+  stroke-linejoin:round;
+  pointer-events:none;
+  text-anchor:middle;
+}
+
+.cross{
+  stroke:#dc2626;
+  stroke-width:2.5;
+  pointer-events:none;
+}
+
+.note{
+  color:#64748b;
+  font-size:13px;
+  margin:10px 2px;
+}
+
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0008;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  z-index:5;
+}
+
+.panel{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  width:min(420px,100%);
+  box-shadow:0 15px 50px #0003;
+}
+
+.panel h2{margin-top:0}
+
+.field{
+  display:grid;
+  gap:5px;
+  margin:12px 0;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  margin-top:18px;
+}
+
 @media(max-width:600px){
- body{font-size:13px}
- header{padding:9px 11px;gap:5px}
- h1{font-size:15px}
- header small{font-size:11px}
- header>div:last-child{font-size:11px}
- main{padding:5px}
- .toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin-bottom:7px}
- .toolbar button,.toolbar select{width:100%;min-width:0;padding:8px 5px;font-size:12px;border-radius:7px}
- #drawBtn{grid-column:span 2}
- .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin:6px 0}
- .stat{padding:6px 4px;text-align:center;font-size:10px;border-radius:6px;white-space:nowrap}
- .workspace{padding:1px;border-radius:6px}
- .note{font-size:11px}
- .panel{padding:15px}
- .field{margin:9px 0}
+
+  body{font-size:13px}
+
+  header{
+    padding:9px 11px;
+    gap:5px;
+  }
+
+  h1{font-size:15px}
+
+  header small{font-size:11px}
+
+  header>div:last-child{font-size:11px}
+
+  main{padding:5px}
+
+  /* Kekalkan 4 kolum supaya statistik menjadi 2 row */
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:4px;
+    margin:6px 0;
+  }
+
+  .stat{
+    padding:6px 2px;
+    text-align:center;
+    font-size:10px;
+    border-radius:6px;
+    white-space:nowrap;
+    min-width:0;
+  }
+
+  .workspace{
+    padding:1px;
+    border-radius:6px;
+  }
+
+  .note{font-size:11px}
+
+  .panel{padding:15px}
+
+  .field{margin:9px 0}
 }
+
 @media(max-width:360px){
- .toolbar button,.toolbar select{font-size:11px}
- .stat{font-size:9px}
+
+  .stat{
+    font-size:9px;
+    padding:5px 1px;
+  }
 }
-</style></head>
+</style>
+</head>
+
 <body>
-<header><div><h1>Jackson Property – Taman Suria Jaya, Sandakan</h1><small>Site Plan • Phase 1</small></div><div>Lot Management<br><small id="syncStatus">Menyambung ke Firebase…</small></div></header>
+
+<header>
+  <div>
+    <h1>Jackson Property – Taman Suria Jaya, Sandakan</h1>
+    <small>Site Plan • Phase 1</small>
+  </div>
+
+  <div>
+    Lot Management<br>
+    <small id="syncStatus">Menyambung ke Firebase…</small>
+  </div>
+</header>
+
 <main>
 
+<!-- Statistik -->
 <div class="stats" id="stats"></div>
-<div class="workspace"><div id="stage">
-<img id="plan" src="suriajaya.jpg" alt="Site Plan Phase 1">
-<svg id="overlay" viewBox="0 0 826 1024" preserveAspectRatio="none"></svg>
-</div></div>
-<p class="note">Paparan sahaja — klik lot untuk melihat maklumat. Data diselaraskan secara realtime melalui Firebase Firestore.</p>
+
+<!-- Pelan lot -->
+<div class="workspace">
+  <div id="stage">
+
+    <img
+      id="plan"
+      src="suriajaya.jpg"
+      alt="Site Plan Phase 1"
+    >
+
+    <svg
+      id="overlay"
+      viewBox="0 0 826 1024"
+      preserveAspectRatio="none"
+    ></svg>
+
+  </div>
+</div>
+
+<p class="note">
+  Paparan sahaja — klik lot untuk melihat maklumat.
+  Data diselaraskan secara realtime melalui Firebase Firestore.
+</p>
+
 </main>
 
-<div class="modal" id="modal"><div class="panel"><h2 id="modalTitle">Maklumat Lot</h2>
-<div class="field"><label>Nombor / Nama Lot</label><input id="lotNum"></div>
-<div class="field"><label>Status</label><select id="lotStatus"><option>AVAILABLE</option><option>HOLD</option><option>BOOKED</option><option>SOLD</option></select></div>
-<div class="field"><label>Harga (RM)</label><input id="lotPrice" placeholder="Contoh: 299000"></div>
-<div class="field"><label>Kategori</label><select id="lotType"><option>BUMI</option><option>NON-BUMI</option></select></div>
-<div class="field"><label>Remark</label><input id="lotRemark" placeholder="Catatan (optional)"></div>
+<!-- Modal Maklumat Lot -->
+<div class="modal" id="modal">
 
-</div></div>
+  <div class="panel">
+
+    <h2 id="modalTitle">Maklumat Lot</h2>
+
+    <div class="field">
+      <label>Nombor / Nama Lot</label>
+      <input id="lotNum">
+    </div>
+
+    <div class="field">
+      <label>Status</label>
+      <select id="lotStatus">
+        <option>AVAILABLE</option>
+        <option>HOLD</option>
+        <option>BOOKED</option>
+        <option>SOLD</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Harga (RM)</label>
+      <input id="lotPrice" placeholder="Contoh: 299000">
+    </div>
+
+    <div class="field">
+      <label>Kategori</label>
+      <select id="lotType">
+        <option>BUMI</option>
+        <option>NON-BUMI</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Remark</label>
+      <input id="lotRemark" placeholder="Catatan (optional)">
+    </div>
+
+  </div>
+
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <script>
+
 const firebaseConfig = {
   apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
   authDomain: "listing-2a59c.firebaseapp.com",
@@ -84,128 +349,506 @@ const firebaseConfig = {
 };
 
 let db, lotsRef;
+
 const COLLECTION = 'suriajaya_lots';
+
 try {
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
+  if(!firebase.apps.length){
+    firebase.initializeApp(firebaseConfig);
+  }
+
   db = firebase.firestore();
+
   lotsRef = db.collection(COLLECTION);
-} catch (err) {
-  console.error('Firebase initialization error:', err);
-  setTimeout(() => setSyncStatus('Firebase gagal dimulakan: ' + (err.message || err), '#fecaca'), 0);
+
+}catch(err){
+
+  console.error('Firebase initialization error:',err);
+
+  setTimeout(() => {
+
+    setSyncStatus(
+      'Firebase gagal dimulakan: '+(err.message || err),
+      '#fecaca'
+    );
+
+  },0);
+
 }
+
+
 const svg = document.getElementById('overlay');
-let lots = JSON.parse(localStorage.getItem('jpLots') || '[]');
-let mode = 'view', drawing = false, start = null, draft = null, editingId = null;
-let applyingRemote = false, dbReady = false;
 
-function setSyncStatus(message, color) {
+let lots = JSON.parse(
+  localStorage.getItem('jpLots') || '[]'
+);
+
+let mode = 'view';
+let drawing = false;
+let start = null;
+let draft = null;
+let editingId = null;
+
+let applyingRemote = false;
+let dbReady = false;
+
+
+function setSyncStatus(message,color){
+
   const el = document.getElementById('syncStatus');
-  if (el) { el.textContent = message; el.style.color = color || '#fff'; }
+
+  if(el){
+
+    el.textContent = message;
+
+    el.style.color = color || '#fff';
+
+  }
+
 }
-function cacheLots() { localStorage.setItem('jpLots', JSON.stringify(lots)); }
 
 
+function cacheLots(){
 
-function point(e) {
+  localStorage.setItem(
+    'jpLots',
+    JSON.stringify(lots)
+  );
+
+}
+
+
+function point(e){
+
   const r = svg.getBoundingClientRect();
+
   const vb = svg.viewBox.baseVal;
-  return { x: (e.clientX-r.left)/r.width*vb.width, y: (e.clientY-r.top)/r.height*vb.height };
-}
-function persistLocalAndRender() { cacheLots(); render(); }
 
-// Firestore realtime listener: semua pengguna menerima perubahan secara langsung.
-if (lotsRef) lotsRef.onSnapshot(snapshot => {
-  applyingRemote = true;
-  const remote = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-  if (snapshot.empty && lots.length) {
-    // Pindahkan data lama dari browser ini ke Firestore sekali sahaja jika koleksi masih kosong.
-    const batch = db.batch();
-    lots.forEach((lot, i) => {
-      const id = String(lot.id || (Date.now() + '-' + i));
-      batch.set(lotsRef.doc(id), { ...lot, id });
-    });
-    batch.commit().then(() => setSyncStatus('✓ Data tempatan dimuat naik ke Firebase', '#bbf7d0'))
-      .catch(err => setSyncStatus('Gagal muat naik: ' + err.message, '#fecaca'))
-      .finally(() => { applyingRemote = false; dbReady = true; });
-    return;
-  }
-  lots = remote;
+  return {
+
+    x:(e.clientX-r.left)/r.width*vb.width,
+
+    y:(e.clientY-r.top)/r.height*vb.height
+
+  };
+
+}
+
+
+function persistLocalAndRender(){
+
   cacheLots();
+
   render();
-  dbReady = true;
-  applyingRemote = false;
-  setSyncStatus('✓ Firebase Realtime aktif — data diselaraskan', '#bbf7d0');
-}, error => {
-  dbReady = false;
-  applyingRemote = false;
-  setSyncStatus('Firebase gagal: ' + (error.code || error.message), '#fecaca');
-  console.error('Firestore listener error:', error);
-});
 
-function pointInBounds(l) { return l && [l.x,l.y,l.w,l.h].every(v => Number.isFinite(Number(v))); }
-function render() {
-  svg.innerHTML = '';
-  // Paparan sahaja: tiada penapis status/kategori dalam halaman ini.
-  const shown = lots;
-  shown.forEach(l => {
-    if (!pointInBounds(l)) return;
-    const g = document.createElementNS(svg.namespaceURI, 'g');
-    const r = document.createElementNS(svg.namespaceURI, 'rect');
-    r.setAttribute('x', l.x); r.setAttribute('y', l.y);
-    r.setAttribute('width', l.w); r.setAttribute('height', l.h); r.setAttribute('rx', 1);
-    r.setAttribute('class', 'lot ' + (l.status === 'SOLD' ? 'sold' : l.status === 'HOLD' ? 'hold' : l.status === 'BOOKED' ? 'booked' : l.type === 'BUMI' ? 'bumi' : ''));
-    g.appendChild(r);
-    const t = document.createElementNS(svg.namespaceURI, 'text');
-    t.setAttribute('x', Number(l.x) + Number(l.w)/2);
-    t.setAttribute('y', Number(l.y) + Number(l.h)/2 + 4);
-    t.setAttribute('class', 'lottext'); t.textContent = l.num || 'Lot'; g.appendChild(t);
-    if (l.status === 'SOLD') {
-      const a = document.createElementNS(svg.namespaceURI, 'line');
-      const b = document.createElementNS(svg.namespaceURI, 'line');
-      [['x1',Number(l.x)+Number(l.w)*.2],['y1',Number(l.y)+Number(l.h)*.2],['x2',Number(l.x)+Number(l.w)*.8],['y2',Number(l.y)+Number(l.h)*.8]].forEach(v=>a.setAttribute(v[0],v[1]));
-      [['x1',Number(l.x)+Number(l.w)*.8],['y1',Number(l.y)+Number(l.h)*.2],['x2',Number(l.x)+Number(l.w)*.2],['y2',Number(l.y)+Number(l.h)*.8]].forEach(v=>b.setAttribute(v[0],v[1]));
-      a.setAttribute('class','cross'); b.setAttribute('class','cross'); g.append(a,b);
+}
+
+
+// Firebase realtime listener
+if(lotsRef){
+
+  lotsRef.onSnapshot(snapshot => {
+
+    applyingRemote = true;
+
+    const remote = snapshot.docs.map(doc => ({
+      ...doc.data(),
+      id:doc.id
+    }));
+
+
+    // Pindahkan data localStorage ke Firestore jika koleksi kosong
+    if(snapshot.empty && lots.length){
+
+      const batch = db.batch();
+
+      lots.forEach((lot,i) => {
+
+        const id = String(
+          lot.id || (Date.now()+'-'+i)
+        );
+
+        batch.set(
+          lotsRef.doc(id),
+          {...lot,id}
+        );
+
+      });
+
+
+      batch.commit()
+
+        .then(() => {
+
+          setSyncStatus(
+            '✓ Data tempatan dimuat naik ke Firebase',
+            '#bbf7d0'
+          );
+
+        })
+
+        .catch(err => {
+
+          setSyncStatus(
+            'Gagal muat naik: '+err.message,
+            '#fecaca'
+          );
+
+        })
+
+        .finally(() => {
+
+          applyingRemote = false;
+
+          dbReady = true;
+
+        });
+
+      return;
+
     }
-    g.style.cursor = 'pointer';
-    g.addEventListener('click', e => { e.stopPropagation(); openModal(l); });
-    svg.appendChild(g);
-  });
-  const counts = { AVAILABLE:0, HOLD:0, BOOKED:0, SOLD:0 };
-  lots.forEach(l => { if (counts[l.status] !== undefined) counts[l.status]++; });
-  document.getElementById('stats').innerHTML = Object.entries(counts).map(([k,v]) => `<div class="stat"><b>${k}</b>: ${v}</div>`).join('') + `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
-}
-
-function openModal(l) {
-  if (!l) return;
-  editingId = String(l.id);
-  document.getElementById('modalTitle').textContent = 'Maklumat Lot ' + (l.num || '');
-  document.getElementById('lotNum').value = l.num || '';
-  document.getElementById('lotStatus').value = l.status || 'AVAILABLE';
-  document.getElementById('lotPrice').value = l.price || '';
-  document.getElementById('lotType').value = l.type || 'BUMI';
-  document.getElementById('lotRemark').value = l.remark || '';
-  ['lotNum','lotStatus','lotPrice','lotType','lotRemark'].forEach(id => document.getElementById(id).disabled = true);
-  document.getElementById('modal').style.display = 'flex';
-}
-function closeModal() {
-  document.getElementById('modal').style.display = 'none';
-}
 
 
-function updatePlanSize() {
-  const im = document.getElementById('plan');
-  if (im.naturalWidth && im.naturalHeight) {
-    svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
+    lots = remote;
+
+    cacheLots();
+
     render();
-  }
+
+    dbReady = true;
+
+    applyingRemote = false;
+
+    setSyncStatus(
+      '✓ Firebase Realtime aktif — data diselaraskan',
+      '#bbf7d0'
+    );
+
+
+  },error => {
+
+    dbReady = false;
+
+    applyingRemote = false;
+
+    setSyncStatus(
+      'Firebase gagal: '+(error.code || error.message),
+      '#fecaca'
+    );
+
+    console.error('Firestore listener error:',error);
+
+  });
+
 }
-document.getElementById('modal').addEventListener('click', e => {
-  if (e.target.id === 'modal') closeModal();
+
+
+function pointInBounds(l){
+
+  return l && [
+    l.x,
+    l.y,
+    l.w,
+    l.h
+  ].every(v => Number.isFinite(Number(v)));
+
+}
+
+
+function render(){
+
+  svg.innerHTML = '';
+
+  // View Only: paparkan semua lot
+  const shown = lots;
+
+
+  shown.forEach(l => {
+
+    if(!pointInBounds(l)) return;
+
+
+    const g = document.createElementNS(
+      svg.namespaceURI,
+      'g'
+    );
+
+
+    const r = document.createElementNS(
+      svg.namespaceURI,
+      'rect'
+    );
+
+    r.setAttribute('x',l.x);
+
+    r.setAttribute('y',l.y);
+
+    r.setAttribute('width',l.w);
+
+    r.setAttribute('height',l.h);
+
+    r.setAttribute('rx',1);
+
+
+    r.setAttribute(
+      'class',
+      'lot '+
+      (
+        l.status === 'SOLD' ? 'sold' :
+        l.status === 'HOLD' ? 'hold' :
+        l.status === 'BOOKED' ? 'booked' :
+        l.type === 'BUMI' ? 'bumi' : ''
+      )
+    );
+
+
+    g.appendChild(r);
+
+
+    const t = document.createElementNS(
+      svg.namespaceURI,
+      'text'
+    );
+
+    t.setAttribute(
+      'x',
+      Number(l.x)+Number(l.w)/2
+    );
+
+    t.setAttribute(
+      'y',
+      Number(l.y)+Number(l.h)/2+4
+    );
+
+    t.setAttribute('class','lottext');
+
+    t.textContent = l.num || 'Lot';
+
+    g.appendChild(t);
+
+
+    // Tanda X untuk lot SOLD
+    if(l.status === 'SOLD'){
+
+      const a = document.createElementNS(
+        svg.namespaceURI,
+        'line'
+      );
+
+      const b = document.createElementNS(
+        svg.namespaceURI,
+        'line'
+      );
+
+
+      [
+        ['x1',Number(l.x)+Number(l.w)*.2],
+        ['y1',Number(l.y)+Number(l.h)*.2],
+        ['x2',Number(l.x)+Number(l.w)*.8],
+        ['y2',Number(l.y)+Number(l.h)*.8]
+      ].forEach(v => a.setAttribute(v[0],v[1]));
+
+
+      [
+        ['x1',Number(l.x)+Number(l.w)*.8],
+        ['y1',Number(l.y)+Number(l.h)*.2],
+        ['x2',Number(l.x)+Number(l.w)*.2],
+        ['y2',Number(l.y)+Number(l.h)*.8]
+      ].forEach(v => b.setAttribute(v[0],v[1]));
+
+
+      a.setAttribute('class','cross');
+
+      b.setAttribute('class','cross');
+
+      g.append(a,b);
+
+    }
+
+
+    g.style.cursor = 'pointer';
+
+
+    // Klik lot untuk melihat maklumat
+    g.addEventListener('click',e => {
+
+      e.stopPropagation();
+
+      openModal(l);
+
+    });
+
+
+    svg.appendChild(g);
+
+  });
+
+
+  // Statistik status
+  const counts = {
+    AVAILABLE:0,
+    HOLD:0,
+    BOOKED:0,
+    SOLD:0
+  };
+
+
+  lots.forEach(l => {
+
+    if(counts[l.status] !== undefined){
+
+      counts[l.status]++;
+
+    }
+
+  });
+
+
+  // Statistik lot AVAILABLE mengikut kategori
+  const bumiAvailable = lots.filter(l =>
+    l.status === 'AVAILABLE' &&
+    l.type === 'BUMI'
+  ).length;
+
+
+  const nonBumiAvailable = lots.filter(l =>
+    l.status === 'AVAILABLE' &&
+    l.type === 'NON-BUMI'
+  ).length;
+
+
+  // Row 1:
+  // AVAILABLE | HOLD | BOOKED | SOLD
+  //
+  // Row 2:
+  // BUMI | NON-BUMI | Jumlah Lot
+
+  document.getElementById('stats').innerHTML =
+
+    Object.entries(counts)
+
+      .map(([k,v]) =>
+        `<div class="stat"><b>${k}</b>: ${v}</div>`
+      )
+
+      .join('') +
+
+    `<div class="stat"><b>BUMI</b>: ${bumiAvailable}</div>` +
+
+    `<div class="stat"><b>NON-BUMI</b>: ${nonBumiAvailable}</div>` +
+
+    `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
+
+}
+
+
+function openModal(l){
+
+  if(!l) return;
+
+
+  editingId = String(l.id);
+
+
+  document.getElementById('modalTitle').textContent =
+    'Maklumat Lot '+(l.num || '');
+
+
+  document.getElementById('lotNum').value =
+    l.num || '';
+
+  document.getElementById('lotStatus').value =
+    l.status || 'AVAILABLE';
+
+  document.getElementById('lotPrice').value =
+    l.price || '';
+
+  document.getElementById('lotType').value =
+    l.type || 'BUMI';
+
+  document.getElementById('lotRemark').value =
+    l.remark || '';
+
+
+  // Semua medan read-only
+  [
+    'lotNum',
+    'lotStatus',
+    'lotPrice',
+    'lotType',
+    'lotRemark'
+  ].forEach(id => {
+
+    document.getElementById(id).disabled = true;
+
+  });
+
+
+  document.getElementById('modal').style.display = 'flex';
+
+}
+
+
+function closeModal(){
+
+  document.getElementById('modal').style.display = 'none';
+
+}
+
+
+function updatePlanSize(){
+
+  const im = document.getElementById('plan');
+
+  if(im.naturalWidth && im.naturalHeight){
+
+    svg.setAttribute(
+      'viewBox',
+      `0 0 ${im.naturalWidth} ${im.naturalHeight}`
+    );
+
+    render();
+
+  }
+
+}
+
+
+// Tutup modal apabila klik luar panel
+document.getElementById('modal')
+  .addEventListener('click',e => {
+
+    if(e.target.id === 'modal'){
+
+      closeModal();
+
+    }
+
+  });
+
+
+// Tutup modal menggunakan Escape
+document.addEventListener('keydown',e => {
+
+  if(e.key === 'Escape'){
+
+    closeModal();
+
+  }
+
 });
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') closeModal();
-});
-document.getElementById('plan').addEventListener('load', updatePlanSize);
+
+
+document.getElementById('plan')
+  .addEventListener('load',updatePlanSize);
+
+
 updatePlanSize();
+
 render();
-</script></body></html>
+
+</script>
+
+</body>
+</html>
