@@ -596,11 +596,11 @@ function render(){
     const g = document.createElementNS(svg.namespaceURI, 'g');
     const r = document.createElementNS(svg.namespaceURI, 'rect');
 
-    r.setAttribute('x',l.x);
-    r.setAttribute('y',l.y);
-    r.setAttribute('width',l.w);
-    r.setAttribute('height',l.h);
-    r.setAttribute('rx',1);
+    r.setAttribute('x', l.x);
+    r.setAttribute('y', l.y);
+    r.setAttribute('width', l.w);
+    r.setAttribute('height', l.h);
+    r.setAttribute('rx', 1);
 
     r.setAttribute(
       'class',
@@ -615,9 +615,9 @@ function render(){
     g.appendChild(r);
 
     const t = document.createElementNS(svg.namespaceURI, 'text');
-    t.setAttribute('x', Number(l.x)+Number(l.w)/2);
-    t.setAttribute('y', Number(l.y)+Number(l.h)/2+4);
-    t.setAttribute('class','lottext');
+    t.setAttribute('x', Number(l.x) + Number(l.w) / 2);
+    t.setAttribute('y', Number(l.y) + Number(l.h) / 2 + 4);
+    t.setAttribute('class', 'lottext');
     t.textContent = l.num || 'Lot';
     g.appendChild(t);
 
@@ -631,6 +631,7 @@ function render(){
       g.append(a,b);
     }
 
+    // Putar menggunakan pusat geometri asal (cx, cy) supaya saiz kotak lot tidak berubah
     const rot = Number(l.rotation) || 0;
     if(rot !== 0) {
       const cx = Number(l.x) + Number(l.w) / 2;
@@ -708,7 +709,6 @@ function setFormReadOnly(readOnly){
     document.getElementById(id).disabled = readOnly;
   });
   
-  // Sembunyikan ruang sudut putaran sepenuhnya semasa mode Papar (readOnly)
   document.getElementById('rotationField').style.display = readOnly ? 'none' : 'grid';
 
   document.getElementById('deleteBtn').style.display = (!readOnly && editingId) ? 'inline-block' : 'none';
