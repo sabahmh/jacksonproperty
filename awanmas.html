@@ -117,8 +117,8 @@ input,select{
 
 #stage{
   position:relative;
-  width:100%;
-  height:100%;
+  width:826px; /* Dikunci mengikut saiz asal */
+  height:1024px;
   margin:0 auto;
   user-select:none;
   -webkit-user-select:none;
@@ -128,18 +128,21 @@ input,select{
 }
 
 #plan{
-  display:block;
-  width:100%;
-  height:auto;
+  position:absolute;
+  top:0;
+  left:0;
+  width:826px;
+  height:1024px;
   pointer-events:none;
   -webkit-user-drag:none;
 }
 
 #overlay{
   position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
+  top:0;
+  left:0;
+  width:826px;
+  height:1024px;
   touch-action:none;
   overflow:visible;
 }
@@ -400,7 +403,6 @@ input,select{
     <svg
       id="overlay"
       viewBox="0 0 826 1024"
-      preserveAspectRatio="none"
     ></svg>
 
   </div>
@@ -622,7 +624,7 @@ function toggleDraw(force){
   }
 }
 
-// Fungsi point() yang diselaraskan untuk sentuhan telefon & tetikus komputer
+// Pengiraan titik SVG menggunakan CTM rasmi (dikunci mengikut saiz fizikal imej)
 function point(e){
   const pt = svg.createSVGPoint();
   pt.x = e.clientX;
@@ -1112,7 +1114,7 @@ function endPan(e){
   }
 }
 
-window.addEventListener('pointerup', endPan);
+window.addEventListener('pointerup', endPass = endPan);
 window.addEventListener('pointercancel', endPan);
 
 workspace.addEventListener('click', e=>{
@@ -1184,7 +1186,18 @@ svg.addEventListener('pointercancel', finishDrawing);
 
 function updatePlanSize(){
   if(planImg.naturalWidth && planImg.naturalHeight){
-    svg.setAttribute('viewBox', `0 0 ${planImg.naturalWidth} ${planImg.naturalHeight}`);
+    const w = planImg.naturalWidth;
+    const h = planImg.naturalHeight;
+    
+    // Kunci saiz mutlak stage, plan, dan overlay mengikut saiz asal imej
+    stage.style.width = w + 'px';
+    stage.style.height = h + 'px';
+    planImg.style.width = w + 'px';
+    planImg.style.height = h + 'px';
+    svg.style.width = w + 'px';
+    svg.style.height = h + 'px';
+    
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
     render();
   }
 }
