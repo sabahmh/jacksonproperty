@@ -21,89 +21,88 @@ body{
   background:#f3f5f9;
   color:var(--ink);
   font:15px Arial,sans-serif;
-  overflow-x:hidden;
 }
 
 header{
   background:var(--blue);
   color:#fff;
-  padding:12px 16px;
+  padding:16px 20px;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  gap:10px;
+  gap:12px;
   flex-wrap:wrap;
 }
 
 h1{
-  font-size:18px;
+  font-size:20px;
   margin:0;
 }
 
 header small{opacity:.85}
 
 main{
-  max-width:100%;
+  max-width:1400px;
   margin:auto;
-  padding:6px;
+  padding:14px;
 }
 
 .toolbar{
   display:flex;
-  gap:6px;
+  gap:8px;
   flex-wrap:wrap;
-  margin-bottom:8px;
+  margin-bottom:12px;
   align-items:center;
 }
 
 button,.btn{
   border:0;
   border-radius:8px;
-  padding:8px 12px;
+  padding:10px 13px;
   background:var(--blue);
   color:white;
   cursor:pointer;
   font-weight:600;
-  font-size:13px;
 }
 
 button.secondary{background:#64748b}
 button.active{background:#0f766e}
 
 input,select{
-  padding:8px;
+  padding:9px;
   border:1px solid #cbd5e1;
   border-radius:7px;
-  font-size:13px;
+  min-width:100px;
 }
 
 /* Statistik */
 .stats{
   display:grid;
   grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:4px;
-  margin:6px 0;
+  gap:8px;
+  margin:10px 0;
 }
 
 .stat{
   background:white;
   border:1px solid #e2e8f0;
-  border-radius:7px;
-  padding:6px 2px;
+  border-radius:9px;
+  padding:8px 13px;
   text-align:center;
-  font-size:11px;
   min-width:0;
 }
 
-/* Workspace dan pelan FULL FIT */
+/* Workspace dan pelan */
 .workspace{
   background:white;
   border:1px solid #dbe2ea;
-  border-radius:8px;
+  border-radius:10px;
   overflow:hidden;
-  padding:0;
+  padding:3px;
   position:relative;
   width:100%;
+
+  /* Pan dan zoom */
   touch-action:none;
   cursor:grab;
   user-select:none;
@@ -117,16 +116,13 @@ input,select{
 #stage{
   position:relative;
   width:100%;
-  height:100%;
+  max-width:100%;
   margin:0 auto;
   user-select:none;
   -webkit-user-select:none;
   touch-action:none;
   transform-origin:0 0;
   will-change:transform;
-  display:flex;
-  align-items:center;
-  justify-content:center;
 }
 
 #plan{
@@ -136,7 +132,6 @@ input,select{
   max-width:100%;
   pointer-events:none;
   -webkit-user-drag:none;
-  object-fit: contain;
 }
 
 #overlay{
@@ -200,18 +195,17 @@ input,select{
 
 .note{
   color:#64748b;
-  font-size:12px;
-  margin:8px 2px;
+  font-size:13px;
+  margin:10px 2px;
 }
 
 #drawHint{
   display:none;
   background:#fff7ed;
   color:#9a3412;
-  padding:8px;
+  padding:10px;
   border-radius:8px;
-  margin-bottom:8px;
-  font-size:12px;
+  margin-bottom:10px;
 }
 
 /* Modal */
@@ -257,22 +251,81 @@ input,select{
   min-width:0;
 }
 
-/* Paparan telefon khusus */
+/* Paparan telefon */
 @media(max-width:600px){
+
+  body{font-size:13px}
+
   header{
-    padding:8px 12px;
+    padding:9px 11px;
+    gap:5px;
   }
-  h1{font-size:14px}
-  header small{font-size:10px}
-  header>div:last-child{font-size:10px}
-  main{padding:4px}
+
+  h1{font-size:15px}
+
+  header small{font-size:11px}
+
+  header>div:last-child{font-size:11px}
+
+  main{padding:5px}
+
   .toolbar{
     display:grid;
     grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:4px;
-    margin-bottom:6px;
+    gap:5px;
+    margin-bottom:7px;
   }
+
+  .toolbar button,
+  .toolbar select{
+    width:100%;
+    min-width:0;
+    padding:8px 5px;
+    font-size:12px;
+    border-radius:7px;
+  }
+
   #drawBtn{grid-column:span 2}
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:4px;
+    margin:6px 0;
+  }
+
+  .stat{
+    padding:6px 2px;
+    text-align:center;
+    font-size:10px;
+    border-radius:6px;
+    white-space:nowrap;
+    min-width:0;
+  }
+
+  .workspace{
+    padding:1px;
+    border-radius:6px;
+  }
+
+  .note{font-size:11px}
+
+  .panel{padding:15px}
+
+  .field{margin:9px 0}
+}
+
+@media(max-width:360px){
+
+  .toolbar button,
+  .toolbar select{
+    font-size:11px;
+  }
+
+  .stat{
+    font-size:9px;
+    padding:5px 1px;
+  }
 }
 </style>
 </head>
@@ -281,7 +334,7 @@ input,select{
 
 <header>
   <div>
-    <h1>Jackson Property – Awan Mas</h1>
+    <h1>Jackson Property – Awan Mas, Sandakan</h1>
     <small>Site Plan • Phase 1</small>
   </div>
 
@@ -330,7 +383,7 @@ input,select{
 <!-- Statistik -->
 <div class="stats" id="stats"></div>
 
-<!-- Pelan lot (Full Fit Screen) -->
+<!-- Pelan lot -->
 <div class="workspace" id="workspace">
 
   <div id="stage">
@@ -345,7 +398,7 @@ input,select{
     <svg
       id="overlay"
       viewBox="0 0 826 1024"
-      preserveAspectRatio="xMidYMid meet"
+      preserveAspectRatio="none"
     ></svg>
 
   </div>
@@ -353,7 +406,11 @@ input,select{
 </div>
 
 <p class="note">
-  Nota: Swipe untuk gerakkan pelan. Pinch dua jari untuk zoom skrin.
+  Nota: Mode Papar — klik lot untuk melihat maklumat.
+  Mode Edit — klik lot untuk edit/putar, atau klik & seret lot secara manual untuk alih kedudukan.
+  <br>
+  Telefon: Swipe untuk gerakkan pelan. Pinch dua jari untuk zoom.
+  Komputer: Drag menggunakan tetikus dan scroll untuk zoom.
 </p>
 
 </main>
@@ -393,7 +450,7 @@ input,select{
       </select>
     </div>
 
-    <div class="field" id="rotationField">
+    <div class="field">
       <label>Sudut Putaran / Senget (Darjah)</label>
       <input type="number" id="lotRotation" value="0" placeholder="Contoh: 15 atau -15">
     </div>
@@ -457,7 +514,6 @@ const lotsRef = db.collection(COLLECTION);
 const svg = document.getElementById('overlay');
 const workspace = document.getElementById('workspace');
 const stage = document.getElementById('stage');
-const planImg = document.getElementById('plan');
 
 let lots = JSON.parse(
   localStorage.getItem('awanmasLots') || '[]'
@@ -469,6 +525,7 @@ let start = null;
 let draft = null;
 let editingId = null;
 
+// Pembolehubah untuk fungsi Drag Lot
 let draggingLot = null;
 let dragOffset = { x: 0, y: 0 };
 let isDraggingLot = false;
@@ -476,132 +533,282 @@ let isDraggingLot = false;
 let applyingRemote = false;
 let dbReady = false;
 
+
+/* =====================================
+   PAN & ZOOM VARIABLES
+===================================== */
+
 let scale = 1;
 let offsetX = 0;
 let offsetY = 0;
 
 let pointers = new Map();
+
 let startDistance = 0;
 let startScale = 1;
+
 let startX = 0;
 let startY = 0;
+
 let startOffsetX = 0;
 let startOffsetY = 0;
+
 let hasMoved = false;
 let suppressClick = false;
 
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
 
+
+/* =====================================
+   FIREBASE STATUS
+===================================== */
+
 function setSyncStatus(message,color){
+
   const el = document.getElementById('syncStatus');
+
   if(el){
     el.textContent = message;
     el.style.color = color || '#fff';
   }
+
 }
+
 
 function cacheLots(){
-  localStorage.setItem('awanmasLots', JSON.stringify(lots));
+
+  localStorage.setItem(
+    'awanmasLots',
+    JSON.stringify(lots)
+  );
+
 }
+
+
+/* =====================================
+   MODE
+===================================== */
 
 function updateDrawUI(){
-  document.getElementById('drawBtn').classList.toggle('active',drawing);
-  document.getElementById('drawHint').style.display = drawing ? 'block' : 'none';
+
+  document.getElementById('drawBtn')
+    .classList.toggle('active',drawing);
+
+  document.getElementById('drawHint').style.display =
+    drawing ? 'block' : 'none';
+
   svg.style.cursor = drawing ? 'crosshair' : 'default';
+
 }
+
 
 function setMode(m){
+
   mode = m;
-  document.getElementById('viewBtn').classList.toggle('active',m === 'view');
-  document.getElementById('editBtn').classList.toggle('active',m === 'edit');
+
+  document.getElementById('viewBtn')
+    .classList.toggle('active',m === 'view');
+
+  document.getElementById('editBtn')
+    .classList.toggle('active',m === 'edit');
+
   if(m === 'view'){
+
     drawing = false;
+
     start = null;
-    if(draft instanceof SVGRectElement) draft.remove();
+
+    if(draft instanceof SVGRectElement){
+      draft.remove();
+    }
+
     draft = null;
+
   }
+
   updateDrawUI();
+
 }
+
 
 function toggleDraw(force){
+
   const next = force === undefined ? !drawing : !!force;
-  if(next) setMode('edit');
-  drawing = next;
-  updateDrawUI();
-  if(drawing){
-    setSyncStatus('Mode lukis aktif — seret pada pelan untuk lukis lot', '#fde68a');
+
+  if(next){
+    setMode('edit');
   }
+
+  drawing = next;
+
+  updateDrawUI();
+
+  if(drawing){
+
+    setSyncStatus(
+      'Mode lukis aktif — seret pada pelan untuk lukis lot',
+      '#fde68a'
+    );
+
+  }
+
 }
 
+
+/* =====================================
+   COORDINATES
+===================================== */
+
 function point(e){
+
   const r = svg.getBoundingClientRect();
   const vb = svg.viewBox.baseVal;
+
   return {
     x:(e.clientX-r.left)/r.width*vb.width,
     y:(e.clientY-r.top)/r.height*vb.height
   };
+
 }
 
+
+function persistLocalAndRender(){
+
+  cacheLots();
+  render();
+
+}
+
+
+/* =====================================
+   FIREBASE REALTIME LISTENER
+===================================== */
+
 lotsRef.onSnapshot(snapshot => {
+
   applyingRemote = true;
+
   const remote = snapshot.docs.map(doc => ({
     ...doc.data(),
     id:doc.id
   }));
 
   if(snapshot.empty && lots.length){
+
     const batch = db.batch();
+
     lots.forEach((lot,i) => {
-      const id = String(lot.id || (Date.now()+'-'+i));
-      batch.set(lotsRef.doc(id), {...lot,id});
+
+      const id = String(
+        lot.id || (Date.now()+'-'+i)
+      );
+
+      batch.set(
+        lotsRef.doc(id),
+        {...lot,id}
+      );
+
     });
-    batch.commit().then(() => {
-      setSyncStatus('✓ Data tempatan dimuat naik', '#bbf7d0');
-    }).finally(() => {
-      applyingRemote = false;
-      dbReady = true;
-    });
+
+    batch.commit()
+      .then(() => {
+        setSyncStatus('✓ Data tempatan dimuat naik ke Firebase', '#bbf7d0');
+      })
+      .catch(err => {
+        setSyncStatus('Gagal muat naik: '+err.message, '#fecaca');
+      })
+      .finally(() => {
+        applyingRemote = false;
+        dbReady = true;
+      });
+
     return;
+
   }
 
   lots = remote;
   cacheLots();
   render();
+
   dbReady = true;
   applyingRemote = false;
-  setSyncStatus('✓ Firebase Realtime aktif', '#bbf7d0');
+
+  setSyncStatus(
+    '✓ Firebase Realtime aktif — data diselaraskan',
+    '#bbf7d0'
+  );
+
 },error => {
+
   dbReady = false;
   applyingRemote = false;
-  setSyncStatus('Firebase gagal', '#fecaca');
+
+  setSyncStatus(
+    'Firebase gagal: '+(error.code || error.message),
+    '#fecaca'
+  );
+
+  console.error('Firestore listener error:',error);
+
 });
 
+
+/* =====================================
+   LOT VALIDATION
+===================================== */
+
 function pointInBounds(l){
-  return l && [l.x, l.y, l.w, l.h].every(v => Number.isFinite(Number(v)));
+
+  return l && [
+    l.x,
+    l.y,
+    l.w,
+    l.h
+  ].every(v => Number.isFinite(Number(v)));
+
 }
 
+
+/* =====================================
+   RENDER LOT
+===================================== */
+
 function render(){
+
   svg.innerHTML = '';
-  const statusFilter = document.getElementById('filterStatus').value;
-  const typeFilter = document.getElementById('filterType').value;
+
+  const statusFilter =
+    document.getElementById('filterStatus').value;
+
+  const typeFilter =
+    document.getElementById('filterType').value;
 
   const shown = lots.filter(l =>
     (!statusFilter || l.status === statusFilter) &&
     (!typeFilter || l.type === typeFilter)
   );
 
+
   shown.forEach(l => {
+
     if(!pointInBounds(l)) return;
 
-    const g = document.createElementNS(svg.namespaceURI, 'g');
-    const r = document.createElementNS(svg.namespaceURI, 'rect');
+    const g = document.createElementNS(
+      svg.namespaceURI,
+      'g'
+    );
 
-    r.setAttribute('x', l.x);
-    r.setAttribute('y', l.y);
-    r.setAttribute('width', l.w);
-    r.setAttribute('height', l.h);
-    r.setAttribute('rx', 1);
+    const r = document.createElementNS(
+      svg.namespaceURI,
+      'rect'
+    );
+
+    r.setAttribute('x',l.x);
+    r.setAttribute('y',l.y);
+    r.setAttribute('width',l.w);
+    r.setAttribute('height',l.h);
+    r.setAttribute('rx',1);
 
     r.setAttribute(
       'class',
@@ -613,25 +820,68 @@ function render(){
         l.type === 'BUMI' ? 'bumi' : ''
       )
     );
+
     g.appendChild(r);
 
-    const t = document.createElementNS(svg.namespaceURI, 'text');
-    t.setAttribute('x', Number(l.x) + Number(l.w) / 2);
-    t.setAttribute('y', Number(l.y) + Number(l.h) / 2 + 4);
-    t.setAttribute('class', 'lottext');
+
+    const t = document.createElementNS(
+      svg.namespaceURI,
+      'text'
+    );
+
+    t.setAttribute(
+      'x',
+      Number(l.x)+Number(l.w)/2
+    );
+
+    t.setAttribute(
+      'y',
+      Number(l.y)+Number(l.h)/2+4
+    );
+
+    t.setAttribute('class','lottext');
+
     t.textContent = l.num || 'Lot';
+
     g.appendChild(t);
 
+
+    // Tanda X untuk SOLD
+
     if(l.status === 'SOLD'){
-      const a = document.createElementNS(svg.namespaceURI, 'line');
-      const b = document.createElementNS(svg.namespaceURI, 'line');
-      [['x1',Number(l.x)+Number(l.w)*.2],['y1',Number(l.y)+Number(l.h)*.2],['x2',Number(l.x)+Number(l.w)*.8],['y2',Number(l.y)+Number(l.h)*.8]].forEach(v=>a.setAttribute(v[0],v[1]));
-      [['x1',Number(l.x)+Number(l.w)*.8],['y1',Number(l.y)+Number(l.h)*.2],['x2',Number(l.x)+Number(l.w)*.2],['y2',Number(l.y)+Number(l.h)*.8]].forEach(v=>b.setAttribute(v[0],v[1]));
+
+      const a = document.createElementNS(
+        svg.namespaceURI,
+        'line'
+      );
+
+      const b = document.createElementNS(
+        svg.namespaceURI,
+        'line'
+      );
+
+      [
+        ['x1',Number(l.x)+Number(l.w)*.2],
+        ['y1',Number(l.y)+Number(l.h)*.2],
+        ['x2',Number(l.x)+Number(l.w)*.8],
+        ['y2',Number(l.y)+Number(l.h)*.8]
+      ].forEach(v => a.setAttribute(v[0],v[1]));
+
+      [
+        ['x1',Number(l.x)+Number(l.w)*.8],
+        ['y1',Number(l.y)+Number(l.h)*.2],
+        ['x2',Number(l.x)+Number(l.w)*.2],
+        ['y2',Number(l.y)+Number(l.h)*.8]
+      ].forEach(v => b.setAttribute(v[0],v[1]));
+
       a.setAttribute('class','cross');
       b.setAttribute('class','cross');
+
       g.append(a,b);
+
     }
 
+    // Guna transform rotate jika sudut wujud
     const rot = Number(l.rotation) || 0;
     if(rot !== 0) {
       const cx = Number(l.x) + Number(l.w) / 2;
@@ -641,47 +891,61 @@ function render(){
 
     g.style.cursor = mode === 'edit' ? 'move' : 'pointer';
 
+    // Event Pointer Down untuk DRAG lot secara manual
     g.addEventListener('pointerdown', e => {
       if(drawing || mode !== 'edit') return;
       e.stopPropagation();
+
       draggingLot = l;
       isDraggingLot = true;
       hasMoved = false;
+
       const pt = point(e);
       dragOffset.x = pt.x - Number(l.x);
       dragOffset.y = pt.y - Number(l.y);
+
       g.setPointerCapture(e.pointerId);
     });
 
+    // Event Pointer Move untuk mengemaskini posisi semasa drag
     g.addEventListener('pointermove', e => {
       if(!isDraggingLot || draggingLot !== l) return;
       e.stopPropagation();
       hasMoved = true;
+
       const pt = point(e);
       l.x = pt.x - dragOffset.x;
       l.y = pt.y - dragOffset.y;
+
+      // Render semula posisi masa nyata
       render();
     });
 
+    // Event Pointer Up untuk simpan posisi baharu ke Firebase
     g.addEventListener('pointerup', async e => {
       if(!isDraggingLot || draggingLot !== l) return;
       e.stopPropagation();
       isDraggingLot = false;
       draggingLot = null;
+
       if(hasMoved){
         suppressClick = true;
+        // Simpan posisi baru ke Firebase
         try {
+          setSyncStatus('Menyimpan kedudukan lot…', '#fde68a');
           await lotsRef.doc(String(l.id)).set({
             x: Number(l.x),
             y: Number(l.y),
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
+          setSyncStatus('✓ Kedudukan lot dikemaskini', '#bbf7d0');
         } catch(err) {
           console.error(err);
         }
       }
     });
 
+    // Klik lot untuk buka modal (jika tidak ditarik/drag)
     g.addEventListener('click', e => {
       if(suppressClick) return;
       e.stopPropagation();
@@ -689,48 +953,105 @@ function render(){
     });
 
     svg.appendChild(g);
+
   });
 
-  const counts = { AVAILABLE:0, HOLD:0, BOOKED:0, SOLD:0 };
-  lots.forEach(l => { if(counts[l.status] !== undefined) counts[l.status]++; });
 
-  const bumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'BUMI').length;
-  const nonBumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'NON-BUMI').length;
+  /* Statistik status */
+
+  const counts = {
+    AVAILABLE:0,
+    HOLD:0,
+    BOOKED:0,
+    SOLD:0
+  };
+
+  lots.forEach(l => {
+    if(counts[l.status] !== undefined){
+      counts[l.status]++;
+    }
+  });
+
+  const bumiAvailable = lots.filter(l =>
+    l.status === 'AVAILABLE' && l.type === 'BUMI'
+  ).length;
+
+  const nonBumiAvailable = lots.filter(l =>
+    l.status === 'AVAILABLE' && l.type === 'NON-BUMI'
+  ).length;
 
   document.getElementById('stats').innerHTML =
-    Object.entries(counts).map(([k,v]) => `<div class="stat"><b>${k}</b>: ${v}</div>`).join('') +
+    Object.entries(counts)
+      .map(([k,v]) => `<div class="stat"><b>${k}</b>: ${v}</div>`)
+      .join('') +
     `<div class="stat"><b>BUMI</b>: ${bumiAvailable}</div>` +
     `<div class="stat"><b>NON-BUMI</b>: ${nonBumiAvailable}</div>` +
-    `<div class="stat"><b>Jumlah</b>: ${lots.length}</div>`;
+    `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
+
 }
+
+
+/* =====================================
+   MODAL READ ONLY / EDIT
+===================================== */
 
 function setFormReadOnly(readOnly){
-  ['lotNum', 'lotStatus', 'lotPrice', 'lotType', 'lotRotation', 'lotRemark'].forEach(id => {
+
+  [
+    'lotNum',
+    'lotStatus',
+    'lotPrice',
+    'lotType',
+    'lotRotation',
+    'lotRemark'
+  ].forEach(id => {
     document.getElementById(id).disabled = readOnly;
   });
-  
-  document.getElementById('rotationField').style.display = readOnly ? 'none' : 'grid';
 
-  document.getElementById('deleteBtn').style.display = (!readOnly && editingId) ? 'inline-block' : 'none';
-  document.querySelector('#modal .actions button:last-child').style.display = readOnly ? 'none' : 'inline-block';
-  document.querySelector('#modal .actions button:first-child').textContent = readOnly ? 'Tutup' : 'Batal';
+  document.getElementById('deleteBtn').style.display =
+    (!readOnly && editingId) ? 'inline-block' : 'none';
+
+  document.querySelector(
+    '#modal .actions button:last-child'
+  ).style.display =
+    readOnly ? 'none' : 'inline-block';
+
+  document.querySelector(
+    '#modal .actions button:first-child'
+  ).textContent =
+    readOnly ? 'Tutup' : 'Batal';
+
 }
 
+
 function openModal(l,coords){
+
   const readOnly = mode === 'view' && !coords;
   if(mode === 'view' && !coords && !l) return;
+
   editingId = l ? String(l.id) : null;
-  document.getElementById('modalTitle').textContent = l ? (readOnly ? 'Maklumat Lot ' : 'Edit Lot ') + (l.num || '') : 'Lot Baru';
+
+  document.getElementById('modalTitle').textContent =
+    l
+      ? (readOnly ? 'Maklumat Lot ' : 'Edit Lot ') + (l.num || '')
+      : 'Lot Baru';
+
   document.getElementById('lotNum').value = l ? (l.num || '') : '';
   document.getElementById('lotStatus').value = l ? (l.status || 'AVAILABLE') : 'AVAILABLE';
   document.getElementById('lotPrice').value = l ? (l.price || '') : '';
   document.getElementById('lotType').value = l ? (l.type || 'BUMI') : 'BUMI';
   document.getElementById('lotRotation').value = l ? (l.rotation || 0) : 0;
   document.getElementById('lotRemark').value = l ? (l.remark || '') : '';
-  draft = coords || (l ? {x:l.x, y:l.y, w:l.w, h:l.h} : null);
+
+  draft = coords || (
+    l ? {x:l.x, y:l.y, w:l.w, h:l.h} : null
+  );
+
   setFormReadOnly(readOnly);
   document.getElementById('modal').style.display = 'flex';
+
 }
+
 
 function closeModal(){
   document.getElementById('modal').style.display = 'none';
@@ -738,13 +1059,30 @@ function closeModal(){
   setFormReadOnly(false);
 }
 
-async function saveLot(){
-  if(mode !== 'edit') return;
-  const num = document.getElementById('lotNum').value.trim();
-  if(!num){ alert('Masukkan nombor lot'); return; }
-  if(!draft){ alert('Kawasan lot tidak dijumpai.'); return; }
 
-  const id = editingId || (Date.now().toString() + Math.random().toString(36).slice(2,7));
+/* =====================================
+   SAVE LOT
+===================================== */
+
+async function saveLot(){
+
+  if(mode !== 'edit') return;
+
+  const num = document.getElementById('lotNum').value.trim();
+  if(!num){
+    alert('Masukkan nombor lot');
+    return;
+  }
+
+  if(!draft){
+    alert('Kawasan lot tidak dijumpai.');
+    return;
+  }
+
+  const id = editingId || (
+    Date.now().toString() + Math.random().toString(36).slice(2,7)
+  );
+
   const data = {
     id,
     num,
@@ -761,26 +1099,42 @@ async function saveLot(){
   };
 
   try{
-    setSyncStatus('Menyimpan...', '#fde68a');
+    setSyncStatus('Menyimpan lot ke Firebase…', '#fde68a');
     await lotsRef.doc(id).set(data, {merge:true});
     closeModal();
     setSyncStatus('✓ Lot disimpan', '#bbf7d0');
   }catch(err){
-    alert('Gagal: '+err.message);
+    alert('Gagal menyimpan lot: '+err.message);
+    setSyncStatus('Ralat simpanan Firebase', '#fecaca');
   }
+
 }
 
+
+/* =====================================
+   DELETE LOT
+===================================== */
+
 async function deleteLot(){
+
   if(!editingId || mode !== 'edit') return;
   if(!confirm('Padam lot ini?')) return;
+
   try{
     await lotsRef.doc(editingId).delete();
     closeModal();
     setSyncStatus('✓ Lot dipadam', '#bbf7d0');
   }catch(err){
-    alert('Gagal: '+err.message);
+    alert('Gagal memadam lot: '+err.message);
+    setSyncStatus('Ralat padam lot', '#fecaca');
   }
+
 }
+
+
+/* =====================================
+   PAN & ZOOM
+===================================== */
 
 function applyTransform(){
   stage.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
@@ -793,12 +1147,17 @@ function getDistance(a,b){
 workspace.addEventListener('pointerdown',e=>{
   if(drawing || isDraggingLot) return;
   if(e.pointerType === 'mouse' && e.button !== 0) return;
+
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+
   if(pointers.size === 1){
-    startX = e.clientX; startY = e.clientY;
-    startOffsetX = offsetX; startOffsetY = offsetY;
+    startX = e.clientX;
+    startY = e.clientY;
+    startOffsetX = offsetX;
+    startOffsetY = offsetY;
     hasMoved = false;
   }
+
   if(pointers.size === 2){
     const p = [...pointers.values()];
     startDistance = getDistance(p[0],p[1]);
@@ -810,25 +1169,32 @@ workspace.addEventListener('pointerdown',e=>{
 window.addEventListener('pointermove',e=>{
   if(drawing || isDraggingLot) return;
   if(!pointers.has(e.pointerId)) return;
+
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+
   if(pointers.size === 1){
     const dx = e.clientX - startX;
     const dy = e.clientY - startY;
     if(Math.abs(dx)>4 || Math.abs(dy)>4) hasMoved = true;
+
     offsetX = startOffsetX + dx;
     offsetY = startOffsetY + dy;
     applyTransform();
   }
+
   if(pointers.size === 2){
     const p = [...pointers.values()];
     const newDistance = getDistance(p[0],p[1]);
+
     if(startDistance > 0){
       const newScale = startScale * (newDistance / startDistance);
       const rect = workspace.getBoundingClientRect();
       const centerX = (p[0].x + p[1].x)/2 - rect.left;
       const centerY = (p[0].y + p[1].y)/2 - rect.top;
+
       const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
       const ratio = nextScale / scale;
+
       offsetX = centerX - (centerX - offsetX)*ratio;
       offsetY = centerY - (centerY - offsetY)*ratio;
       scale = nextScale;
@@ -841,17 +1207,24 @@ window.addEventListener('pointermove',e=>{
 function endPan(e){
   if(!pointers.has(e.pointerId)) return;
   pointers.delete(e.pointerId);
+
   if(pointers.size === 1){
     const p = [...pointers.values()][0];
-    startX = p.x; startY = p.y;
-    startOffsetX = offsetX; startOffsetY = offsetY;
+    startX = p.x;
+    startY = p.y;
+    startOffsetX = offsetX;
+    startOffsetY = offsetY;
     startDistance = 0;
   }
+
   if(pointers.size === 0){
     startDistance = 0;
     if(hasMoved){
       suppressClick = true;
-      setTimeout(()=>{ suppressClick = false; hasMoved = false; }, 400);
+      setTimeout(()=>{
+        suppressClick = false;
+        hasMoved = false;
+      }, 400);
     }
   }
 }
@@ -860,12 +1233,41 @@ window.addEventListener('pointerup', endPan);
 window.addEventListener('pointercancel', endPan);
 
 workspace.addEventListener('click', e=>{
-  if(suppressClick){ e.preventDefault(); e.stopPropagation(); suppressClick = false; hasMoved = false; }
+  if(suppressClick){
+    e.preventDefault();
+    e.stopPropagation();
+    suppressClick = false;
+    hasMoved = false;
+  }
 }, true);
+
+workspace.addEventListener('wheel', e=>{
+  if(drawing) return;
+  e.preventDefault();
+
+  const rect = workspace.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const oldScale = scale;
+  const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (e.deltaY < 15 ? 1.15 : 0.87)));
+  const ratio = nextScale / oldScale;
+
+  offsetX = x - (x - offsetX)*ratio;
+  offsetY = y - (y - offsetY)*ratio;
+  scale = nextScale;
+  applyTransform();
+},{passive:false});
+
+
+/* =====================================
+   DRAW NEW LOT
+===================================== */
 
 svg.addEventListener('pointerdown', e=>{
   if(!drawing || mode !== 'edit' || isDraggingLot) return;
   e.preventDefault();
+
   start = point(e);
   draft = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
   draft.setAttribute('class', 'lot bumi');
@@ -876,6 +1278,7 @@ svg.addEventListener('pointerdown', e=>{
 svg.addEventListener('pointermove', e=>{
   if(!start || !draft || !(draft instanceof SVGRectElement)) return;
   const p = point(e);
+
   draft.setAttribute('x', Math.min(start.x, p.x));
   draft.setAttribute('y', Math.min(start.y, p.y));
   draft.setAttribute('width', Math.abs(p.x - start.x));
@@ -884,13 +1287,16 @@ svg.addEventListener('pointermove', e=>{
 
 function finishDrawing(){
   if(!start || !draft || !(draft instanceof SVGRectElement)) return;
+
   const x = Number(draft.getAttribute('x'));
   const y = Number(draft.getAttribute('y'));
   const w = Number(draft.getAttribute('width'));
   const h = Number(draft.getAttribute('height'));
+
   draft.remove();
   start = null;
   draft = null;
+
   if(w < 5 || h < 5) return;
   openModal(null, {x, y, w, h});
 }
@@ -898,20 +1304,18 @@ function finishDrawing(){
 svg.addEventListener('pointerup', finishDrawing);
 svg.addEventListener('pointercancel', finishDrawing);
 
+
+/* =====================================
+   PLAN IMAGE SIZE & MODAL
+===================================== */
+
 function updatePlanSize(){
-  if(planImg.naturalWidth && planImg.naturalHeight){
-    // Tetapkan viewBox SVG mengikut dimensi asal sebenar gambar (naturalWidth & naturalHeight)
-    svg.setAttribute('viewBox', `0 0 ${planImg.naturalWidth} ${planImg.naturalHeight}`);
-    
-    const availableHeight = window.innerHeight - workspace.getBoundingClientRect().top - 30;
-    if(availableHeight > 300) {
-      workspace.style.height = availableHeight + 'px';
-    }
+  const im = document.getElementById('plan');
+  if(im.naturalWidth && im.naturalHeight){
+    svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
     render();
   }
 }
-
-window.addEventListener('resize', updatePlanSize);
 
 document.getElementById('modal').addEventListener('click', e=>{
   if(e.target.id === 'modal') closeModal();
@@ -921,15 +1325,12 @@ document.addEventListener('keydown', e=>{
   if(e.key === 'Escape') closeModal();
 });
 
-planImg.addEventListener('load', updatePlanSize);
-planImg.addEventListener('error', ()=>{
+document.getElementById('plan').addEventListener('load', updatePlanSize);
+document.getElementById('plan').addEventListener('error', ()=>{
   console.error('Gagal memuatkan awanmas2plan.jpg');
 });
 
-if(planImg.complete) {
-  updatePlanSize();
-}
-
+updatePlanSize();
 render();
 
 </script>
