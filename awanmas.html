@@ -345,7 +345,7 @@ input,select{
     <svg
       id="overlay"
       viewBox="0 0 826 1024"
-      preserveAspectRatio="none"
+      preserveAspectRatio="xMidYMid meet"
     ></svg>
 
   </div>
@@ -457,6 +457,7 @@ const lotsRef = db.collection(COLLECTION);
 const svg = document.getElementById('overlay');
 const workspace = document.getElementById('workspace');
 const stage = document.getElementById('stage');
+const planImg = document.getElementById('plan');
 
 let lots = JSON.parse(
   localStorage.getItem('awanmasLots') || '[]'
@@ -631,7 +632,6 @@ function render(){
       g.append(a,b);
     }
 
-    // Rotasi kekal pada paksi tengah geometri kotak asal tanpa mengubah saiz/bentuk fizikal
     const rot = Number(l.rotation) || 0;
     if(rot !== 0) {
       const cx = Number(l.x) + Number(l.w) / 2;
@@ -899,9 +899,9 @@ svg.addEventListener('pointerup', finishDrawing);
 svg.addEventListener('pointercancel', finishDrawing);
 
 function updatePlanSize(){
-  const im = document.getElementById('plan');
-  if(im.naturalWidth && im.naturalHeight){
-    svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
+  if(planImg.naturalWidth && planImg.naturalHeight){
+    // Tetapkan viewBox SVG mengikut dimensi asal sebenar gambar (naturalWidth & naturalHeight)
+    svg.setAttribute('viewBox', `0 0 ${planImg.naturalWidth} ${planImg.naturalHeight}`);
     
     const availableHeight = window.innerHeight - workspace.getBoundingClientRect().top - 30;
     if(availableHeight > 300) {
@@ -921,12 +921,15 @@ document.addEventListener('keydown', e=>{
   if(e.key === 'Escape') closeModal();
 });
 
-document.getElementById('plan').addEventListener('load', updatePlanSize);
-document.getElementById('plan').addEventListener('error', ()=>{
+planImg.addEventListener('load', updatePlanSize);
+planImg.addEventListener('error', ()=>{
   console.error('Gagal memuatkan awanmas2plan.jpg');
 });
 
-updatePlanSize();
+if(planImg.complete) {
+  updatePlanSize();
+}
+
 render();
 
 </script>
