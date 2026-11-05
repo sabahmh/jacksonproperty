@@ -393,7 +393,7 @@ input,select{
       </select>
     </div>
 
-    <div class="field">
+    <div class="field" id="rotationField">
       <label>Sudut Putaran / Senget (Darjah)</label>
       <input type="number" id="lotRotation" value="0" placeholder="Contoh: 15 atau -15">
     </div>
@@ -707,6 +707,10 @@ function setFormReadOnly(readOnly){
   ['lotNum', 'lotStatus', 'lotPrice', 'lotType', 'lotRotation', 'lotRemark'].forEach(id => {
     document.getElementById(id).disabled = readOnly;
   });
+  
+  // Sembunyikan ruang sudut putaran sepenuhnya semasa mode Papar (readOnly)
+  document.getElementById('rotationField').style.display = readOnly ? 'none' : 'grid';
+
   document.getElementById('deleteBtn').style.display = (!readOnly && editingId) ? 'inline-block' : 'none';
   document.querySelector('#modal .actions button:last-child').style.display = readOnly ? 'none' : 'inline-block';
   document.querySelector('#modal .actions button:first-child').textContent = readOnly ? 'Tutup' : 'Batal';
@@ -899,7 +903,6 @@ function updatePlanSize(){
   if(im.naturalWidth && im.naturalHeight){
     svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
     
-    // Auto sesuaikan ketinggian workspace supaya memenuhi ruang bawah skrin telefon
     const availableHeight = window.innerHeight - workspace.getBoundingClientRect().top - 30;
     if(availableHeight > 300) {
       workspace.style.height = availableHeight + 'px';
