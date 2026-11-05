@@ -92,7 +92,7 @@ input,select{
   min-width:0;
 }
 
-/* Workspace dan pelan (Saiz kotak dibesarkan sampai ke bawah) */
+/* Workspace dan pelan */
 .workspace{
   background:white;
   border:1px solid #dbe2ea;
@@ -127,7 +127,7 @@ input,select{
   transform-origin:0 0;
   will-change:transform;
   display:flex;
-  align-items: flex-start; /* Default paparan bermula di bahagian atas sekali */
+  align-items: flex-start;
   justify-content:center;
 }
 
@@ -405,7 +405,7 @@ input,select{
     <svg
       id="overlay"
       viewBox="0 0 826 1024"
-      preserveAspectRatio="none"
+      preserveAspectRatio="xMidYMid meet"
     ></svg>
 
   </div>
@@ -541,7 +541,7 @@ let dbReady = false;
 
 let scale = 1;
 let offsetX = 0;
-let offsetY = 0; // Default di atas sekali (0)
+let offsetY = 0;
 
 let pointers = new Map();
 
@@ -627,13 +627,13 @@ function toggleDraw(force){
 }
 
 function point(e){
-  const r = svg.getBoundingClientRect();
-  const vb = svg.viewBox.baseVal;
-
-  return {
-    x:(e.clientX-r.left)/r.width*vb.width,
-    y:(e.clientY-r.top)/r.height*vb.height
-  };
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return { x: 0, y: 0 };
+  const svgPt = pt.matrixTransform(ctm.inverse());
+  return { x: svgPt.x, y: svgPt.y };
 }
 
 function persistLocalAndRender(){
