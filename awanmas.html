@@ -631,7 +631,7 @@ function render(){
       g.append(a,b);
     }
 
-    // Putar menggunakan pusat geometri asal (cx, cy) supaya saiz kotak lot tidak berubah
+    // Rotasi kekal pada paksi tengah geometri kotak asal tanpa mengubah saiz/bentuk fizikal
     const rot = Number(l.rotation) || 0;
     if(rot !== 0) {
       const cx = Number(l.x) + Number(l.w) / 2;
