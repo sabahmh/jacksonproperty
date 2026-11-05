@@ -92,7 +92,7 @@ input,select{
   min-width:0;
 }
 
-/* Workspace dan pelan */
+/* Workspace dan pelan (Saiz kotak dibesarkan sampai ke bawah) */
 .workspace{
   background:white;
   border:1px solid #dbe2ea;
@@ -101,6 +101,8 @@ input,select{
   padding:3px;
   position:relative;
   width:100%;
+  height: calc(100vh - 200px);
+  min-height: 550px;
 
   /* Pan dan zoom */
   touch-action:none;
@@ -116,6 +118,7 @@ input,select{
 #stage{
   position:relative;
   width:100%;
+  height:100%;
   max-width:100%;
   margin:0 auto;
   user-select:none;
@@ -123,6 +126,9 @@ input,select{
   touch-action:none;
   transform-origin:0 0;
   will-change:transform;
+  display:flex;
+  align-items: flex-start; /* Default paparan bermula di bahagian atas sekali */
+  justify-content:center;
 }
 
 #plan{
@@ -304,6 +310,7 @@ input,select{
   }
 
   .workspace{
+    height: calc(100vh - 160px);
     padding:1px;
     border-radius:6px;
   }
@@ -525,7 +532,6 @@ let start = null;
 let draft = null;
 let editingId = null;
 
-// Pembolehubah untuk fungsi Drag Lot
 let draggingLot = null;
 let dragOffset = { x: 0, y: 0 };
 let isDraggingLot = false;
@@ -533,14 +539,9 @@ let isDraggingLot = false;
 let applyingRemote = false;
 let dbReady = false;
 
-
-/* =====================================
-   PAN & ZOOM VARIABLES
-===================================== */
-
 let scale = 1;
 let offsetX = 0;
-let offsetY = 0;
+let offsetY = 0; // Default di atas sekali (0)
 
 let pointers = new Map();
 
@@ -559,39 +560,22 @@ let suppressClick = false;
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
 
-
-/* =====================================
-   FIREBASE STATUS
-===================================== */
-
 function setSyncStatus(message,color){
-
   const el = document.getElementById('syncStatus');
-
   if(el){
     el.textContent = message;
     el.style.color = color || '#fff';
   }
-
 }
 
-
 function cacheLots(){
-
   localStorage.setItem(
     'awanmasLots',
     JSON.stringify(lots)
   );
-
 }
 
-
-/* =====================================
-   MODE
-===================================== */
-
 function updateDrawUI(){
-
   document.getElementById('drawBtn')
     .classList.toggle('active',drawing);
 
@@ -599,12 +583,9 @@ function updateDrawUI(){
     drawing ? 'block' : 'none';
 
   svg.style.cursor = drawing ? 'crosshair' : 'default';
-
 }
 
-
 function setMode(m){
-
   mode = m;
 
   document.getElementById('viewBtn')
@@ -614,9 +595,7 @@ function setMode(m){
     .classList.toggle('active',m === 'edit');
 
   if(m === 'view'){
-
     drawing = false;
-
     start = null;
 
     if(draft instanceof SVGRectElement){
@@ -624,16 +603,12 @@ function setMode(m){
     }
 
     draft = null;
-
   }
 
   updateDrawUI();
-
 }
 
-
 function toggleDraw(force){
-
   const next = force === undefined ? !drawing : !!force;
 
   if(next){
@@ -641,27 +616,17 @@ function toggleDraw(force){
   }
 
   drawing = next;
-
   updateDrawUI();
 
   if(drawing){
-
     setSyncStatus(
       'Mode lukis aktif — seret pada pelan untuk lukis lot',
       '#fde68a'
     );
-
   }
-
 }
 
-
-/* =====================================
-   COORDINATES
-===================================== */
-
 function point(e){
-
   const r = svg.getBoundingClientRect();
   const vb = svg.viewBox.baseVal;
 
@@ -669,24 +634,14 @@ function point(e){
     x:(e.clientX-r.left)/r.width*vb.width,
     y:(e.clientY-r.top)/r.height*vb.height
   };
-
 }
-
 
 function persistLocalAndRender(){
-
   cacheLots();
   render();
-
 }
 
-
-/* =====================================
-   FIREBASE REALTIME LISTENER
-===================================== */
-
 lotsRef.onSnapshot(snapshot => {
-
   applyingRemote = true;
 
   const remote = snapshot.docs.map(doc => ({
@@ -695,11 +650,9 @@ lotsRef.onSnapshot(snapshot => {
   }));
 
   if(snapshot.empty && lots.length){
-
     const batch = db.batch();
 
     lots.forEach((lot,i) => {
-
       const id = String(
         lot.id || (Date.now()+'-'+i)
       );
@@ -708,7 +661,6 @@ lotsRef.onSnapshot(snapshot => {
         lotsRef.doc(id),
         {...lot,id}
       );
-
     });
 
     batch.commit()
@@ -724,7 +676,6 @@ lotsRef.onSnapshot(snapshot => {
       });
 
     return;
-
   }
 
   lots = remote;
@@ -740,7 +691,6 @@ lotsRef.onSnapshot(snapshot => {
   );
 
 },error => {
-
   dbReady = false;
   applyingRemote = false;
 
@@ -750,32 +700,18 @@ lotsRef.onSnapshot(snapshot => {
   );
 
   console.error('Firestore listener error:',error);
-
 });
 
-
-/* =====================================
-   LOT VALIDATION
-===================================== */
-
 function pointInBounds(l){
-
   return l && [
     l.x,
     l.y,
     l.w,
     l.h
   ].every(v => Number.isFinite(Number(v)));
-
 }
 
-
-/* =====================================
-   RENDER LOT
-===================================== */
-
 function render(){
-
   svg.innerHTML = '';
 
   const statusFilter =
@@ -789,9 +725,7 @@ function render(){
     (!typeFilter || l.type === typeFilter)
   );
 
-
   shown.forEach(l => {
-
     if(!pointInBounds(l)) return;
 
     const g = document.createElementNS(
@@ -823,7 +757,6 @@ function render(){
 
     g.appendChild(r);
 
-
     const t = document.createElementNS(
       svg.namespaceURI,
       'text'
@@ -845,11 +778,7 @@ function render(){
 
     g.appendChild(t);
 
-
-    // Tanda X untuk SOLD
-
     if(l.status === 'SOLD'){
-
       const a = document.createElementNS(
         svg.namespaceURI,
         'line'
@@ -878,10 +807,8 @@ function render(){
       b.setAttribute('class','cross');
 
       g.append(a,b);
-
     }
 
-    // Guna transform rotate jika sudut wujud
     const rot = Number(l.rotation) || 0;
     if(rot !== 0) {
       const cx = Number(l.x) + Number(l.w) / 2;
@@ -891,7 +818,6 @@ function render(){
 
     g.style.cursor = mode === 'edit' ? 'move' : 'pointer';
 
-    // Event Pointer Down untuk DRAG lot secara manual
     g.addEventListener('pointerdown', e => {
       if(drawing || mode !== 'edit') return;
       e.stopPropagation();
@@ -907,7 +833,6 @@ function render(){
       g.setPointerCapture(e.pointerId);
     });
 
-    // Event Pointer Move untuk mengemaskini posisi semasa drag
     g.addEventListener('pointermove', e => {
       if(!isDraggingLot || draggingLot !== l) return;
       e.stopPropagation();
@@ -917,11 +842,9 @@ function render(){
       l.x = pt.x - dragOffset.x;
       l.y = pt.y - dragOffset.y;
 
-      // Render semula posisi masa nyata
       render();
     });
 
-    // Event Pointer Up untuk simpan posisi baharu ke Firebase
     g.addEventListener('pointerup', async e => {
       if(!isDraggingLot || draggingLot !== l) return;
       e.stopPropagation();
@@ -930,7 +853,6 @@ function render(){
 
       if(hasMoved){
         suppressClick = true;
-        // Simpan posisi baru ke Firebase
         try {
           setSyncStatus('Menyimpan kedudukan lot…', '#fde68a');
           await lotsRef.doc(String(l.id)).set({
@@ -945,7 +867,6 @@ function render(){
       }
     });
 
-    // Klik lot untuk buka modal (jika tidak ditarik/drag)
     g.addEventListener('click', e => {
       if(suppressClick) return;
       e.stopPropagation();
@@ -953,11 +874,7 @@ function render(){
     });
 
     svg.appendChild(g);
-
   });
-
-
-  /* Statistik status */
 
   const counts = {
     AVAILABLE:0,
@@ -987,16 +904,9 @@ function render(){
     `<div class="stat"><b>BUMI</b>: ${bumiAvailable}</div>` +
     `<div class="stat"><b>NON-BUMI</b>: ${nonBumiAvailable}</div>` +
     `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
-
 }
 
-
-/* =====================================
-   MODAL READ ONLY / EDIT
-===================================== */
-
 function setFormReadOnly(readOnly){
-
   [
     'lotNum',
     'lotStatus',
@@ -1020,12 +930,9 @@ function setFormReadOnly(readOnly){
     '#modal .actions button:first-child'
   ).textContent =
     readOnly ? 'Tutup' : 'Batal';
-
 }
 
-
 function openModal(l,coords){
-
   const readOnly = mode === 'view' && !coords;
   if(mode === 'view' && !coords && !l) return;
 
@@ -1049,9 +956,7 @@ function openModal(l,coords){
 
   setFormReadOnly(readOnly);
   document.getElementById('modal').style.display = 'flex';
-
 }
-
 
 function closeModal(){
   document.getElementById('modal').style.display = 'none';
@@ -1059,13 +964,7 @@ function closeModal(){
   setFormReadOnly(false);
 }
 
-
-/* =====================================
-   SAVE LOT
-===================================== */
-
 async function saveLot(){
-
   if(mode !== 'edit') return;
 
   const num = document.getElementById('lotNum').value.trim();
@@ -1107,16 +1006,9 @@ async function saveLot(){
     alert('Gagal menyimpan lot: '+err.message);
     setSyncStatus('Ralat simpanan Firebase', '#fecaca');
   }
-
 }
 
-
-/* =====================================
-   DELETE LOT
-===================================== */
-
 async function deleteLot(){
-
   if(!editingId || mode !== 'edit') return;
   if(!confirm('Padam lot ini?')) return;
 
@@ -1128,13 +1020,7 @@ async function deleteLot(){
     alert('Gagal memadam lot: '+err.message);
     setSyncStatus('Ralat padam lot', '#fecaca');
   }
-
 }
-
-
-/* =====================================
-   PAN & ZOOM
-===================================== */
 
 function applyTransform(){
   stage.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
@@ -1259,11 +1145,6 @@ workspace.addEventListener('wheel', e=>{
   applyTransform();
 },{passive:false});
 
-
-/* =====================================
-   DRAW NEW LOT
-===================================== */
-
 svg.addEventListener('pointerdown', e=>{
   if(!drawing || mode !== 'edit' || isDraggingLot) return;
   e.preventDefault();
@@ -1303,11 +1184,6 @@ function finishDrawing(){
 
 svg.addEventListener('pointerup', finishDrawing);
 svg.addEventListener('pointercancel', finishDrawing);
-
-
-/* =====================================
-   PLAN IMAGE SIZE & MODAL
-===================================== */
 
 function updatePlanSize(){
   const im = document.getElementById('plan');
