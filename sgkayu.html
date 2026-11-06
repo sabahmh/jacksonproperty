@@ -198,7 +198,6 @@ input,select{
   stroke-linejoin:round;
   pointer-events:none;
   text-anchor:middle;
-  glyph-orientation-vertical: 0;
 }
 
 .cross{
@@ -937,8 +936,6 @@ function render(){
     );
 
     t.setAttribute('class','lottext');
-    t.setAttribute('writing-mode', 'tb');
-    t.setAttribute('style', 'dominant-baseline: central; text-anchor: middle;');
     t.textContent = l.num || 'Lot';
     
     g.appendChild(t);
