@@ -952,9 +952,8 @@ function render(){
     
     // Putarkan teks -90 darjah pada pusat lot
     t.setAttribute('transform', `rotate(-90, ${cx}, ${cy})`);
-    
+
     t.textContent = l.num || 'Lot';
-   
     g.appendChild(t);
 
     if(l.status === 'SOLD'){
