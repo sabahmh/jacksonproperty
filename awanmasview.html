@@ -782,10 +782,16 @@ function openModal(l){
 
   editingId = String(l.id);
 
+  // 👇 PERUBAHAN DI SINI (Pemeriksaan nombor yang selamat)
+  let rawPrice = Number(l.price);
+  let formattedPrice = !isNaN(rawPrice) && rawPrice > 0 
+    ? 'RM ' + rawPrice.toLocaleString() 
+    : '-';
+
   document.getElementById('modalTitle').textContent = 'Maklumat Lot ' + (l.num || '');
   document.getElementById('lotNum').value = l.num || '';
   document.getElementById('lotStatus').value = l.status || 'AVAILABLE';
-  document.getElementById('lotPrice').value = l.price ? 'RM ' + Number(l.price).toLocaleString() : '-';
+  document.getElementById('lotPrice').value = formattedPrice; // Menggunakan pembolehubah baru
   document.getElementById('lotType').value = l.type || 'BUMI';
   document.getElementById('lotRemark').value = l.remark || 'Tiada';
 
