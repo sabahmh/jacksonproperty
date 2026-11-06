@@ -198,9 +198,7 @@ input,select{
   stroke-linejoin:round;
   pointer-events:none;
   text-anchor:middle;
-
-  writing-mode: vertical-rl; /* Menyusun teks dari atas ke bawah secara menegak */
-  text-orientation: upright; /* Memastikan nombor tegak tidak baring */
+  glyph-orientation-vertical: 0;
 }
 
 .cross{
@@ -939,6 +937,8 @@ function render(){
     );
 
     t.setAttribute('class','lottext');
+    t.setAttribute('writing-mode', 'tb');
+    t.setAttribute('style', 'dominant-baseline: central; text-anchor: middle;');
     t.textContent = l.num || 'Lot';
     
     g.appendChild(t);
