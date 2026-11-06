@@ -938,13 +938,21 @@ function render(){
       Number(l.y)+Number(l.h)/2+4
     );
 
-    // Tetapan untuk memaksa teks menjadi menegak di dalam SVG
-    t.setAttribute('writing-mode', 'vertical-rl');
-    t.setAttribute('glyph-orientation-vertical', '0');
+  // PEMBINAAN TEKS DENGAN ROTATE -90 DARJAH
+    const t = document.createElementNS(svg.namespaceURI, 'text');
+    t.setAttribute('class', 'lottext');
     t.setAttribute('text-anchor', 'middle');
-    t.setAttribute('dominant-baseline', 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+
+    const cx = Number(l.x) + Number(l.w) / 2;
+    const cy = Number(l.y) + Number(l.h) / 2;
     
-    t.setAttribute('class','lottext');
+    t.setAttribute('x', cx);
+    t.setAttribute('y', cy);
+    
+    // Putarkan teks -90 darjah pada pusat lot
+    t.setAttribute('transform', `rotate(-90, ${cx}, ${cy})`);
+    
     t.textContent = l.num || 'Lot';
    
     g.appendChild(t);
