@@ -782,11 +782,15 @@ function openModal(l){
 
   editingId = String(l.id);
 
-  // Paparkan nombor biasa atau '-' jika tiada
-  let rawPrice = Number(l.price);
-  let formattedPrice = !isNaN(rawPrice) && rawPrice > 0 
-    ? rawPrice 
-    : '-';
+  // Semak pelbagai kemungkinan nama medan harga yang mungkin wujud di Firebase
+  let priceValue = l.price !== undefined ? l.price : (l.harga !== undefined ? l.harga : null);
+
+  // Jika nilai wujud, cuba tukar kepada nombor. Jika gagal, paparkan nilai asal teks tersebut.
+  let formattedPrice = '-';
+  if (priceValue !== null && priceValue !== '') {
+    let rawPrice = Number(priceValue);
+    formattedPrice = !isNaN(rawPrice) ? rawPrice : priceValue;
+  }
 
   document.getElementById('modalTitle').textContent = 'Maklumat Lot ' + (l.num || '');
   document.getElementById('lotNum').value = l.num || '';
