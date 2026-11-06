@@ -158,16 +158,17 @@ input,select{
   cursor:pointer;
 }
 
-.lot.bumi{
-  fill:#FFA500;
-  fill-opacity:.55;
-  stroke:#be185d;
+.lot.available.bumi,
+.lot.bumi {
+  fill: #FFA500;
+  fill-opacity: 0.60;
+  stroke: #c2410c;
 }
   
 .lot.available {
-  fill: #D2B48C;        
-  fill-opacity: 0.50;  
-  stroke: #8B4513;     
+  fill: #3b82f6;        
+  fill-opacity: 0.60;  
+  stroke: #1d4ed8;     
 }
   
 .lot.sold{
@@ -198,6 +199,8 @@ input,select{
   stroke-linejoin:round;
   pointer-events:none;
   text-anchor:middle;
+  writing-mode: vertical-rl; 
+  text-orientation: upright;
 }
 
 .cross{
