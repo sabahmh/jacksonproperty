@@ -438,24 +438,24 @@ input,select{
   Komputer: Drag menggunakan tetikus dan scroll untuk zoom.
 </p>
 
-<!-- BAHAGIAN JADUAL SENARAI LOT AVAILABLE -->
-<section class="mt-8 bg-white border border-slate-200 rounded-xl p-4 sm:p-6 shadow-sm">
-  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-100">
+<!-- BAHAGIAN JADUAL SENARAI LOT AVAILABLE (COMPACT ROW) -->
+<section class="mt-6 bg-white border border-slate-200 rounded-xl p-3 sm:p-5 shadow-sm">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
     <div>
-      <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+      <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
         <i class="fa-solid fa-house-circle-check text-emerald-600"></i>
         Senarai Lot Available (Taman Sungai Kayu)
       </h2>
-      <p class="text-xs text-slate-500 mt-0.5">Senarai terkini lot kekosongan beserta harga dan kategori</p>
+      <p class="text-[11px] text-slate-500">Ringkasan lot kekosongan (1 baris setiap lot)</p>
     </div>
 
     <!-- Carian dan Tapisan Jadual -->
     <div class="flex flex-wrap items-center gap-2">
       <div class="relative">
-        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-        <input type="text" id="searchAvailable" oninput="renderAvailableTable()" placeholder="Cari nombor lot..." class="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-slate-300 w-36 sm:w-44 focus:outline-none focus:border-blue-500">
+        <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+        <input type="text" id="searchAvailable" oninput="renderAvailableTable()" placeholder="Cari lot..." class="pl-7 pr-2.5 py-1 text-xs rounded-md border border-slate-300 w-32 sm:w-36 focus:outline-none focus:border-blue-500">
       </div>
-      <select id="filterAvailableType" onchange="renderAvailableTable()" class="py-1.5 px-3 text-xs rounded-lg border border-slate-300 bg-white focus:outline-none focus:border-blue-500">
+      <select id="filterAvailableType" onchange="renderAvailableTable()" class="py-1 px-2.5 text-xs rounded-md border border-slate-300 bg-white focus:outline-none focus:border-blue-500">
         <option value="">Semua Kategori</option>
         <option value="BUMI">BUMI</option>
         <option value="NON-BUMI">NON-BUMI</option>
@@ -464,14 +464,14 @@ input,select{
   </div>
 
   <div class="overflow-x-auto">
-    <table class="w-full text-left text-sm border-collapse">
+    <table class="w-full text-left text-xs border-collapse">
       <thead>
-        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold text-xs uppercase tracking-wider">
-          <th class="py-3 px-4">No. Lot</th>
-          <th class="py-3 px-4">Kategori</th>
-          <th class="py-3 px-4">Harga (RM)</th>
-          <th class="py-3 px-4">Catatan / Remark</th>
-          <th class="py-3 px-4 text-right">Tindakan</th>
+        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold">
+          <th class="py-2.5 px-3">No. Lot</th>
+          <th class="py-2.5 px-3">Kategori</th>
+          <th class="py-2.5 px-3">Harga (RM)</th>
+          <th class="py-2.5 px-3">Catatan</th>
+          <th class="py-2.5 px-3 text-right">Tindakan</th>
         </tr>
       </thead>
       <tbody id="availableTableBody" class="divide-y divide-slate-100 text-slate-700">
@@ -812,7 +812,7 @@ function pointInBounds(l){
 
 
 /* =====================================
-   RENDER LOT & JADUAL AVAILABLE
+   RENDER LOT & COMPACT TABLE
 ===================================== */
 
 function renderAvailableTable(){
@@ -822,7 +822,6 @@ function renderAvailableTable(){
   const searchQuery = (document.getElementById('searchAvailable')?.value || '').toLowerCase();
   const typeFilter = document.getElementById('filterAvailableType')?.value || '';
 
-  // Penapisan lot AVAILABLE sahaja
   const availableLots = lots.filter(l => {
     const matchesStatus = l.status === 'AVAILABLE';
     const matchesType = !typeFilter || l.type === typeFilter;
@@ -830,13 +829,12 @@ function renderAvailableTable(){
     return matchesStatus && matchesType && matchesSearch;
   });
 
-  // Urutkan nombor lot
   availableLots.sort((a,b) => (a.num || '').localeCompare(b.num || '', undefined, {numeric: true}));
 
   if(availableLots.length === 0){
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="py-6 text-center text-slate-400 italic">
+        <td colspan="5" class="py-4 text-center text-slate-400 italic">
           Tiada lot Available ditemui.
         </td>
       </tr>
@@ -847,20 +845,20 @@ function renderAvailableTable(){
   tbody.innerHTML = availableLots.map(l => {
     const formattedPrice = l.price 
       ? 'RM ' + Number(l.price).toLocaleString('ms-MY') 
-      : '<span class="text-slate-400 font-normal">Belum Tetap</span>';
+      : '<span class="text-slate-400 font-normal">-</span>';
 
     const typeBadge = l.type === 'BUMI'
-      ? `<span class="bg-pink-100 text-pink-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-pink-200">BUMI</span>`
-      : `<span class="bg-blue-100 text-blue-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-200">NON-BUMI</span>`;
+      ? `<span class="bg-pink-100 text-pink-700 text-[10px] font-semibold px-2 py-0.5 rounded border border-pink-200">BUMI</span>`
+      : `<span class="bg-blue-100 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded border border-blue-200">NON-BUMI</span>`;
 
     return `
-      <tr class="hover:bg-slate-50 transition-colors">
-        <td class="py-3 px-4 font-bold text-slate-800">${l.num || 'Lot'}</td>
-        <td class="py-3 px-4">${typeBadge}</td>
-        <td class="py-3 px-4 font-semibold text-emerald-700">${formattedPrice}</td>
-        <td class="py-3 px-4 text-xs text-slate-500">${l.remark || '-'}</td>
-        <td class="py-3 px-4 text-right">
-          <button onclick="openModalById('${l.id}')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1 rounded-md transition-colors inline-flex items-center gap-1">
+      <tr class="hover:bg-slate-50/80 transition-colors whitespace-nowrap">
+        <td class="py-2 px-3 font-bold text-slate-800">${l.num || 'Lot'}</td>
+        <td class="py-2 px-3">${typeBadge}</td>
+        <td class="py-2 px-3 font-semibold text-emerald-700">${formattedPrice}</td>
+        <td class="py-2 px-3 text-slate-500 truncate max-w-[180px]" title="${l.remark || ''}">${l.remark || '-'}</td>
+        <td class="py-2 px-3 text-right">
+          <button onclick="openModalById('${l.id}')" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2 py-0.5 rounded transition-colors inline-flex items-center gap-1">
             <i class="fa-solid fa-eye"></i> Info
           </button>
         </td>
@@ -943,7 +941,6 @@ function render(){
 
     g.appendChild(t);
 
-    // Tanda X untuk SOLD
     if(l.status === 'SOLD'){
       const a = document.createElementNS(svg.namespaceURI, 'line');
       const b = document.createElementNS(svg.namespaceURI, 'line');
@@ -1035,7 +1032,6 @@ function render(){
     svg.appendChild(g);
   });
 
-  /* Statistik status */
   const counts = {
     AVAILABLE:0,
     HOLD:0,
@@ -1065,7 +1061,6 @@ function render(){
     `<div class="stat"><b>NON-BUMI</b>: ${nonBumiAvailable}</div>` +
     `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
 
-  // Kemaskini Jadual Available
   renderAvailableTable();
 }
 
