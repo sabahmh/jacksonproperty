@@ -941,10 +941,6 @@ function render(){
     t.setAttribute('class','lottext');
     t.textContent = l.num || 'Lot';
 
-    const cx = Number(l.x) + Number(l.w) / 2;
-    const cy = Number(l.y) + Number(l.h) / 2;
-    t.setAttribute('transform', `rotate(90, ${cx}, ${cy})`);
-
     g.appendChild(t);
 
     if(l.status === 'SOLD'){
