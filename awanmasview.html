@@ -782,20 +782,25 @@ function openModal(l){
 
   editingId = String(l.id);
 
-  // Semak pelbagai kemungkinan nama medan harga yang mungkin wujud di Firebase
+  // Ambil nilai price dari Firebase (cari 'price' atau 'harga')
   let priceValue = l.price !== undefined ? l.price : (l.harga !== undefined ? l.harga : null);
 
-  // Jika nilai wujud, cuba tukar kepada nombor. Jika gagal, paparkan nilai asal teks tersebut.
   let formattedPrice = '-';
   if (priceValue !== null && priceValue !== '') {
     let rawPrice = Number(priceValue);
-    formattedPrice = !isNaN(rawPrice) ? rawPrice : priceValue;
+    
+    // Jika ia nombor yang sah, formatkan dengan tanda koma (contoh: 150000 jadi 150,000)
+    if (!isNaN(rawPrice) && rawPrice > 0) {
+      formattedPrice = rawPrice.toLocaleString();
+    } else {
+      formattedPrice = priceValue; // Jika ia teks biasa, paparkan seperti biasa
+    }
   }
 
   document.getElementById('modalTitle').textContent = 'Maklumat Lot ' + (l.num || '');
   document.getElementById('lotNum').value = l.num || '';
   document.getElementById('lotStatus').value = l.status || 'AVAILABLE';
-  document.getElementById('lotPrice').value = formattedPrice;
+  document.getElementById('lotPrice').value = formattedPrice; // Paparan ada koma
   document.getElementById('lotType').value = l.type || 'BUMI';
   document.getElementById('lotRemark').value = l.remark || 'Tiada';
 
