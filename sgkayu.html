@@ -938,6 +938,12 @@ function render(){
       Number(l.y)+Number(l.h)/2+4
     );
 
+    // Tetapan untuk memaksa teks menjadi menegak di dalam SVG
+    t.setAttribute('writing-mode', 'vertical-rl');
+    t.setAttribute('glyph-orientation-vertical', '0');
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'middle');
+    
     t.setAttribute('class','lottext');
     t.textContent = l.num || 'Lot';
    
