@@ -221,9 +221,9 @@ body{
     </div>
   </div>
 
-  <!-- Statistik Ringkasan -->
-  <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 sm:gap-3" id="stats">
-    <!-- Kad Statistik Diisi secara Dinamik -->
+  <!-- Statistik Ringkasan (Kompak & Horizontal Scroll) -->
+  <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar scroll-smooth" id="stats">
+    <!-- Kad Statistik Kompak Diisi secara Dinamik -->
   </div>
 
   <!-- Workspace dan pelan (Pan & Zoom Only) -->
@@ -512,19 +512,19 @@ function renderStats(){
   const statsContainer = document.getElementById('stats');
   
   const items = [
-    { label: 'Available', val: counts.AVAILABLE, color: 'text-emerald-600', bg: 'bg-emerald-50 border-emerald-100' },
-    { label: 'Hold', val: counts.HOLD, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' },
-    { label: 'Booked', val: counts.BOOKED, color: 'text-purple-600', bg: 'bg-purple-50 border-purple-100' },
-    { label: 'Sold', val: counts.SOLD, color: 'text-slate-600', bg: 'bg-slate-100 border-slate-200' },
-    { label: 'Bumi Avail', val: bumiAvailable, color: 'text-pink-600', bg: 'bg-pink-50 border-pink-100' },
-    { label: 'Non-Bumi', val: nonBumiAvailable, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100' },
-    { label: 'Jumlah Lot', val: lots.length, color: 'text-slate-800', bg: 'bg-white border-slate-200' }
+    { label: 'Avail', val: counts.AVAILABLE, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+    { label: 'Hold', val: counts.HOLD, color: 'text-amber-700 bg-amber-50 border-amber-200' },
+    { label: 'Booked', val: counts.BOOKED, color: 'text-purple-700 bg-purple-50 border-purple-200' },
+    { label: 'Sold', val: counts.SOLD, color: 'text-slate-700 bg-slate-100 border-slate-200' },
+    { label: 'Bumi', val: bumiAvailable, color: 'text-pink-700 bg-pink-50 border-pink-200' },
+    { label: 'Non-Bumi', val: nonBumiAvailable, color: 'text-blue-700 bg-blue-50 border-blue-200' },
+    { label: 'Jumlah', val: lots.length, color: 'text-slate-800 bg-white border-slate-300' }
   ];
 
   statsContainer.innerHTML = items.map(item => `
-    <div class="${item.bg} border rounded-xl p-2.5 text-center shadow-sm">
-      <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-slate-500 block">${item.label}</span>
-      <span class="text-base sm:text-xl font-bold ${item.color}">${item.val}</span>
+    <div class="${item.color} border rounded-lg px-2 py-1 flex items-center gap-1.5 whitespace-nowrap shadow-xs flex-shrink-0 text-[11px] sm:text-xs">
+      <span class="font-medium opacity-85 uppercase tracking-tight">${item.label}:</span>
+      <span class="font-bold">${item.val}</span>
     </div>
   `).join('');
 }
