@@ -853,10 +853,10 @@ function render(){
       'class',
       'lot '+
       (
+        l.status === 'AVAILABLE' ? 'available' :
         l.status === 'SOLD' ? 'sold' :
         l.status === 'HOLD' ? 'hold' :
         l.status === 'BOOKED' ? 'booked' :
-        l.status === 'AVAILABLE' ? 'available' :
         l.type === 'BUMI' ? 'bumi' : ''
       )
     );
