@@ -108,7 +108,7 @@ input,select{
   padding:3px;
   position:relative;
   width:100%;
-  touch-action:none;
+  touch-action:none; /* PENTING: Halang scroll browser supaya pinch-to-zoom mobile berfungsi */
   cursor:grab;
   user-select:none;
   -webkit-user-select:none;
@@ -270,6 +270,7 @@ input,select{
   header{padding:9px 11px; gap:5px;}
   h1{font-size:15px}
   header small{font-size:11px}
+  header>div:last-child{font-size:11px}
   main{padding:5px}
   .toolbar{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; margin-bottom:7px;}
   .toolbar button, .toolbar select{width:100%; min-width:0; padding:8px 5px; font-size:12px; border-radius:7px;}
@@ -286,7 +287,7 @@ input,select{
 
 <body>
 
-<!-- Skrin Loading Semakan Sesi (Dilangkau sementara) -->
+<!-- Skrin Loading Disembunyikan Sementara -->
 <div id="loadingScreen" class="fixed inset-0 bg-slate-900 flex flex-col items-center justify-center z-50 text-slate-400" style="display:none;">
     <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-blue-500"></i>
     <p class="text-sm">Menyemak sesi...</p>
@@ -344,7 +345,8 @@ input,select{
 </div>
 
 <p class="note">
-  Nota: Mode Papar — klik lot untuk melihat maklumat. Mode Edit — klik lot untuk edit/putar, atau klik & seret lot secara manual untuk alih kedudukan.
+  Nota: Mode Papar — klik lot untuk melihat maklumat. Mode Edit — klik lot untuk edit/putar, atau klik & seret lot secara manual untuk alih kedudukan. <br>
+  Telefon: Swipe untuk gerakkan pelan. Pinch dua jari untuk zoom.
 </p>
 
 <!-- JADUAL SENARAI LOT AVAILABLE -->
@@ -600,6 +602,8 @@ function render(){
   );
 
   shown.forEach(l => {
+    if(![l.x, l.y, l.w, l.h].every(v => Number.isFinite(Number(v)))) return;
+
     const g = document.createElementNS(svg.namespaceURI, 'g');
     const r = document.createElementNS(svg.namespaceURI, 'rect');
 
@@ -612,12 +616,15 @@ function render(){
     r.setAttribute(
       'class',
       'lot ' +
-      (l.status ? l.status.toLowerCase() : '') + ' ' +
+      (l.status === 'AVAILABLE' ? 'available' :
+       l.status === 'SOLD' ? 'sold' :
+       l.status === 'HOLD' ? 'hold' :
+       l.status === 'BOOKED' ? 'booked' : '') + ' ' +
       (l.type ? l.type.toLowerCase() : '')
     );
     g.appendChild(r);
 
-    // PEMBINAAN TEKS DENGAN ROTATE -90 DARJAH
+    // PEMBINAAN TEKS DENGAN ROTATE -90 DARJAH (Satu pengisytiharan sahaja)[cite: 1]
     const t = document.createElementNS(svg.namespaceURI, 'text');
     t.setAttribute('class', 'lottext');
     t.setAttribute('text-anchor', 'middle');
@@ -628,8 +635,6 @@ function render(){
     
     t.setAttribute('x', cx);
     t.setAttribute('y', cy);
-    
-    // Putarkan teks -90 darjah pada pusat lot
     t.setAttribute('transform', `rotate(-90, ${cx}, ${cy})`);
 
     t.textContent = l.num || 'Lot';
@@ -648,6 +653,8 @@ function render(){
     if(rot !== 0) {
       g.setAttribute('transform', `rotate(${rot}, ${cx}, ${cy})`);
     }
+
+    g.style.cursor = mode === 'edit' ? 'move' : 'pointer';
 
     g.addEventListener('pointerdown', e => {
       if(drawing || mode !== 'edit') return;
@@ -747,41 +754,110 @@ async function deleteLot(){
   closeModal();
 }
 
+/* =====================================
+   PAN & ZOOM (Sokongan Mobile & Desktop)
+===================================== */
 function applyTransform(){
   stage.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
 }
 
+function getDistance(a, b){
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
 workspace.addEventListener('pointerdown', e => {
   if(drawing || isDraggingLot) return;
-  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
   if(pointers.size === 1){
     startX = e.clientX; startY = e.clientY;
     startOffsetX = offsetX; startOffsetY = offsetY;
     hasMoved = false;
   }
+
+  if(pointers.size === 2){
+    const p = [...pointers.values()];
+    startDistance = getDistance(p[0], p[1]);
+    startScale = scale;
+    hasMoved = true;
+  }
 });
 
 window.addEventListener('pointermove', e => {
   if(drawing || isDraggingLot || !pointers.has(e.pointerId)) return;
-  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
   if(pointers.size === 1){
     const dx = e.clientX - startX, dy = e.clientY - startY;
-    if(Math.abs(dx)>4 || Math.abs(dy)>4) hasMoved = true;
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) hasMoved = true;
     offsetX = startOffsetX + dx; offsetY = startOffsetY + dy;
     applyTransform();
   }
-});
+
+  if(pointers.size === 2){
+    const p = [...pointers.values()];
+    const newDistance = getDistance(p[0], p[1]);
+
+    if(startDistance > 0){
+      const newScale = startScale * (newDistance / startDistance);
+      const rect = workspace.getBoundingClientRect();
+      const centerX = (p[0].x + p[1].x) / 2 - rect.left;
+      const centerY = (p[0].y + p[1].y) / 2 - rect.top;
+
+      const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      const ratio = nextScale / scale;
+
+      offsetX = centerX - (centerX - offsetX) * ratio;
+      offsetY = centerY - (centerY - offsetY) * ratio;
+      scale = nextScale;
+      hasMoved = true;
+      applyTransform();
+    }
+  }
+}, { passive: true });
 
 function endPan(e){
   if(!pointers.has(e.pointerId)) return;
   pointers.delete(e.pointerId);
-  if(pointers.size === 0 && hasMoved){
-    suppressClick = true;
-    setTimeout(() => { suppressClick = false; hasMoved = false; }, 400);
+
+  if(pointers.size === 1){
+    const p = [...pointers.values()][0];
+    startX = p.x; startY = p.y;
+    startOffsetX = offsetX; startOffsetY = offsetY;
+    startDistance = 0;
+  }
+
+  if(pointers.size === 0){
+    startDistance = 0;
+    if(hasMoved){
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; hasMoved = false; }, 400);
+    }
   }
 }
+
 window.addEventListener('pointerup', endPan);
 window.addEventListener('pointercancel', endPan);
+
+workspace.addEventListener('wheel', e => {
+  if(drawing) return;
+  e.preventDefault();
+
+  const rect = workspace.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const oldScale = scale;
+  const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (e.deltaY < 0 ? 1.15 : 0.87)));
+  const ratio = nextScale / oldScale;
+
+  offsetX = x - (x - offsetX) * ratio;
+  offsetY = y - (y - offsetY) * ratio;
+  scale = nextScale;
+  applyTransform();
+}, { passive: false });
 
 svg.addEventListener('pointerdown', e => {
   if(!drawing || mode !== 'edit' || isDraggingLot) return;
