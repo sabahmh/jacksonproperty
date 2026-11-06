@@ -937,16 +937,7 @@ function render(){
 
     t.setAttribute('class','lottext');
     t.textContent = l.num || 'Lot';
-
-    let autoRot = Number(l.rotation);
-    if (!autoRot && Number(l.h) > Number(l.w) * 1.3) {
-      autoRot = -90; // Otomatik menegak untuk lot sisi
-    }
-
-    if (autoRot !== 0) {
-      t.setAttribute('transform', `rotate(${autoRot}, ${cx}, ${cy})`);
-    }
-    
+   
     g.appendChild(t);
 
     if(l.status === 'SOLD'){
