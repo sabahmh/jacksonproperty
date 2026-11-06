@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html lang="ms">
-<head><!DOCTYPE html>
-<html lang="ms">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jackson Property – Awan Mas, Sandakan (Paparan Sahaja)</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jackson Property – Awan Mas, Sandakan</title>
 
 <style>
 :root{
@@ -18,33 +14,99 @@
   --yellow:#f59e0b;
 }
 
-*{
-  box-sizing:border-box;
-  font-family: 'Inter', sans-serif;
-}
+*{box-sizing:border-box}
 
 body{
   margin:0;
   background:#f3f5f9;
   color:var(--ink);
+  font:15px Arial,sans-serif;
+}
+
+header{
+  background:var(--blue);
+  color:#fff;
+  padding:16px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+h1{
+  font-size:20px;
+  margin:0;
+}
+
+header small{opacity:.85}
+
+main{
+  max-width:1400px;
+  margin:auto;
+  padding:14px;
+}
+
+.toolbar{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:12px;
+  align-items:center;
+}
+
+button,.btn{
+  border:0;
+  border-radius:8px;
+  padding:10px 13px;
+  background:var(--blue);
+  color:white;
+  cursor:pointer;
+  font-weight:600;
+}
+
+button.secondary{background:#64748b}
+button.active{background:#0f766e}
+
+input,select{
+  padding:9px;
+  border:1px solid #cbd5e1;
+  border-radius:7px;
+  min-width:100px;
+}
+
+/* Statistik */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+  margin:10px 0;
+}
+
+.stat{
+  background:white;
+  border:1px solid #e2e8f0;
+  border-radius:99px;
+  padding:8px 13px;
+  text-align:center;
+  min-width:0;
 }
 
 /* Workspace dan pelan */
 .workspace{
-  background:#ffffff;
+  background:white;
   border:1px solid #dbe2ea;
-  border-radius:12px;
+  border-radius:10px;
   overflow:hidden;
-  padding:0;
+  padding:3px;
   position:relative;
   width:100%;
-  height: 70vh;
-  min-height: 500px;
+
+  /* Pan dan zoom */
   touch-action:none;
   cursor:grab;
   user-select:none;
   -webkit-user-select:none;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
 
 .workspace:active{
@@ -85,13 +147,8 @@ body{
   stroke:#1d4ed8;
   stroke-width:1.4;
   fill:#ffffff;
-  fill-opacity:.15;
+  fill-opacity:.08;
   cursor:pointer;
-  transition: opacity 0.2s, fill-opacity 0.2s;
-}
-
-.lot:hover{
-  fill-opacity:0.4;
 }
 
 .lot.bumi{
@@ -102,20 +159,20 @@ body{
 
 .lot.sold{
   fill:#64748b;
-  fill-opacity:.45;
+  fill-opacity:.38;
   stroke:#334155;
 }
 
 .lot.hold{
   fill:#fbbf24;
-  fill-opacity:.55;
+  fill-opacity:.5;
   stroke:#b45309;
 }
 
 .lot.booked{
   fill: #a855f7;
   fill-opacity: .55;
-  stroke: #7e22ce;
+  stroke: #ef4444;
 }
 
 .lottext{
@@ -136,187 +193,261 @@ body{
   pointer-events:none;
 }
 
+.note{
+  color:#64748b;
+  font-size:13px;
+  margin:10px 2px;
+}
+
 /* Modal */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  background:#0008;
   display:none;
   align-items:center;
   justify-content:center;
   padding:15px;
-  z-index:50;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  z-index:5;
 }
 
 .panel{
   background:white;
-  padding:24px;
-  border-radius:16px;
-  width:min(420px, 100%);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  padding:20px;
+  border-radius:14px;
+  width:min(420px,100%);
+  box-shadow:0 15px 50px #0003;
   max-height: 90vh;
   overflow-y: auto;
 }
 
+.panel h2{margin-top:0}
+
+.field{
+  display:grid;
+  gap:5px;
+  margin:12px 0;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  margin-top:18px;
+}
+
+.field input,
+.field select{
+  width:100%;
+  min-width:0;
+}
+
+/* Paparan telefon */
 @media(max-width:600px){
+
+  body{font-size:13px}
+
+  header{
+    padding:9px 11px;
+    gap:5px;
+  }
+
+  h1{font-size:15px}
+
+  header small{font-size:11px}
+
+  header>div:last-child{font-size:11px}
+
+  main{padding:5px}
+
+  .toolbar{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:5px;
+    margin-bottom:7px;
+  }
+
+  .toolbar select{
+    width:100%;
+    min-width:0;
+    padding:8px 5px;
+    font-size:12px;
+    border-radius:7px;
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:4px;
+    margin:6px 0;
+  }
+
+  .stat{
+    padding:6px 2px;
+    text-align:center;
+    font-size:10px;
+    border-radius:6px;
+    white-space:nowrap;
+    min-width:0;
+  }
+
   .workspace{
-    height: 60vh;
-    min-height: 400px;
+    padding:1px;
+    border-radius:6px;
+    min-height: 500px;
+  }
+
+  .note{font-size:11px}
+
+  .panel{padding:15px}
+
+  .field{margin:9px 0}
+}
+
+@media(max-width:360px){
+
+  .toolbar select{
+    font-size:11px;
+  }
+
+  .stat{
+    font-size:9px;
+    padding:5px 1px;
   }
 }
 </style>
 </head>
 
-<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+<body>
 
-<!-- Header -->
-<header class="bg-[#173b72] text-white shadow-md">
-  <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-    <div>
-      <div class="flex items-center gap-2">
-        <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Jackson Property</h1>
-        <span class="bg-blue-900/60 text-blue-200 text-xs px-2.5 py-0.5 rounded-full font-medium border border-blue-400/30">Paparan Sahaja</span>
-      </div>
-      <p class="text-xs sm:text-sm text-blue-200 mt-0.5">Pelan Tapak • Awan Mas, Sandakan (Fasa 1)</p>
-    </div>
+<header>
+  <div>
+    <h1>Jackson Property – Awan Mas, Sandakan</h1>
+    <small>Site Plan • Phase 1</small>
+  </div>
 
-    <div class="flex items-center gap-2 text-xs sm:text-sm bg-blue-900/40 px-3 py-1.5 rounded-lg border border-blue-400/20">
-      <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" id="statusDot"></span>
-      <span id="syncStatus" class="text-blue-100 font-medium">Menyambung ke Firebase…</span>
-    </div>
+  <div>
+    Lot Status<br>
+    <small id="syncStatus">Menyambung ke Firebase…</small>
   </div>
 </header>
 
-<main class="max-w-7xl w-full mx-auto p-3 sm:p-6 flex-1 flex flex-col gap-4">
+<main>
 
-  <!-- Toolbar & Penapis -->
-  <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-200/80 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
-    
-    <div class="flex items-center gap-2 text-slate-700 font-semibold text-sm">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.56V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.44L3.293 6.707A1 1 0 013 6V4z" />
-      </svg>
-      <span>Penapis Lot:</span>
-    </div>
+<div class="toolbar">
 
-    <div class="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto">
-      <select id="filterStatus" onchange="render()" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-44">
-        <option value="">Semua Status</option>
-        <option value="AVAILABLE">AVAILABLE</option>
-        <option value="HOLD">HOLD</option>
-        <option value="BOOKED">BOOKED</option>
-        <option value="SOLD">SOLD</option>
-      </select>
+  <select id="filterStatus" onchange="render()">
+    <option value="">Semua Status</option>
+    <option>AVAILABLE</option>
+    <option>HOLD</option>
+    <option>BOOKED</option>
+    <option>SOLD</option>
+  </select>
 
-      <select id="filterType" onchange="render()" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none w-full sm:w-44">
-        <option value="">Semua Kategori</option>
-        <option value="BUMI">BUMI</option>
-        <option value="NON-BUMI">NON-BUMI</option>
-      </select>
-    </div>
+  <select id="filterType" onchange="render()">
+    <option value="">Semua Lot</option>
+    <option>BUMI</option>
+    <option>NON-BUMI</option>
+  </select>
+
+</div>
+
+<!-- Statistik -->
+<div class="stats" id="stats"></div>
+
+<!-- Pelan lot -->
+<div class="workspace" id="workspace">
+
+  <div id="stage">
+
+    <img
+      id="plan"
+      src="awanmas2plan.jpg"
+      alt="Site Plan Awan Mas"
+      draggable="false"
+    >
+
+    <svg
+      id="overlay"
+      viewBox="0 0 826 1024"
+      preserveAspectRatio="none"
+    ></svg>
+
   </div>
 
-  <!-- Statistik Ringkasan (Kompak & Horizontal Scroll) -->
-  <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar scroll-smooth" id="stats">
-    <!-- Kad Statistik Kompak Diisi secara Dinamik -->
-  </div>
+</div>
 
-  <!-- Workspace dan pelan (Pan & Zoom Only) -->
-  <div class="workspace" id="workspace">
-    <div id="stage">
-      <img
-        id="plan"
-        src="awanmas2plan.jpg"
-        alt="Site Plan Awan Mas"
-        draggable="false"
-      >
-      <svg
-        id="overlay"
-        viewBox="0 0 826 1024"
-        preserveAspectRatio="none"
-      ></svg>
-    </div>
-  </div>
-
-  <!-- Petunjuk Kawalan -->
-  <div class="bg-blue-50/80 border border-blue-200/80 rounded-xl p-3 text-xs text-blue-900 flex items-start gap-2.5 shadow-sm">
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-    </svg>
-    <div>
-      <p class="font-semibold mb-0.5">Panduan Navigasi:</p>
-      <p class="text-blue-800">
-        <strong>Klik mana-mana lot</strong> untuk melihat butiran lengkap. <br class="sm:hidden">
-        <strong>Telefon:</strong> Leret (Swipe) untuk alih pelan & cubit dua jari (Pinch) untuk zoom. | 
-        <strong>Komputer:</strong> Seret tetikus (Drag) & guna rod skrol (Scroll) untuk zoom.
-      </p>
-    </div>
-  </div>
+<p class="note">
+  Nota: Klik lot untuk melihat maklumat terperinci.
+  <br>
+  Telefon: Swipe untuk gerakkan pelan. Pinch dua jari untuk zoom.
+  Komputer: Drag menggunakan tetikus dan scroll untuk zoom.
+</p>
 
 </main>
 
-<!-- Modal View-Only Lot (Read-Only) -->
+<!-- Modal Lot -->
 <div class="modal" id="modal">
+
   <div class="panel">
-    
-    <div class="flex justify-between items-start border-b border-slate-100 pb-3 mb-4">
-      <div>
-        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Maklumat Lot</span>
-        <h2 id="modalLotNum" class="text-2xl font-bold text-slate-800">Lot --</h2>
-      </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+
+    <h2 id="modalTitle">Maklumat Lot</h2>
+
+    <div class="field">
+      <label>Nombor / Nama Lot</label>
+      <input id="lotNum" disabled>
     </div>
 
-    <div class="space-y-3.5">
-      <div class="flex justify-between items-center py-1 border-b border-slate-50">
-        <span class="text-sm font-medium text-slate-500">Status</span>
-        <span id="modalLotStatus" class="font-bold text-xs px-3 py-1 rounded-full uppercase">AVAILABLE</span>
-      </div>
-
-      <div class="flex justify-between items-center py-1 border-b border-slate-50">
-        <span class="text-sm font-medium text-slate-500">Kategori</span>
-        <span id="modalLotType" class="font-semibold text-sm text-slate-700">BUMI</span>
-      </div>
-
-      <div class="flex justify-between items-center py-1 border-b border-slate-50">
-        <span class="text-sm font-medium text-slate-500">Harga Anggaran</span>
-        <span id="modalLotPrice" class="font-bold text-base text-emerald-600">RM --</span>
-      </div>
-
-      <div class="py-1">
-        <span class="text-sm font-medium text-slate-500 block mb-1">Catatan / Remark</span>
-        <p id="modalLotRemark" class="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg border border-slate-200/80 min-h-[48px] italic">Tiada catatan.</p>
-      </div>
+    <div class="field">
+      <label>Status</label>
+      <select id="lotStatus" disabled>
+        <option>AVAILABLE</option>
+        <option>HOLD</option>
+        <option>BOOKED</option>
+        <option>SOLD</option>
+      </select>
     </div>
 
-    <div class="mt-6 pt-2">
-      <button onclick="closeModal()" class="w-full py-2.5 bg-slate-800 text-white font-medium rounded-xl hover:bg-slate-900 transition shadow-sm text-sm">
+    <div class="field">
+      <label>Harga (RM)</label>
+      <input id="lotPrice" placeholder="-" disabled>
+    </div>
+
+    <div class="field">
+      <label>Kategori</label>
+      <select id="lotType" disabled>
+        <option>BUMI</option>
+        <option>NON-BUMI</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Remark</label>
+      <input id="lotRemark" placeholder="Tiada" disabled>
+    </div>
+
+    <div class="actions">
+
+      <button onclick="closeModal()">
         Tutup
       </button>
+
     </div>
 
   </div>
+
 </div>
 
-<!-- Firebase SDK -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
+
 /* =====================================
    FIREBASE CONFIGURATION
 ===================================== */
+
 const firebaseConfig = {
   apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
   authDomain: "listing-2a59c.firebaseapp.com",
@@ -328,6 +459,7 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
+
 const db = firebase.firestore();
 
 const COLLECTION = 'awanmas_lots';
@@ -337,21 +469,33 @@ const svg = document.getElementById('overlay');
 const workspace = document.getElementById('workspace');
 const stage = document.getElementById('stage');
 
-let lots = [];
+let lots = JSON.parse(
+  localStorage.getItem('awanmasLots') || '[]'
+);
+
+const mode = 'view';
+let editingId = null;
+
+let applyingRemote = false;
+let dbReady = false;
+
 
 /* =====================================
    PAN & ZOOM VARIABLES
 ===================================== */
+
 let scale = 1;
 let offsetX = 0;
 let offsetY = 0;
 
 let pointers = new Map();
+
 let startDistance = 0;
 let startScale = 1;
 
 let startX = 0;
 let startY = 0;
+
 let startOffsetX = 0;
 let startOffsetY = 0;
 
@@ -361,78 +505,150 @@ let suppressClick = false;
 const MIN_SCALE = 1;
 const MAX_SCALE = 5;
 
+
 /* =====================================
-   STATUS FIREBASE
+   FIREBASE STATUS
 ===================================== */
-function setSyncStatus(message, isError = false){
+
+function setSyncStatus(message,color){
+
   const el = document.getElementById('syncStatus');
-  const dot = document.getElementById('statusDot');
 
   if(el){
     el.textContent = message;
+    el.style.color = color || '#fff';
   }
-  if(dot){
-    if(isError){
-      dot.className = "inline-block w-2.5 h-2.5 rounded-full bg-red-400";
-    } else {
-      dot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-    }
-  }
+
 }
 
+
+function cacheLots(){
+
+  localStorage.setItem(
+    'awanmasLots',
+    JSON.stringify(lots)
+  );
+
+}
+
+
 /* =====================================
-   FIREBASE REALTIME LISTENER (VIEW ONLY)
+   COORDINATES
 ===================================== */
+
+function point(e){
+
+  const r = svg.getBoundingClientRect();
+  const vb = svg.viewBox.baseVal;
+
+  return {
+    x:(e.clientX-r.left)/r.width*vb.width,
+    y:(e.clientY-r.top)/r.height*vb.height
+  };
+
+}
+
+
+/* =====================================
+   FIREBASE REALTIME LISTENER
+===================================== */
+
 lotsRef.onSnapshot(snapshot => {
-  lots = snapshot.docs.map(doc => ({
+
+  applyingRemote = true;
+
+  const remote = snapshot.docs.map(doc => ({
     ...doc.data(),
-    id: doc.id
+    id:doc.id
   }));
 
+  lots = remote;
+  cacheLots();
   render();
-  setSyncStatus('✓ Data Dikemaskini (Real-time)');
-}, error => {
-  setSyncStatus('Ralat Firebase: ' + (error.code || error.message), true);
-  console.error('Firestore listener error:', error);
+
+  dbReady = true;
+  applyingRemote = false;
+
+  setSyncStatus(
+    '✓ Data terkini diselaraskan',
+    '#bbf7d0'
+  );
+
+},error => {
+
+  dbReady = false;
+  applyingRemote = false;
+
+  setSyncStatus(
+    'Sambungan gagal: '+(error.code || error.message),
+    '#fecaca'
+  );
+
+  console.error('Firestore listener error:',error);
+
 });
 
+
 /* =====================================
-   VALIDASI LOT
+   LOT VALIDATION
 ===================================== */
+
 function pointInBounds(l){
-  return l && [l.x, l.y, l.w, l.h].every(v => Number.isFinite(Number(v)));
+
+  return l && [
+    l.x,
+    l.y,
+    l.w,
+    l.h
+  ].every(v => Number.isFinite(Number(v)));
+
 }
 
+
 /* =====================================
-   RENDER LOT (PAPARAN SAHAJA)
+   RENDER LOT
 ===================================== */
+
 function render(){
+
   svg.innerHTML = '';
 
-  const statusFilter = document.getElementById('filterStatus').value;
-  const typeFilter = document.getElementById('filterType').value;
+  const statusFilter =
+    document.getElementById('filterStatus').value;
+
+  const typeFilter =
+    document.getElementById('filterType').value;
 
   const shown = lots.filter(l =>
     (!statusFilter || l.status === statusFilter) &&
     (!typeFilter || l.type === typeFilter)
   );
 
+
   shown.forEach(l => {
+
     if(!pointInBounds(l)) return;
 
-    const g = document.createElementNS(svg.namespaceURI, 'g');
+    const g = document.createElementNS(
+      svg.namespaceURI,
+      'g'
+    );
 
-    // Segi Empat Lot
-    const r = document.createElementNS(svg.namespaceURI, 'rect');
-    r.setAttribute('x', l.x);
-    r.setAttribute('y', l.y);
-    r.setAttribute('width', l.w);
-    r.setAttribute('height', l.h);
-    r.setAttribute('rx', 1);
+    const r = document.createElementNS(
+      svg.namespaceURI,
+      'rect'
+    );
+
+    r.setAttribute('x',l.x);
+    r.setAttribute('y',l.y);
+    r.setAttribute('width',l.w);
+    r.setAttribute('height',l.h);
+    r.setAttribute('rx',1);
 
     r.setAttribute(
       'class',
-      'lot ' + (
+      'lot '+
+      (
         l.status === 'SOLD' ? 'sold' :
         l.status === 'HOLD' ? 'hold' :
         l.status === 'BOOKED' ? 'booked' :
@@ -442,39 +658,65 @@ function render(){
 
     g.appendChild(r);
 
-    // Teks Nombor Lot
-    const t = document.createElementNS(svg.namespaceURI, 'text');
-    t.setAttribute('x', Number(l.x) + Number(l.w)/2);
-    t.setAttribute('y', Number(l.y) + Number(l.h)/2 + 4);
-    t.setAttribute('class', 'lottext');
+
+    const t = document.createElementNS(
+      svg.namespaceURI,
+      'text'
+    );
+
+    t.setAttribute(
+      'x',
+      Number(l.x)+Number(l.w)/2
+    );
+
+    t.setAttribute(
+      'y',
+      Number(l.y)+Number(l.h)/2+4
+    );
+
+    t.setAttribute('class','lottext');
+
     t.textContent = l.num || 'Lot';
+
     g.appendChild(t);
 
-    // Tanda X jika SOLD
+
+    // Tanda X untuk SOLD
+
     if(l.status === 'SOLD'){
-      const a = document.createElementNS(svg.namespaceURI, 'line');
-      const b = document.createElementNS(svg.namespaceURI, 'line');
+
+      const a = document.createElementNS(
+        svg.namespaceURI,
+        'line'
+      );
+
+      const b = document.createElementNS(
+        svg.namespaceURI,
+        'line'
+      );
 
       [
-        ['x1', Number(l.x) + Number(l.w) * 0.2],
-        ['y1', Number(l.y) + Number(l.h) * 0.2],
-        ['x2', Number(l.x) + Number(l.w) * 0.8],
-        ['y2', Number(l.y) + Number(l.h) * 0.8]
-      ].forEach(v => a.setAttribute(v[0], v[1]));
+        ['x1',Number(l.x)+Number(l.w)*.2],
+        ['y1',Number(l.y)+Number(l.h)*.2],
+        ['x2',Number(l.x)+Number(l.w)*.8],
+        ['y2',Number(l.y)+Number(l.h)*.8]
+      ].forEach(v => a.setAttribute(v[0],v[1]));
 
       [
-        ['x1', Number(l.x) + Number(l.w) * 0.8],
-        ['y1', Number(l.y) + Number(l.h) * 0.2],
-        ['x2', Number(l.x) + Number(l.w) * 0.2],
-        ['y2', Number(l.y) + Number(l.h) * 0.8]
-      ].forEach(v => b.setAttribute(v[0], v[1]));
+        ['x1',Number(l.x)+Number(l.w)*.8],
+        ['y1',Number(l.y)+Number(l.h)*.2],
+        ['x2',Number(l.x)+Number(l.w)*.2],
+        ['y2',Number(l.y)+Number(l.h)*.8]
+      ].forEach(v => b.setAttribute(v[0],v[1]));
 
-      a.setAttribute('class', 'cross');
-      b.setAttribute('class', 'cross');
-      g.append(a, b);
+      a.setAttribute('class','cross');
+      b.setAttribute('class','cross');
+
+      g.append(a,b);
+
     }
 
-    // Putaran Lot (Transform Rotate)
+    // Guna transform rotate jika sudut wujud
     const rot = Number(l.rotation) || 0;
     if(rot !== 0) {
       const cx = Number(l.x) + Number(l.w) / 2;
@@ -482,7 +724,9 @@ function render(){
       g.setAttribute('transform', `rotate(${rot}, ${cx}, ${cy})`);
     }
 
-    // Event Klik untuk Papar Maklumat
+    g.style.cursor = 'pointer';
+
+    // Klik lot untuk buka modal
     g.addEventListener('click', e => {
       if(suppressClick) return;
       e.stopPropagation();
@@ -490,17 +734,18 @@ function render(){
     });
 
     svg.appendChild(g);
+
   });
 
-  // Statistik Kemaskini
-  renderStats();
-}
 
-/* =====================================
-   KAD STATISTIK
-===================================== */
-function renderStats(){
-  const counts = { AVAILABLE:0, HOLD:0, BOOKED:0, SOLD:0 };
+  /* Statistik status */
+
+  const counts = {
+    AVAILABLE:0,
+    HOLD:0,
+    BOOKED:0,
+    SOLD:0
+  };
 
   lots.forEach(l => {
     if(counts[l.status] !== undefined){
@@ -508,706 +753,55 @@ function renderStats(){
     }
   });
 
-  const bumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'BUMI').length;
-  const nonBumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'NON-BUMI').length;
+  const bumiAvailable = lots.filter(l =>
+    l.status === 'AVAILABLE' && l.type === 'BUMI'
+  ).length;
 
-  const statsContainer = document.getElementById('stats');
-  
-  const items = [
-    { label: 'Avail', val: counts.AVAILABLE, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
-    { label: 'Hold', val: counts.HOLD, color: 'text-amber-700 bg-amber-50 border-amber-200' },
-    { label: 'Booked', val: counts.BOOKED, color: 'text-purple-700 bg-purple-50 border-purple-200' },
-    { label: 'Sold', val: counts.SOLD, color: 'text-slate-700 bg-slate-100 border-slate-200' },
-    { label: 'Bumi', val: bumiAvailable, color: 'text-pink-700 bg-pink-50 border-pink-200' },
-    { label: 'Non-Bumi', val: nonBumiAvailable, color: 'text-blue-700 bg-blue-50 border-blue-200' },
-    { label: 'Jumlah', val: lots.length, color: 'text-slate-800 bg-white border-slate-300' }
-  ];
+  const nonBumiAvailable = lots.filter(l =>
+    l.status === 'AVAILABLE' && l.type === 'NON-BUMI'
+  ).length;
 
-  statsContainer.innerHTML = items.map(item => `
-    <div class="${item.color} border rounded-lg px-2 py-1 flex items-center gap-1.5 whitespace-nowrap shadow-xs flex-shrink-0 text-[11px] sm:text-xs">
-      <span class="font-medium opacity-85 uppercase tracking-tight">${item.label}:</span>
-      <span class="font-bold">${item.val}</span>
-    </div>
-  `).join('');
+  document.getElementById('stats').innerHTML =
+    Object.entries(counts)
+      .map(([k,v]) => `<div class="stat"><b>${k}</b>: ${v}</div>`)
+      .join('') +
+    `<div class="stat"><b>BUMI</b>: ${bumiAvailable}</div>` +
+    `<div class="stat"><b>NON-BUMI</b>: ${nonBumiAvailable}</div>` +
+    `<div class="stat"><b>Jumlah Lot</b>: ${lots.length}</div>`;
+
 }
 
+
 /* =====================================
-   MODAL MAKLUAT LOT (READ-ONLY)
+   MODAL READ ONLY
 ===================================== */
+
 function openModal(l){
+
   if(!l) return;
 
-  document.getElementById('modalLotNum').textContent = l.num ? `Lot ${l.num}` : 'Lot --';
-
-  // Status Styling
-  const statusEl = document.getElementById('modalLotStatus');
-  statusEl.textContent = l.status || 'AVAILABLE';
-
-  const statusStyles = {
-    'AVAILABLE': 'bg-emerald-100 text-emerald-800 border border-emerald-200',
-    'HOLD': 'bg-amber-100 text-amber-800 border border-amber-200',
-    'BOOKED': 'bg-purple-100 text-purple-800 border border-purple-200',
-    'SOLD': 'bg-slate-200 text-slate-800 border border-slate-300'
-  };
-  statusEl.className = `font-bold text-xs px-3 py-1 rounded-full uppercase ${statusStyles[l.status] || statusStyles['AVAILABLE']}`;
-
-  // Kategori & Harga
-  document.getElementById('modalLotType').textContent = l.type || 'BUMI';
-
-  const priceVal = l.price ? Number(l.price).toLocaleString('ms-MY', { style: 'currency', currency: 'MYR' }).replace('MYR', 'RM') : (l.price ? `RM ${l.price}` : 'Hubungi Ejen');
-  document.getElementById('modalLotPrice').textContent = priceVal;
-
-  // Remark
-  const remarkEl = document.getElementById('modalLotRemark');
-  if(l.remark && l.remark.trim() !== '') {
-    remarkEl.textContent = l.remark;
-    remarkEl.classList.remove('italic', 'text-slate-400');
-    remarkEl.classList.add('text-slate-700');
-  } else {
-    remarkEl.textContent = 'Tiada catatan tambahan.';
-    remarkEl.classList.add('italic', 'text-slate-400');
-    remarkEl.classList.remove('text-slate-700');
-  }
-
-  document.getElementById('modal').style.display = 'flex';
-}
-
-function closeModal(){
-  document.getElementById('modal').style.display = 'none';
-}
-
-/* =====================================
-   FUNGSI PAN & ZOOM
-===================================== */
-function applyTransform(){
-  stage.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
-}
-
-function getDistance(a,b){
-  return Math.hypot(a.x-b.x, a.y-b.y);
-}
-
-workspace.addEventListener('pointerdown', e => {
-  if(e.pointerType === 'mouse' && e.button !== 0) return;
-
-  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-
-  if(pointers.size === 1){
-    startX = e.clientX;
-    startY = e.clientY;
-    startOffsetX = offsetX;
-    startOffsetY = offsetY;
-    hasMoved = false;
-  }
-
-  if(pointers.size === 2){
-    const p = [...pointers.values()];
-    startDistance = getDistance(p[0],p[1]);
-    startScale = scale;
-    hasMoved = true;
-  }
-});
-
-window.addEventListener('pointermove', e => {
-  if(!pointers.has(e.pointerId)) return;
-
-  pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
-
-  if(pointers.size === 1){
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
-    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) hasMoved = true;
-
-    offsetX = startOffsetX + dx;
-    offsetY = startOffsetY + dy;
-    applyTransform();
-  }
-
-  if(pointers.size === 2){
-    const p = [...pointers.values()];
-    const newDistance = getDistance(p[0],p[1]);
-
-    if(startDistance > 0){
-      const newScale = startScale * (newDistance / startDistance);
-      const rect = workspace.getBoundingClientRect();
-      const centerX = (p[0].x + p[1].x)/2 - rect.left;
-      const centerY = (p[0].y + p[1].y)/2 - rect.top;
-
-      const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
-      const ratio = nextScale / scale;
-
-      offsetX = centerX - (centerX - offsetX)*ratio;
-      offsetY = centerY - (centerY - offsetY)*ratio;
-      scale = nextScale;
-      hasMoved = true;
-      applyTransform();
-    }
-  }
-}, {passive:true});
-
-function endPan(e){
-  if(!pointers.has(e.pointerId)) return;
-  pointers.delete(e.pointerId);
-
-  if(pointers.size === 1){
-    const p = [...pointers.values()][0];
-    startX = p.x;
-    startY = p.y;
-    startOffsetX = offsetX;
-    startOffsetY = offsetY;
-    startDistance = 0;
-  }
-
-  if(pointers.size === 0){
-    startDistance = 0;
-    if(hasMoved){
-      suppressClick = true;
-      setTimeout(() => {
-        suppressClick = false;
-        hasMoved = false;
-      }, 300);
-    }
-  }
-}
-
-window.addEventListener('pointerup', endPan);
-window.addEventListener('pointercancel', endPan);
-
-workspace.addEventListener('click', e => {
-  if(suppressClick){
-    e.preventDefault();
-    e.stopPropagation();
-    suppressClick = false;
-    hasMoved = false;
-  }
-}, true);
-
-workspace.addEventListener('wheel', e => {
-  e.preventDefault();
-
-  const rect = workspace.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-
-  const oldScale = scale;
-  const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (e.deltaY < 0 ? 1.15 : 0.87)));
-  const ratio = nextScale / oldScale;
-
-  offsetX = x - (x - offsetX)*ratio;
-  offsetY = y - (y - offsetY)*ratio;
-  scale = nextScale;
-  applyTransform();
-}, {passive:false});
-
-/* =====================================
-   SAIZ GAMBAR PELAN & INITIALIZATION
-===================================== */
-function updatePlanSize(){
-  const im = document.getElementById('plan');
-  if(im.naturalWidth && im.naturalHeight){
-    svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
-    render();
-  }
-}
-
-document.getElementById('modal').addEventListener('click', e => {
-  if(e.target.id === 'modal') closeModal();
-});
-
-document.addEventListener('keydown', e => {
-  if(e.key === 'Escape') closeModal();
-});
-
-document.getElementById('plan').addEventListener('load', updatePlanSize);
-document.getElementById('plan').addEventListener('error', () => {
-  console.error('Gagal memuatkan awanmas2plan.jpg');
-});
-
-updatePlanSize();
-render();
-</script>
-
-</body>
-</html>com"></script>
-
-<style>
-:root{
-  --ink:#172033;
-  --blue:#173b72;
-}
-
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  background:#f3f5f9;
-  color:var(--ink);
-  font-family:Arial,sans-serif;
-  font-size:14px;
-}
-
-header{
-  background:var(--blue);
-  color:#fff;
-  padding:12px 16px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
-}
-
-/* Pelan & Workspace */
-.workspace{
-  background:#ffffff;
-  border:1px solid #dbe2ea;
-  border-radius:10px;
-  overflow:hidden;
-  padding:2px;
-  position:relative;
-  width:100%;
-  touch-action:none;
-  cursor:grab;
-  user-select:none;
-  -webkit-user-select:none;
-}
-
-.workspace:active{
-  cursor:grabbing;
-}
-
-#stage{
-  position:relative;
-  width:100%;
-  max-width:100%;
-  margin:0 auto;
-  user-select:none;
-  -webkit-user-select:none;
-  touch-action:none;
-  transform-origin:0 0;
-  will-change:transform;
-}
-
-#plan{
-  display:block;
-  width:100%;
-  height:auto;
-  max-width:100%;
-  pointer-events:none;
-  -webkit-user-drag:none;
-}
-
-#overlay{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  touch-action:none;
-  overflow:visible;
-}
-
-/* Gaya Lot SVG */
-.lot{
-  stroke:#1d4ed8;
-  stroke-width:1.4;
-  fill:#ffffff;
-  fill-opacity:.15;
-  cursor:pointer;
-  transition:fill-opacity 0.2s;
-}
-
-.lot:hover{
-  fill-opacity:.35;
-}
-
-.lot.bumi{
-  fill:#ec4899;
-  fill-opacity:.55;
-  stroke:#be185d;
-}
-
-.lot.sold{
-  fill:#64748b;
-  fill-opacity:.4;
-  stroke:#334155;
-}
-
-.lot.hold{
-  fill:#fbbf24;
-  fill-opacity:.55;
-  stroke:#b45309;
-}
-
-.lot.booked{
-  fill:#a855f7;
-  fill-opacity:.55;
-  stroke:#7e22ce;
-}
-
-.lottext{
-  font-size:12px;
-  font-weight:bold;
-  fill:#111827;
-  paint-order:stroke;
-  stroke:white;
-  stroke-width:2px;
-  stroke-linejoin:round;
-  pointer-events:none;
-  text-anchor:middle;
-}
-
-.cross{
-  stroke:#dc2626;
-  stroke-width:2.5;
-  pointer-events:none;
-}
-</style>
-</head>
-
-<body>
-
-<header>
-  <div>
-    <h1 class="text-base sm:text-lg font-bold leading-tight">Jackson Property – Awan Mas, Sandakan</h1>
-    <small class="text-xs opacity-80">Pelan Tapak • Fasa 2 (Mode Paparan Sahaja)</small>
-  </div>
-
-  <div class="text-xs text-right">
-    <span class="inline-block px-2 py-0.5 rounded bg-blue-950 font-semibold">👁 View Only</span>
-    <div id="syncStatus" class="mt-0.5 opacity-90">Menyambung ke Firebase…</div>
-  </div>
-</header>
-
-<main class="max-w-[1400px] mx-auto p-2 sm:p-3 space-y-2">
-
-  <!-- Penapis Status & Jenis -->
-  <div class="flex flex-wrap gap-2 items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
-    <div class="flex gap-2 flex-1 min-w-[240px]">
-      <select id="filterStatus" onchange="render()" class="flex-1 bg-slate-50 border border-slate-300 text-xs sm:text-sm rounded-lg p-2 font-medium">
-        <option value="">Semua Status</option>
-        <option>AVAILABLE</option>
-        <option>HOLD</option>
-        <option>BOOKED</option>
-        <option>SOLD</option>
-      </select>
-
-      <select id="filterType" onchange="render()" class="flex-1 bg-slate-50 border border-slate-300 text-xs sm:text-sm rounded-lg p-2 font-medium">
-        <option value="">Semua Kategori</option>
-        <option>BUMI</option>
-        <option>NON-BUMI</option>
-      </select>
-    </div>
-    
-    <div class="text-xs text-slate-500 hidden sm:block">
-      Klik lot untuk maklumat terperinci
-    </div>
-  </div>
-
-  <!-- Statistik Padat 2 Baris x 4 Lajur -->
-  <div class="grid grid-cols-4 gap-1 sm:gap-1.5" id="stats">
-    <!-- Stat items rendered via JS -->
-  </div>
-
-  <!-- Pelan Lot Workspace -->
-  <div class="workspace" id="workspace">
-    <div id="stage">
-      <img
-        id="plan"
-        src="awanmas2plan.jpg"
-        alt="Pelan Tapak Awan Mas"
-        draggable="false"
-      >
-      <svg
-        id="overlay"
-        viewBox="0 0 826 1024"
-        preserveAspectRatio="none"
-      ></svg>
-    </div>
-  </div>
-
-  <p class="text-xs text-slate-500 px-1">
-    <strong>Panduan Kawalan:</strong> 
-    Telefon: Swipe/Meleret untuk menggerakkan pelan. Pinch 2 jari untuk zoom. | 
-    Komputer: Drag tetikus untuk alih pelan. Tatal (scroll) roda tetikus untuk zoom.
-  </p>
-
-</main>
-
-<!-- Modal Maklumat Lot (Read-Only) -->
-<div class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-3 z-50" id="modal">
-  <div class="bg-white rounded-xl shadow-2xl border border-slate-100 w-full max-w-sm p-5 space-y-4">
-    
-    <div class="flex justify-between items-center border-b pb-2">
-      <h3 class="text-base font-bold text-slate-800" id="modalTitle">Maklumat Lot</h3>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-1">&times;</button>
-    </div>
-
-    <div class="space-y-2.5 text-xs sm:text-sm">
-      <div class="flex justify-between py-1 border-b border-slate-100">
-        <span class="text-slate-500 font-medium">Nombor Lot:</span>
-        <span class="font-bold text-slate-800" id="infoNum">-</span>
-      </div>
-
-      <div class="flex justify-between py-1 border-b border-slate-100">
-        <span class="text-slate-500 font-medium">Status:</span>
-        <span class="font-semibold px-2 py-0.5 rounded-full text-xs" id="infoStatus">-</span>
-      </div>
-
-      <div class="flex justify-between py-1 border-b border-slate-100">
-        <span class="text-slate-500 font-medium">Harga Anggaran:</span>
-        <span class="font-bold text-blue-700" id="infoPrice">-</span>
-      </div>
-
-      <div class="flex justify-between py-1 border-b border-slate-100">
-        <span class="text-slate-500 font-medium">Kategori Lot:</span>
-        <span class="font-semibold text-slate-700" id="infoType">-</span>
-      </div>
-
-      <div class="space-y-1">
-        <span class="text-slate-500 font-medium block">Catatan / Remark:</span>
-        <div class="p-2 bg-slate-50 rounded-lg text-slate-700 text-xs italic border border-slate-200 min-h-[40px]" id="infoRemark">
-          Tiada catatan
-        </div>
-      </div>
-    </div>
-
-    <div class="pt-2">
-      <button onclick="closeModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-lg text-xs transition">
-        Tutup
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<!-- SDK Firebase (Compat Mode) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
-<script>
-/* =====================================
-   KONFIGURASI FIREBASE
-===================================== */
-const firebaseConfig = {
-  apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
-  authDomain: "listing-2a59c.firebaseapp.com",
-  projectId: "listing-2a59c",
-  storageBucket: "listing-2a59c.firebasestorage.app",
-  messagingSenderId: "363739620416",
-  appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
-  measurementId: "G-SZ47HNR9PT"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const COLLECTION = 'awanmas_lots';
-const lotsRef = db.collection(COLLECTION);
-
-const svg = document.getElementById('overlay');
-const workspace = document.getElementById('workspace');
-const stage = document.getElementById('stage');
-
-let lots = JSON.parse(localStorage.getItem('awanmasLotsView') || '[]');
-
-/* =====================================
-   STATUS SYNC
-===================================== */
-function setSyncStatus(message, color){
-  const el = document.getElementById('syncStatus');
-  if(el){
-    el.textContent = message;
-    el.style.color = color || '#fff';
-  }
-}
-
-function cacheLots(){
-  localStorage.setItem('awanmasLotsView', JSON.stringify(lots));
-}
-
-/* =====================================
-   FIREBASE REALTIME LISTENER
-===================================== */
-lotsRef.onSnapshot(snapshot => {
-  lots = snapshot.docs.map(doc => ({
-    ...doc.data(),
-    id: doc.id
-  }));
-  cacheLots();
-  render();
-  setSyncStatus('✓ Data terkini diselaraskan', '#bbf7d0');
-}, error => {
-  setSyncStatus('Ralat Firebase: ' + (error.code || error.message), '#fecaca');
-  console.error('Firestore listener error:', error);
-});
-
-/* =====================================
-   SEMAK SAMA ADA COORDINATE VALID
-===================================== */
-function pointInBounds(l){
-  return l && [l.x, l.y, l.w, l.h].every(v => Number.isFinite(Number(v)));
-}
-
-/* =====================================
-   RENDER LOT & STATISTIK
-===================================== */
-function render(){
-  svg.innerHTML = '';
-
-  const statusFilter = document.getElementById('filterStatus').value;
-  const typeFilter = document.getElementById('filterType').value;
-
-  const shown = lots.filter(l =>
-    (!statusFilter || l.status === statusFilter) &&
-    (!typeFilter || l.type === typeFilter)
-  );
-
-  shown.forEach(l => {
-    if(!pointInBounds(l)) return;
-
-    const g = document.createElementNS(svg.namespaceURI, 'g');
-    const r = document.createElementNS(svg.namespaceURI, 'rect');
-
-    r.setAttribute('x', l.x);
-    r.setAttribute('y', l.y);
-    r.setAttribute('width', l.w);
-    r.setAttribute('height', l.h);
-    r.setAttribute('rx', 1);
-
-    r.setAttribute('class', 'lot ' + (
-      l.status === 'SOLD' ? 'sold' :
-      l.status === 'HOLD' ? 'hold' :
-      l.status === 'BOOKED' ? 'booked' :
-      l.type === 'BUMI' ? 'bumi' : ''
-    ));
-
-    g.appendChild(r);
-
-    const t = document.createElementNS(svg.namespaceURI, 'text');
-    t.setAttribute('x', Number(l.x) + Number(l.w)/2);
-    t.setAttribute('y', Number(l.y) + Number(l.h)/2 + 4);
-    t.setAttribute('class', 'lottext');
-    t.textContent = l.num || 'Lot';
-
-    g.appendChild(t);
-
-    // Tanda SILANG (X) untuk Lot SOLD
-    if(l.status === 'SOLD'){
-      const a = document.createElementNS(svg.namespaceURI, 'line');
-      const b = document.createElementNS(svg.namespaceURI, 'line');
-
-      [
-        ['x1', Number(l.x) + Number(l.w)*.2],
-        ['y1', Number(l.y) + Number(l.h)*.2],
-        ['x2', Number(l.x) + Number(l.w)*.8],
-        ['y2', Number(l.y) + Number(l.h)*.8]
-      ].forEach(v => a.setAttribute(v[0], v[1]));
-
-      [
-        ['x1', Number(l.x) + Number(l.w)*.8],
-        ['y1', Number(l.y) + Number(l.h)*.2],
-        ['x2', Number(l.x) + Number(l.w)*.2],
-        ['y2', Number(l.y) + Number(l.h)*.8]
-      ].forEach(v => b.setAttribute(v[0], v[1]));
-
-      a.setAttribute('class', 'cross');
-      b.setAttribute('class', 'cross');
-      g.append(a, b);
-    }
-
-    // Putaran Lot (Rotation)
-    const rot = Number(l.rotation) || 0;
-    if(rot !== 0) {
-      const cx = Number(l.x) + Number(l.w) / 2;
-      const cy = Number(l.y) + Number(l.h) / 2;
-      g.setAttribute('transform', `rotate(${rot}, ${cx}, ${cy})`);
-    }
-
-    // Event Klik untuk Buka Modal Informasi
-    g.addEventListener('click', e => {
-      if(suppressClick) return;
-      e.stopPropagation();
-      openModal(l);
-    });
-
-    svg.appendChild(g);
-  });
-
-  // Pengiraan Statistik Status & Kategori Lot
-  const counts = { AVAILABLE:0, HOLD:0, BOOKED:0, SOLD:0 };
-  lots.forEach(l => {
-    if(counts[l.status] !== undefined) counts[l.status]++;
-  });
-
-  const bumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'BUMI').length;
-  const nonBumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'NON-BUMI').length;
-
-  const statConfig = [
-    { label:'AVAILABLE', val: counts.AVAILABLE, color:'bg-emerald-50 border-emerald-200 text-emerald-800' },
-    { label:'HOLD', val: counts.HOLD, color:'bg-amber-50 border-amber-200 text-amber-800' },
-    { label:'BOOKED', val: counts.BOOKED, color:'bg-purple-50 border-purple-200 text-purple-800' },
-    { label:'SOLD', val: counts.SOLD, color:'bg-slate-100 border-slate-300 text-slate-700' },
-    { label:'BUMI AVAIL', val: bumiAvailable, color:'bg-pink-50 border-pink-200 text-pink-800' },
-    { label:'NON-BUMI AVAIL', val: nonBumiAvailable, color:'bg-blue-50 border-blue-200 text-blue-800' },
-    { label:'JUMLAH LOT', val: lots.length, color:'bg-indigo-50 border-indigo-200 text-indigo-800' },
-    { label:'STATUS', val: 'READ ONLY', color:'bg-slate-800 border-slate-900 text-white' }
-  ];
-
-  document.getElementById('stats').innerHTML = statConfig.map(s => `
-    <div class="${s.color} border rounded px-1.5 py-1 text-center shadow-sm">
-      <div class="text-[9px] sm:text-[10px] font-bold tracking-tight uppercase leading-none opacity-80 truncate">${s.label}</div>
-      <div class="text-xs sm:text-sm font-extrabold leading-tight mt-0.5">${s.val}</div>
-    </div>
-  `).join('');
-}
-
-/* =====================================
-   MODAL DIALOGUE (READ ONLY)
-===================================== */
-function openModal(l){
-  if(!l) return;
+  editingId = String(l.id);
 
   document.getElementById('modalTitle').textContent = 'Maklumat Lot ' + (l.num || '');
-  document.getElementById('infoNum').textContent = l.num || '-';
-  
-  const statusEl = document.getElementById('infoStatus');
-  statusEl.textContent = l.status || 'AVAILABLE';
-
-  // Gaya Warna Badge Status
-  const statusColors = {
-    AVAILABLE: 'bg-emerald-100 text-emerald-800',
-    HOLD: 'bg-amber-100 text-amber-800',
-    BOOKED: 'bg-purple-100 text-purple-800',
-    SOLD: 'bg-slate-200 text-slate-800'
-  };
-  statusEl.className = `font-semibold px-2 py-0.5 rounded-full text-xs ${statusColors[l.status] || 'bg-slate-100'}`;
-
-  document.getElementById('infoPrice').textContent = l.price ? `RM ${Number(l.price).toLocaleString('ms-MY')}` : 'Tidak Nyatakan';
-  document.getElementById('infoType').textContent = l.type || 'BUMI';
-  document.getElementById('infoRemark').textContent = l.remark || 'Tiada catatan tambahan.';
+  document.getElementById('lotNum').value = l.num || '';
+  document.getElementById('lotStatus').value = l.status || 'AVAILABLE';
+  document.getElementById('lotPrice').value = l.price ? 'RM ' + Number(l.price).toLocaleString() : '-';
+  document.getElementById('lotType').value = l.type || 'BUMI';
+  document.getElementById('lotRemark').value = l.remark || 'Tiada';
 
   document.getElementById('modal').style.display = 'flex';
+
 }
+
 
 function closeModal(){
   document.getElementById('modal').style.display = 'none';
 }
 
-/* =====================================
-   PAN & ZOOM FEATURE
-===================================== */
-let scale = 1;
-let offsetX = 0;
-let offsetY = 0;
-let pointers = new Map();
-let startDistance = 0;
-let startScale = 1;
-let startX = 0, startY = 0;
-let startOffsetX = 0, startOffsetY = 0;
-let hasMoved = false;
-let suppressClick = false;
 
-const MIN_SCALE = 1;
-const MAX_SCALE = 5;
+/* =====================================
+   PAN & ZOOM
+===================================== */
 
 function applyTransform(){
   stage.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
@@ -1217,7 +811,7 @@ function getDistance(a,b){
   return Math.hypot(a.x-b.x, a.y-b.y);
 }
 
-workspace.addEventListener('pointerdown', e => {
+workspace.addEventListener('pointerdown',e=>{
   if(e.pointerType === 'mouse' && e.button !== 0) return;
 
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
@@ -1238,7 +832,7 @@ workspace.addEventListener('pointerdown', e => {
   }
 });
 
-window.addEventListener('pointermove', e => {
+window.addEventListener('pointermove',e=>{
   if(!pointers.has(e.pointerId)) return;
 
   pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
@@ -1273,7 +867,7 @@ window.addEventListener('pointermove', e => {
       applyTransform();
     }
   }
-}, {passive:true});
+},{passive:true});
 
 function endPan(e){
   if(!pointers.has(e.pointerId)) return;
@@ -1292,10 +886,10 @@ function endPan(e){
     startDistance = 0;
     if(hasMoved){
       suppressClick = true;
-      setTimeout(() => {
+      setTimeout(()=>{
         suppressClick = false;
         hasMoved = false;
-      }, 300);
+      }, 400);
     }
   }
 }
@@ -1303,7 +897,7 @@ function endPan(e){
 window.addEventListener('pointerup', endPan);
 window.addEventListener('pointercancel', endPan);
 
-workspace.addEventListener('click', e => {
+workspace.addEventListener('click', e=>{
   if(suppressClick){
     e.preventDefault();
     e.stopPropagation();
@@ -1312,25 +906,28 @@ workspace.addEventListener('click', e => {
   }
 }, true);
 
-workspace.addEventListener('wheel', e => {
+workspace.addEventListener('wheel', e=>{
   e.preventDefault();
+
   const rect = workspace.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
 
   const oldScale = scale;
-  const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (e.deltaY < 0 ? 1.15 : 0.87)));
+  const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (e.deltaY < 15 ? 1.15 : 0.87)));
   const ratio = nextScale / oldScale;
 
   offsetX = x - (x - offsetX)*ratio;
   offsetY = y - (y - offsetY)*ratio;
   scale = nextScale;
   applyTransform();
-}, {passive:false});
+},{passive:false});
+
 
 /* =====================================
-   SAIZ PELAN TAPAK
+   PLAN IMAGE SIZE & MODAL
 ===================================== */
+
 function updatePlanSize(){
   const im = document.getElementById('plan');
   if(im.naturalWidth && im.naturalHeight){
@@ -1339,21 +936,22 @@ function updatePlanSize(){
   }
 }
 
-document.getElementById('modal').addEventListener('click', e => {
+document.getElementById('modal').addEventListener('click', e=>{
   if(e.target.id === 'modal') closeModal();
 });
 
-document.addEventListener('keydown', e => {
+document.addEventListener('keydown', e=>{
   if(e.key === 'Escape') closeModal();
 });
 
 document.getElementById('plan').addEventListener('load', updatePlanSize);
-document.getElementById('plan').addEventListener('error', () => {
-  console.error('Gagal memuatkan imej pelan awanmas2plan.jpg');
+document.getElementById('plan').addEventListener('error', ()=>{
+  console.error('Gagal memuatkan awanmas2plan.jpg');
 });
 
 updatePlanSize();
 render();
+
 </script>
 
 </body>
