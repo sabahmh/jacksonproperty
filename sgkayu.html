@@ -923,21 +923,6 @@ function render(){
 
     g.appendChild(r);
 
-    const t = document.createElementNS(
-      svg.namespaceURI,
-      'text'
-    );
-
-    t.setAttribute(
-      'x',
-      Number(l.x)+Number(l.w)/2
-    );
-
-    t.setAttribute(
-      'y',
-      Number(l.y)+Number(l.h)/2+4
-    );
-
   // PEMBINAAN TEKS DENGAN ROTATE -90 DARJAH
     const t = document.createElementNS(svg.namespaceURI, 'text');
     t.setAttribute('class', 'lottext');
