@@ -418,6 +418,7 @@ const lotsRef = db.collection(COLLECTION);
 const svg = document.getElementById('overlay');
 const workspace = document.getElementById('workspace');
 const stage = document.getElementById('stage');
+const planImg = document.getElementById('plan');
 
 let lots = JSON.parse(localStorage.getItem('sungaikayuLots') || '[]');
 
@@ -572,7 +573,6 @@ function render(){
   const bumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'BUMI').length;
   const nonBumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'NON-BUMI').length;
 
-  // Compact statistics layout strictly displaying specified fields
   document.getElementById('stats').innerHTML = `
     <div class="stat"><b>AVAILABLE</b>: ${counts.AVAILABLE}</div>
     <div class="stat"><b>HOLD</b>: ${counts.HOLD}</div>
@@ -704,12 +704,7 @@ workspace.addEventListener('wheel', e => {
   applyTransform();
 }, { passive: false });
 
-document.getElementById('plan').addEventListener('load', () => {
-  const im = document.getElementById('plan');
-  if(im.naturalWidth) svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
-  render();
-});
-
+// Render awal sebaik sahaja skrip diproses
 render();
 </script>
 </body>
