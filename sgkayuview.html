@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jackson Property – Taman Sungai Kayu, Sandakan (View Only)</title>
+<link rel="icon" type="image/png" href="jack.png">
+
+<!-- Tailwind CSS & FontAwesome -->
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --ink:#172033;
+  --blue:#173b72;
+  --pink:#ec4899;
+  --green:#16a34a;
+  --yellow:#f59e0b;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:#f3f5f9;
+  color:var(--ink);
+  font:14px 'Inter', Arial, sans-serif;
+}
+
+header{
+  background:var(--blue);
+  color:#fff;
+  padding:10px 14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+h1{
+  font-size:15px;
+  font-weight:700;
+  margin:0;
+}
+
+header small{opacity:.85; font-size:11px;}
+
+main{
+  max-width:1400px;
+  margin:auto;
+  padding:8px;
+}
+
+.toolbar{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+  align-items:center;
+}
+
+input,select{
+  padding:6px 8px;
+  border:1px solid #cbd5e1;
+  border-radius:6px;
+  font-size:12px;
+}
+
+/* Compact Mobile-Friendly Stats Grid */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4, minmax(0, 1fr));
+  gap:4px;
+  margin:6px 0;
+}
+
+.stat{
+  background:white;
+  border:1px solid #e2e8f0;
+  border-radius:6px;
+  padding:4px 2px;
+  text-align:center;
+  font-size:11px;
+  line-height:1.2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.stat b{
+  font-weight:600;
+  color:#475569;
+}
+
+/* Workspace dan pelan */
+.workspace{
+  background:white;
+  border:1px solid #dbe2ea;
+  border-radius:8px;
+  overflow:hidden;
+  padding:2px;
+  position:relative;
+  width:100%;
+  touch-action:none;
+  cursor:grab;
+  user-select:none;
+  -webkit-user-select:none;
+  min-height:350px;
+}
+
+.workspace:active{
+  cursor:grabbing;
+}
+
+#stage{
+  position:relative;
+  width:100%;
+  max-width:100%;
+  margin:0 auto;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+  transform-origin:0 0;
+  will-change:transform;
+}
+
+#plan{
+  display:block;
+  width:100%;
+  height:auto;
+  max-width:100%;
+  pointer-events:none;
+  -webkit-user-drag:none;
+}
+
+#overlay{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  touch-action:none;
+  overflow:visible;
+}
+
+.lot{
+  stroke:#1d4ed8;
+  stroke-width:1.4;
+  fill:#d2b48c;
+  fill-opacity:.08;
+  cursor:pointer;
+}
+
+.lot.available.bumi,
+.lot.bumi {
+  fill: #FFA500;
+  fill-opacity: 0.60;
+  stroke: #c2410c;
+}
+  
+.lot.available {
+  fill: #3b82f6;        
+  fill-opacity: 0.60;  
+  stroke: #1d4ed8;     
+}
+  
+.lot.sold{
+  fill:#64748b;
+  fill-opacity:.38;
+  stroke:#334155;
+}
+
+.lot.hold{
+  fill:#fbbf24;
+  fill-opacity:.5;
+  stroke:#b45309;
+}
+
+.lot.booked{
+  fill: #a855f7;        
+  fill-opacity: .55;   
+  stroke: #ef4444;     
+}
+
+.lottext{
+  font-size:14px;
+  font-weight:bold;
+  fill:#111827;
+  paint-order:stroke;
+  stroke:white;
+  stroke-width:2px;
+  stroke-linejoin:round;
+  pointer-events:none;
+  text-anchor:middle;
+}
+
+.cross{
+  stroke:#dc2626;
+  stroke-width:2.5;
+  pointer-events:none;
+}
+
+.note{
+  color:#64748b;
+  font-size:11px;
+  margin:6px 2px;
+}
+
+/* Modal Read-Only */
+.modal{
+  position:fixed;
+  inset:0;
+  background:#0008;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:15px;
+  z-index:50;
+}
+
+.panel{
+  background:white;
+  padding:16px;
+  border-radius:12px;
+  width:min(360px,100%);
+  box-shadow:0 15px 50px #0003;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.panel h2{
+  margin-top:0;
+  font-size:16px;
+  font-weight:700;
+  color:#1e293b;
+  border-bottom:1px solid #f1f5f9;
+  padding-bottom:8px;
+}
+
+.field-view{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px dashed #e2e8f0;
+  font-size:13px;
+}
+
+.field-view span.label{
+  color:#64748b;
+  font-weight:500;
+}
+
+.field-view span.val{
+  font-weight:600;
+  color:#0f172a;
+}
+
+.actions{
+  display:flex;
+  justify-content:flex-end;
+  margin-top:14px;
+}
+
+@media(max-width:600px){
+  body{font-size:12px}
+  header{padding:8px 10px;}
+  h1{font-size:13px}
+  main{padding:4px}
+  .toolbar{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; margin-bottom:6px;}
+  .toolbar select{width:100%; min-width:0; padding:6px 4px; font-size:11px;}
+  .stats{grid-template-columns:repeat(4,minmax(0,1fr)); gap:3px; margin:4px 0;}
+  .stat{padding:4px 1px; font-size:9.5px;}
+  .workspace{padding:1px; min-height: 380px;}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <h1>Jackson Property – Taman Sungai Kayu</h1>
+  </div>
+  <div>
+    <small id="syncStatus" class="text-emerald-300 font-medium">✓ Mode Papar</small>
+  </div>
+</header>
+
+<main>
+
+<div class="toolbar">
+  <select id="filterStatus" onchange="render()">
+    <option value="">Semua Status</option>
+    <option>AVAILABLE</option>
+    <option>HOLD</option>
+    <option>BOOKED</option>
+    <option>SOLD</option>
+  </select>
+  <select id="filterType" onchange="render()">
+    <option value="">Semua Lot</option>
+    <option>BUMI</option>
+    <option>NON-BUMI</option>
+  </select>
+</div>
+
+<!-- Ringkasan Statistik Saiz Compact -->
+<div class="stats" id="stats"></div>
+
+<!-- Pelan lot -->
+<div class="workspace" id="workspace">
+  <div id="stage">
+    <img id="plan" src="sungaikayu.jpg" alt="Site Plan Taman Sungai Kayu" draggable="false">
+    <svg id="overlay" viewBox="0 0 826 1024" preserveAspectRatio="none"></svg>
+  </div>
+</div>
+
+<p class="note">
+  💡 Klik lot untuk melihat butiran lengkap. Telefon: Swipe untuk gerakkan pelan, pinch dua jari untuk zoom.
+</p>
+
+<!-- JADUAL SENARAI LOT AVAILABLE -->
+<section class="mt-4 bg-white border border-slate-200 rounded-lg p-2.5 sm:p-4 shadow-sm">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2 pb-2 border-b border-slate-100">
+    <div>
+      <h2 class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-1.5">
+        <i class="fa-solid fa-house-circle-check text-emerald-600"></i>
+        Senarai Lot Available (Taman Sungai Kayu)
+      </h2>
+    </div>
+    <div class="flex flex-wrap items-center gap-1.5">
+      <div class="relative">
+        <i class="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-[10px]"></i>
+        <input type="text" id="searchAvailable" oninput="renderAvailableTable()" placeholder="Cari lot..." class="pl-6 pr-2 py-1 text-[11px] rounded border border-slate-300 w-28 sm:w-32 focus:outline-none focus:border-blue-500">
+      </div>
+      <select id="filterAvailableType" onchange="renderAvailableTable()" class="py-1 px-2 text-[11px] rounded border border-slate-300 bg-white focus:outline-none focus:border-blue-500">
+        <option value="">Semua Kategori</option>
+        <option value="BUMI">BUMI</option>
+        <option value="NON-BUMI">NON-BUMI</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full text-left text-xs border-collapse">
+      <thead>
+        <tr class="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold text-[10px]">
+          <th class="py-2 px-2.5">No. Lot</th>
+          <th class="py-2 px-2.5">Kategori</th>
+          <th class="py-2 px-2.5">Harga (RM)</th>
+          <th class="py-2 px-2.5">Catatan</th>
+          <th class="py-2 px-2.5 text-right">Tindakan</th>
+        </tr>
+      </thead>
+      <tbody id="availableTableBody" class="divide-y divide-slate-100 text-slate-700"></tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<!-- Modal Info Lot (Paparan Sahaja) -->
+<div class="modal" id="modal">
+  <div class="panel">
+    <h2 id="modalTitle">Maklumat Lot</h2>
+    
+    <div class="field-view">
+      <span class="label">Nombor / Nama Lot</span>
+      <span class="val" id="viewLotNum">-</span>
+    </div>
+    <div class="field-view">
+      <span class="label">Status</span>
+      <span class="val" id="viewLotStatus">-</span>
+    </div>
+    <div class="field-view">
+      <span class="label">Kategori</span>
+      <span class="val" id="viewLotType">-</span>
+    </div>
+    <div class="field-view">
+      <span class="label">Harga (RM)</span>
+      <span class="val text-emerald-700 font-bold" id="viewLotPrice">-</span>
+    </div>
+    <div class="field-view">
+      <span class="label">Catatan</span>
+      <span class="val" id="viewLotRemark">-</span>
+    </div>
+
+    <div class="actions">
+      <button onclick="closeModal()" class="bg-slate-700 text-white font-medium px-4 py-1.5 text-xs rounded-lg hover:bg-slate-800 transition-colors">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK v8 -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
+  authDomain: "listing-2a59c.firebaseapp.com",
+  projectId: "listing-2a59c",
+  storageBucket: "listing-2a59c.firebasestorage.app",
+  messagingSenderId: "363739620416",
+  appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
+  measurementId: "G-SZ47HNR9PT"
+};
+
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+
+const db = firebase.firestore();
+const COLLECTION = 'sungaikayu_lots';
+const lotsRef = db.collection(COLLECTION);
+
+const svg = document.getElementById('overlay');
+const workspace = document.getElementById('workspace');
+const stage = document.getElementById('stage');
+
+let lots = JSON.parse(localStorage.getItem('sungaikayuLots') || '[]');
+
+let scale = 1, offsetX = 0, offsetY = 0;
+let pointers = new Map();
+let startDistance = 0, startScale = 1;
+let startX = 0, startY = 0, startOffsetX = 0, startOffsetY = 0;
+let hasMoved = false, suppressClick = false;
+const MIN_SCALE = 1, MAX_SCALE = 5;
+
+function setSyncStatus(message, color){
+  const el = document.getElementById('syncStatus');
+  if(el){ el.textContent = message; el.style.color = color || '#fff'; }
+}
+
+function cacheLots(){
+  localStorage.setItem('sungaikayuLots', JSON.stringify(lots));
+}
+
+lotsRef.onSnapshot(snapshot => {
+  const remote = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+  lots = remote;
+  cacheLots();
+  render();
+  setSyncStatus('✓ Firebase Synchronized', '#bbf7d0');
+}, error => {
+  setSyncStatus('Firebase offline', '#fecaca');
+});
+
+function renderAvailableTable(){
+  const tbody = document.getElementById('availableTableBody');
+  if(!tbody) return;
+
+  const searchQuery = (document.getElementById('searchAvailable')?.value || '').toLowerCase();
+  const typeFilter = document.getElementById('filterAvailableType')?.value || '';
+
+  const availableLots = lots.filter(l => {
+    const matchesStatus = l.status === 'AVAILABLE';
+    const matchesType = !typeFilter || l.type === typeFilter;
+    const matchesSearch = !searchQuery || (l.num && l.num.toLowerCase().includes(searchQuery));
+    return matchesStatus && matchesType && matchesSearch;
+  });
+
+  availableLots.sort((a,b) => (a.num || '').localeCompare(b.num || '', undefined, {numeric: true}));
+
+  if(availableLots.length === 0){
+    tbody.innerHTML = `<tr><td colspan="5" class="py-3 text-center text-slate-400 italic text-xs">Tiada lot Available ditemui.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = availableLots.map(l => {
+    const cleanPrice = l.price ? Number(String(l.price).replace(/[^0-9.]/g, '')) : 0;
+    const formattedPrice = cleanPrice > 0 ? 'RM ' + cleanPrice.toLocaleString('ms-MY') : '-';
+    const typeBadge = l.type === 'BUMI'
+      ? `<span class="bg-pink-100 text-pink-700 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-pink-200">BUMI</span>`
+      : `<span class="bg-blue-100 text-blue-700 text-[9px] font-semibold px-1.5 py-0.5 rounded border border-blue-200">NON-BUMI</span>`;
+
+    return `
+      <tr class="hover:bg-slate-50/80 transition-colors whitespace-nowrap">
+        <td class="py-1.5 px-2.5 font-bold text-slate-800">${l.num || 'Lot'}</td>
+        <td class="py-1.5 px-2.5">${typeBadge}</td>
+        <td class="py-1.5 px-2.5 font-semibold text-emerald-700">${formattedPrice}</td>
+        <td class="py-1.5 px-2.5 text-slate-500 truncate max-w-[150px]">${l.remark || '-'}</td>
+        <td class="py-1.5 px-2.5 text-right">
+          <button onclick="openModalById('${l.id}')" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium px-2 py-0.5 rounded transition-colors">Info</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function openModalById(id){
+  const found = lots.find(l => String(l.id) === String(id));
+  if(found) openModal(found);
+}
+
+function render(){
+  svg.innerHTML = '';
+  const statusFilter = document.getElementById('filterStatus').value;
+  const typeFilter = document.getElementById('filterType').value;
+
+  const shown = lots.filter(l =>
+    (!statusFilter || l.status === statusFilter) &&
+    (!typeFilter || l.type === typeFilter)
+  );
+
+  shown.forEach(l => {
+    if(![l.x, l.y, l.w, l.h].every(v => Number.isFinite(Number(v)))) return;
+
+    const g = document.createElementNS(svg.namespaceURI, 'g');
+    const r = document.createElementNS(svg.namespaceURI, 'rect');
+
+    r.setAttribute('x', l.x);
+    r.setAttribute('y', l.y);
+    r.setAttribute('width', l.w);
+    r.setAttribute('height', l.h);
+    r.setAttribute('rx', 1);
+
+    r.setAttribute(
+      'class',
+      'lot ' +
+      (l.status === 'AVAILABLE' ? 'available' :
+       l.status === 'SOLD' ? 'sold' :
+       l.status === 'HOLD' ? 'hold' :
+       l.status === 'BOOKED' ? 'booked' : '') + ' ' +
+      (l.type ? l.type.toLowerCase() : '')
+    );
+    g.appendChild(r);
+
+    const t = document.createElementNS(svg.namespaceURI, 'text');
+    t.setAttribute('class', 'lottext');
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+
+    const cx = Number(l.x) + Number(l.w) / 2;
+    const cy = Number(l.y) + Number(l.h) / 2;
+    
+    t.setAttribute('x', cx);
+    t.setAttribute('y', cy);
+    t.setAttribute('transform', `rotate(-90, ${cx}, ${cy})`);
+
+    t.textContent = l.num || 'Lot';
+    g.appendChild(t);
+
+    if(l.status === 'SOLD'){
+      const a = document.createElementNS(svg.namespaceURI, 'line');
+      const b = document.createElementNS(svg.namespaceURI, 'line');
+      [['x1',Number(l.x)+Number(l.w)*.2],['y1',Number(l.y)+Number(l.h)*.2],['x2',Number(l.x)+Number(l.w)*.8],['y2',Number(l.y)+Number(l.h)*.8]].forEach(v=>a.setAttribute(v[0],v[1]));
+      [['x1',Number(l.x)+Number(l.w)*.8],['y1',Number(l.y)+Number(l.h)*.2],['x2',Number(l.x)+Number(l.w)*.2],['y2',Number(l.y)+Number(l.h)*.8]].forEach(v=>b.setAttribute(v[0],v[1]));
+      a.setAttribute('class','cross'); b.setAttribute('class','cross');
+      g.append(a,b);
+    }
+
+    const rot = Number(l.rotation) || 0;
+    if(rot !== 0) {
+      g.setAttribute('transform', `rotate(${rot}, ${cx}, ${cy})`);
+    }
+
+    g.style.cursor = 'pointer';
+
+    g.addEventListener('click', e => {
+      if(suppressClick) return;
+      e.stopPropagation();
+      openModal(l);
+    });
+
+    svg.appendChild(g);
+  });
+
+  const counts = { AVAILABLE:0, HOLD:0, BOOKED:0, SOLD:0 };
+  lots.forEach(l => { if(counts[l.status] !== undefined) counts[l.status]++; });
+  const bumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'BUMI').length;
+  const nonBumiAvailable = lots.filter(l => l.status === 'AVAILABLE' && l.type === 'NON-BUMI').length;
+
+  // Compact statistics layout strictly displaying specified fields
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><b>AVAILABLE</b>: ${counts.AVAILABLE}</div>
+    <div class="stat"><b>HOLD</b>: ${counts.HOLD}</div>
+    <div class="stat"><b>BOOKED</b>: ${counts.BOOKED}</div>
+    <div class="stat"><b>SOLD</b>: ${counts.SOLD}</div>
+    <div class="stat"><b>BUMI</b>: ${bumiAvailable}</div>
+    <div class="stat"><b>NON-BUMI</b>: ${nonBumiAvailable}</div>
+    <div class="stat" style="grid-column: span 2;"><b>Jumlah Lot</b>: ${lots.length}</div>
+  `;
+
+  renderAvailableTable();
+}
+
+function openModal(l){
+  document.getElementById('modalTitle').textContent = 'Maklumat Lot ' + (l.num || '');
+  document.getElementById('viewLotNum').textContent = l.num || '-';
+  document.getElementById('viewLotStatus').textContent = l.status || '-';
+  document.getElementById('viewLotType').textContent = l.type || '-';
+  
+  const cleanPrice = l.price ? Number(String(l.price).replace(/[^0-9.]/g, '')) : 0;
+  document.getElementById('viewLotPrice').textContent = cleanPrice > 0 ? 'RM ' + cleanPrice.toLocaleString('ms-MY') : (l.price || '-');
+  document.getElementById('viewLotRemark').textContent = l.remark || '-';
+
+  document.getElementById('modal').style.display = 'flex';
+}
+
+function closeModal(){
+  document.getElementById('modal').style.display = 'none';
+}
+
+/* PAN & ZOOM */
+function applyTransform(){
+  stage.style.transform = `translate(${offsetX}px,${offsetY}px) scale(${scale})`;
+}
+
+function getDistance(a, b){
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+workspace.addEventListener('pointerdown', e => {
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if(pointers.size === 1){
+    startX = e.clientX; startY = e.clientY;
+    startOffsetX = offsetX; startOffsetY = offsetY;
+    hasMoved = false;
+  }
+
+  if(pointers.size === 2){
+    const p = [...pointers.values()];
+    startDistance = getDistance(p[0], p[1]);
+    startScale = scale;
+    hasMoved = true;
+  }
+});
+
+window.addEventListener('pointermove', e => {
+  if(!pointers.has(e.pointerId)) return;
+  pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+  if(pointers.size === 1){
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if(Math.abs(dx) > 4 || Math.abs(dy) > 4) hasMoved = true;
+    offsetX = startOffsetX + dx; offsetY = startOffsetY + dy;
+    applyTransform();
+  }
+
+  if(pointers.size === 2){
+    const p = [...pointers.values()];
+    const newDistance = getDistance(p[0], p[1]);
+
+    if(startDistance > 0){
+      const newScale = startScale * (newDistance / startDistance);
+      const rect = workspace.getBoundingClientRect();
+      const centerX = (p[0].x + p[1].x) / 2 - rect.left;
+      const centerY = (p[0].y + p[1].y) / 2 - rect.top;
+
+      const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, newScale));
+      const ratio = nextScale / scale;
+
+      offsetX = centerX - (centerX - offsetX) * ratio;
+      offsetY = centerY - (centerY - offsetY) * ratio;
+      scale = nextScale;
+      hasMoved = true;
+      applyTransform();
+    }
+  }
+}, { passive: true });
+
+function endPan(e){
+  if(!pointers.has(e.pointerId)) return;
+  pointers.delete(e.pointerId);
+
+  if(pointers.size === 1){
+    const p = [...pointers.values()][0];
+    startX = p.x; startY = p.y;
+    startOffsetX = offsetX; startOffsetY = offsetY;
+    startDistance = 0;
+  }
+
+  if(pointers.size === 0){
+    startDistance = 0;
+    if(hasMoved){
+      suppressClick = true;
+      setTimeout(() => { suppressClick = false; hasMoved = false; }, 400);
+    }
+  }
+}
+
+window.addEventListener('pointerup', endPan);
+window.addEventListener('pointercancel', endPan);
+
+workspace.addEventListener('wheel', e => {
+  e.preventDefault();
+
+  const rect = workspace.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const oldScale = scale;
+  const nextScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale * (e.deltaY < 0 ? 1.15 : 0.87)));
+  const ratio = nextScale / oldScale;
+
+  offsetX = x - (x - offsetX) * ratio;
+  offsetY = y - (y - offsetY) * ratio;
+  scale = nextScale;
+  applyTransform();
+}, { passive: false });
+
+document.getElementById('plan').addEventListener('load', () => {
+  const im = document.getElementById('plan');
+  if(im.naturalWidth) svg.setAttribute('viewBox', `0 0 ${im.naturalWidth} ${im.naturalHeight}`);
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
