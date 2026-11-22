@@ -166,8 +166,8 @@
         <option value="Booked">Booked</option>
         <option value="Sold">Sold</option>
       </select>
-      <button class="publish-button" onclick="saveProperty()">🚀 PUBLISH PROPERTY</button>
-      <button id="cancelEditButton" class="cancel-button hidden" onclick="cancelEdit()">Cancel Edit</button>
+      <button type="button" id="publishBtn" class="publish-button" onclick="saveProperty()">🚀 PUBLISH PROPERTY</button>
+      <button type="button" id="cancelEditButton" class="cancel-button hidden" onclick="cancelEdit()">Cancel Edit</button>
     </div>
     <h2 class="manage-title">Manage Listing</h2>
     <div class="property-grid" id="manageList"></div>
@@ -578,16 +578,10 @@ function renderAttachmentPreview() {
     return;
   }
 
-  previewEl.innerHTML = validImgs.map((url, idx) => `
-    <img
-      src="${escapeHTML(url)}"
-      alt="Attachment ${idx + 1}"
-      title="Klik untuk view attachment"
-      class="attachment-thumb"
-      onclick="openGalleryFromUrls('Attachment Listing (${validImgs.length})', ${JSON.stringify(validImgs).replace(/"/g, '&quot;')})"
-      onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';"
-    >
-  `).join("");
+  previewEl.innerHTML = validImgs.map((url, idx) => {
+    const safeUrl = escapeHTML(url);
+    return `<img src="${safeUrl}" alt="Attachment ${idx + 1}" title="Klik untuk view attachment" class="attachment-thumb" data-idx="${idx}" onclick="openGalleryFromUrls('Attachment Listing (${validImgs.length})', currentAttachments)" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">`;
+  }).join("");
 }
 
 /* =========================================
@@ -653,7 +647,10 @@ function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onload = () => {
+      const res = String(reader.result || "");
+      resolve(res.includes(",") ? res.split(",")[1] : res);
+    };
     reader.onerror = error => reject(error);
   });
 }
@@ -662,7 +659,10 @@ function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(blob);
-    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onload = () => {
+      const res = String(reader.result || "");
+      resolve(res.includes(",") ? res.split(",")[1] : res);
+    };
     reader.onerror = error => reject(error);
   });
 }
@@ -678,7 +678,7 @@ async function uploadBase64ToImgBB(base64Image) {
   });
 
   const result = await response.json();
-  if (result.success && result.data && result.data.url) {
+  if (result && result.success && result.data && result.data.url) {
     return result.data.url;
   }
   throw new Error("Gagal upload ke ImgBB. Sila semak API Key anda.");
@@ -715,25 +715,26 @@ async function uploadImageUrlToImgBB(imageUrl) {
 
 document.getElementById("propertyImageFile").addEventListener("change", function(event) {
   const count = event.target.files ? event.target.files.length : 0;
-  if (count > 0) {
-    document.getElementById("imageStatus").innerText = `✅ ${count} fail dipilih. Akan dimuat naik automatik ke ImgBB semasa publish.`;
-  } else {
-    document.getElementById("imageStatus").innerText = "";
-  }
+  const statusEl = document.getElementById("imageStatus");
+  if (!statusEl) return;
+  statusEl.innerText = count > 0
+    ? `✅ ${count} fail dipilih. Akan dimuat naik automatik ke ImgBB semasa publish.`
+    : "";
 });
 
 /* =========================================
    SAVE / UPDATE PROPERTY (REALTIME DB + IMGBB)
 ========================================= */
 async function saveProperty() {
-  const zone = document.getElementById("propertyZone").value;
-  const rawImageLinks = document.getElementById("propertyImageLinks").value.trim();
-  const listingLinkInput = document.getElementById("propertyListingLink").value.trim();
-  const name = document.getElementById("propertyName").value.trim().toUpperCase();
-  const price = document.getElementById("propertyPrice").value.replace(/[^0-9]/g, "");
-  const location = document.getElementById("propertyLocation").value.trim();
-  const description = document.getElementById("propertyDescription").value.trim();
-  const status = document.getElementById("propertyStatus").value;
+  const publishBtn = document.getElementById("publishBtn") || document.querySelector(".publish-button");
+  const zone = (document.getElementById("propertyZone")?.value || "Sandakan").trim();
+  const rawImageLinks = (document.getElementById("propertyImageLinks")?.value || "").trim();
+  const listingLinkInput = (document.getElementById("propertyListingLink")?.value || "").trim();
+  const name = (document.getElementById("propertyName")?.value || "").trim().toUpperCase();
+  const price = (document.getElementById("propertyPrice")?.value || "").replace(/[^0-9]/g, "");
+  const location = (document.getElementById("propertyLocation")?.value || "").trim();
+  const description = (document.getElementById("propertyDescription")?.value || "").trim();
+  const status = (document.getElementById("propertyStatus")?.value || "Available").trim();
   const imageFileInput = document.getElementById("propertyImageFile");
 
   if (!name || !price || !location) {
@@ -741,8 +742,10 @@ async function saveProperty() {
     return;
   }
 
-  const publishBtn = document.querySelector(".publish-button");
-  publishBtn.disabled = true;
+  if (publishBtn) {
+    publishBtn.disabled = true;
+    publishBtn.innerText = "⏳ Sedang memproses...";
+  }
 
   try {
     const parsedLinks = splitUrlLinks(rawImageLinks);
@@ -752,23 +755,20 @@ async function saveProperty() {
 
     let uploadedUrls = [];
 
-    if (imageFileInput.files.length > 0) {
-      publishBtn.innerText = `⏳ Sedang upload ${imageFileInput.files.length} fail gambar ke ImgBB...`;
-      const fileUploads = await Promise.all(
-        Array.from(imageFileInput.files).map(file => uploadSingleToImgBB(file))
-      );
+    const files = imageFileInput && imageFileInput.files ? Array.from(imageFileInput.files) : [];
+    if (files.length > 0) {
+      if (publishBtn) publishBtn.innerText = `⏳ Sedang upload ${files.length} fail gambar ke ImgBB...`;
+      const fileUploads = await Promise.all(files.map(file => uploadSingleToImgBB(file)));
       uploadedUrls.push(...fileUploads);
     }
 
     if (imageLinkCandidates.length > 0) {
-      publishBtn.innerText = `⏳ Sedang upload ${imageLinkCandidates.length} link gambar ke ImgBB...`;
-      const linkUploads = await Promise.all(
-        imageLinkCandidates.map(link => uploadImageUrlToImgBB(link))
-      );
+      if (publishBtn) publishBtn.innerText = `⏳ Sedang upload ${imageLinkCandidates.length} link gambar ke ImgBB...`;
+      const linkUploads = await Promise.all(imageLinkCandidates.map(link => uploadImageUrlToImgBB(link)));
       uploadedUrls.push(...linkUploads.filter(Boolean));
     }
 
-    publishBtn.innerText = "⏳ Sedang simpan ke Database...";
+    if (publishBtn) publishBtn.innerText = "⏳ Sedang simpan ke Database...";
 
     const zoneCode = zone === "Kota Kinabalu" ? "KK" : (zone === "Tawau" ? "TWU" : "SDK");
     const existingRaw = editingId ? (properties.find(p => p.id === editingId)?._raw || {}) : {};
@@ -811,14 +811,16 @@ async function saveProperty() {
       await rtdb.ref("properties").push(listingPayload);
       alert("Property berjaya dipublish!");
     }
-    
+
     cancelEdit();
   } catch (error) {
-    console.error("Ralat: ", error);
-    alert(error.message || "Gagal memproses data.");
+    console.error("Ralat saveProperty:", error);
+    alert("Gagal publish property: " + (error && error.message ? error.message : "Ralat tidak diketahui"));
   } finally {
-    publishBtn.innerText = "🚀 PUBLISH PROPERTY";
-    publishBtn.disabled = false;
+    if (publishBtn) {
+      publishBtn.innerText = "🚀 PUBLISH PROPERTY";
+      publishBtn.disabled = false;
+    }
   }
 }
 
@@ -827,6 +829,7 @@ async function saveProperty() {
 ========================================= */
 function renderManageListings() {
   const list = document.getElementById("manageList");
+  if (!list) return;
   if (properties.length === 0) {
     list.innerHTML = `<div class="empty">Belum ada listing.</div>`;
     return;
@@ -846,8 +849,8 @@ function renderManageListings() {
         <div class="price">${formatPrice(property.price)}</div>
         <div class="location">📍 ${escapeHTML(property.location)}</div>
         <p class="description">Zone: <b>${escapeHTML(property.zone)}</b></p>
-        <button class="edit-button" onclick="editProperty('${property.id}')">EDIT</button>
-        <button class="delete-button" onclick="deleteProperty('${property.id}')">DELETE</button>
+        <button type="button" class="edit-button" onclick="editProperty('${property.id}')">EDIT</button>
+        <button type="button" class="delete-button" onclick="deleteProperty('${property.id}')">DELETE</button>
       </div>
     </div>`;
   }).join("");
