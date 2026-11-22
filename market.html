@@ -351,16 +351,24 @@ function mapListingRecord(id, item) {
 }
 
 /* =========================================
-   BUKA GALERI LISTING BILA KLIK PHOTO
+   BUKA LINK LISTING / VIEW PHOTO
 ========================================= */
-function handlePropertyPhotoClick(propertyId, startIndex = 0) {
-  openGalleryById(propertyId, null, startIndex);
+function handlePropertyPhotoClick(propertyId) {
+  const prop = properties.find(p => p.id === propertyId);
+  if (!prop) return;
+
+  if (prop.listingLink && /^https?:\/\//i.test(prop.listingLink)) {
+    window.open(prop.listingLink, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  openGalleryById(propertyId);
 }
 
 /* =========================================
    POPUP GALERI GAMBAR (VIEW PHOTO KIRI / KANAN)
 ========================================= */
-function openGalleryById(propertyId, event, startIndex = 0) {
+function openGalleryById(propertyId, event) {
   if (event) event.stopPropagation();
   const prop = properties.find(p => p.id === propertyId);
   const imgs = (prop && Array.isArray(prop.images) && prop.images.length > 0)
@@ -368,16 +376,16 @@ function openGalleryById(propertyId, event, startIndex = 0) {
     : [FALLBACK_IMAGE];
 
   galleryImages = imgs;
-  galleryIndex = Math.max(0, Math.min(Number(startIndex) || 0, imgs.length - 1));
+  galleryIndex = 0;
   document.getElementById("galleryTitle").innerText = prop ? prop.name : "Galeri Gambar";
   document.getElementById("galleryModal").classList.remove("hidden");
   renderGalleryState();
 }
 
-function openGalleryFromUrls(title, urls, startIndex = 0) {
+function openGalleryFromUrls(title, urls) {
   const validUrls = (urls || []).filter(u => u && u !== FALLBACK_IMAGE);
   galleryImages = validUrls.length > 0 ? validUrls : [FALLBACK_IMAGE];
-  galleryIndex = Math.max(0, Math.min(Number(startIndex) || 0, galleryImages.length - 1));
+  galleryIndex = 0;
   document.getElementById("galleryTitle").innerText = title || "Attachment Preview";
   document.getElementById("galleryModal").classList.remove("hidden");
   renderGalleryState();
@@ -581,7 +589,7 @@ function renderAttachmentPreview() {
 
   previewEl.innerHTML = validImgs.map((url, idx) => {
     const safeUrl = escapeHTML(url);
-    return `<img src="${safeUrl}" alt="Attachment ${idx + 1}" title="Klik untuk view attachment" class="attachment-thumb" data-idx="${idx}" onclick="openGalleryFromUrls('Attachment Listing (${validImgs.length})', currentAttachments, ${idx})" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">`;
+    return `<img src="${safeUrl}" alt="Attachment ${idx + 1}" title="Klik untuk view attachment" class="attachment-thumb" data-idx="${idx}" onclick="openGalleryFromUrls('Attachment Listing (${validImgs.length})', currentAttachments)" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">`;
   }).join("");
 }
 
@@ -602,13 +610,14 @@ function renderPublicListings() {
 
   list.innerHTML = filtered.map(property => {
     const message = encodeURIComponent(`Hi Jackson, saya berminat dengan property ${property.name}. Boleh bagi maklumat lanjut?`);
+    const hasLink = Boolean(property.listingLink);
     const imgCount = (property.images && property.images.length) || 1;
     return `
     <div class="property-card">
-      <div class="image-wrapper" onclick="handlePropertyPhotoClick('${escapeHTML(property.id)}', 0)" title="Klik untuk lihat galeri gambar listing">
+      <div class="image-wrapper" onclick="handlePropertyPhotoClick('${escapeHTML(property.id)}')" title="${hasLink ? 'Klik untuk buka pautan listing' : 'Klik untuk lihat gambar'}">
         <img class="property-image" src="${escapeHTML(property.image)}" alt="${escapeHTML(property.name)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
-        <span class="gallery-trigger-badge" onclick="openGalleryById('${escapeHTML(property.id)}', event, 0)" title="View Photo">🖼️ ${imgCount}</span>
-        <span class="photo-badge">🔍 Galeri (${imgCount})</span>
+        <span class="gallery-trigger-badge" onclick="openGalleryById('${escapeHTML(property.id)}', event)" title="View Photo">🖼️ ${imgCount}</span>
+        <span class="photo-badge">${hasLink ? '🔗 Buka Link' : '🔍 Lihat'}</span>
       </div>
       <div class="property-content">
         <span class="status ${getStatusClass(property.status)}">${escapeHTML(property.status)}</span>
@@ -839,7 +848,7 @@ function renderManageListings() {
     const imgCount = (property.images && property.images.length) || 1;
     return `
     <div class="property-card">
-      <div class="image-wrapper" onclick="openGalleryById('${escapeHTML(property.id)}', null, 0)" title="Klik untuk lihat semua gambar">
+      <div class="image-wrapper" onclick="openGalleryById('${escapeHTML(property.id)}')" title="Klik untuk lihat semua gambar">
         <img class="property-image" src="${escapeHTML(property.image)}" alt="${escapeHTML(property.name)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
         ${imgCount > 1 ? `<span class="photo-badge">📷 ${imgCount}</span>` : `<span class="photo-badge">🔍 Lihat</span>`}
       </div>
