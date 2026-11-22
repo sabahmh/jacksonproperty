@@ -210,10 +210,11 @@ const firebaseConfig = {
     measurementId: "G-SZ47HNR9PT"
 };
 
-const marketApp = firebase.apps.find(app => app.name === "MARKET_APP")
-  || firebase.initializeApp(firebaseConfig, "MARKET_APP");
-const auth = marketApp.auth();
-const rtdb = marketApp.database();
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+const auth = firebase.auth();
+const rtdb = firebase.database();
 
 let selectedZone = "ALL";
 let editingId = null;
@@ -506,7 +507,14 @@ function subscribeListingsRealtime({ includeAdmin = false } = {}) {
     isListeningRtdb = true;
     const listEl = document.getElementById("propertyList");
 
+    const loadTimer = setTimeout(() => {
+      if (listEl && listEl.innerText.includes("Sedang memuatkan senarai listing")) {
+        listEl.innerHTML = `<div class="empty">Tiada respon daripada Realtime Database. Sila semak sambungan internet/WebSocket, Console (F12), atau Realtime Database Rules.</div>`;
+      }
+    }, 8000);
+
     rtdb.ref("properties").on("value", (snapshot) => {
+      clearTimeout(loadTimer);
       const raw = snapshot.val();
       if (!raw || typeof raw !== "object") {
         properties = [];
@@ -521,6 +529,7 @@ function subscribeListingsRealtime({ includeAdmin = false } = {}) {
         renderManageListings();
       }
     }, (error) => {
+      clearTimeout(loadTimer);
       console.error("Ralat membaca Realtime DB:", error);
       if (listEl) {
         listEl.innerHTML = `<div class="empty">Gagal memuatkan senarai listing: ${escapeHTML(error.message)}</div>`;
