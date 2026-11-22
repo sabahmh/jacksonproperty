@@ -99,11 +99,12 @@
 <main id="publicPage">
   <div class="container">
     <div class="zone-buttons">
-      <button class="zone-button active" onclick="changeZone('Sandakan', this)">Sandakan</button>
+      <button class="zone-button active" onclick="changeZone('ALL', this)">Semua Zone</button>
+      <button class="zone-button" onclick="changeZone('Sandakan', this)">Sandakan</button>
       <button class="zone-button" onclick="changeZone('Kota Kinabalu', this)">Kota Kinabalu</button>
       <button class="zone-button" onclick="changeZone('Tawau', this)">Tawau</button>
     </div>
-    <h2 class="section-title" id="zoneTitle">Property di Sandakan</h2>
+    <h2 class="section-title" id="zoneTitle">Property Available (Semua Zone)</h2>
     <div class="property-grid" id="propertyList"></div>
   </div>
 </main>
@@ -204,7 +205,7 @@ const auth = firebase.auth();
 const rtdb = firebase.database();
 const db = firebase.firestore();
 
-let selectedZone = "Sandakan";
+let selectedZone = "ALL";
 let editingId = null;
 let currentImageUrl = FALLBACK_IMAGE;
 let properties = [];
@@ -497,6 +498,10 @@ function subscribeListingsRealtime({ includeAdmin = false } = {}) {
       if (!document.getElementById("portalSection").classList.contains("hidden")) {
         renderManageListings();
       }
+    }, (error) => {
+      console.error("Ralat membaca Realtime DB:", error);
+      document.getElementById("propertyList").innerHTML =
+        `<div class="empty">Gagal memuatkan senarai listing (${escapeHTML(error.message)}).</div>`;
     });
   } else if (includeAdmin) {
     renderManageListings();
@@ -524,7 +529,9 @@ function changeZone(zone, button) {
   selectedZone = zone;
   document.querySelectorAll(".zone-button").forEach(item => item.classList.remove("active"));
   button.classList.add("active");
-  document.getElementById("zoneTitle").innerText = "Property di " + zone;
+  document.getElementById("zoneTitle").innerText = zone === "ALL"
+    ? "Property Available (Semua Zone)"
+    : "Property Available di " + zone;
   renderPublicListings();
 }
 
@@ -539,14 +546,17 @@ function escapeHTML(text) {
 }
 
 /* =========================================
-   PUBLIC LISTINGS (AVAILABLE SAHAJA)
+   PUBLIC LISTINGS (AVAILABLE SAHAJA, SEMUA ZONE)
 ========================================= */
 function renderPublicListings() {
   const list = document.getElementById("propertyList");
-  const filtered = properties.filter(p => p.zone === selectedZone && p.status === "Available");
+  const filtered = properties.filter(p =>
+    p.status === "Available" && (selectedZone === "ALL" || p.zone === selectedZone)
+  );
 
   if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty">Belum ada property available di ${escapeHTML(selectedZone)}.</div>`;
+    const label = selectedZone === "ALL" ? "semua zone" : selectedZone;
+    list.innerHTML = `<div class="empty">Belum ada property available di ${escapeHTML(label)}.</div>`;
     return;
   }
 
@@ -563,7 +573,7 @@ function renderPublicListings() {
         <span class="status ${getStatusClass(property.status)}">${escapeHTML(property.status)}</span>
         <h3 class="property-name">${escapeHTML(property.name)}</h3>
         <div class="price">${formatPrice(property.price)}</div>
-        <div class="location">📍 ${escapeHTML(property.location)}</div>
+        <div class="location">📍 ${escapeHTML(property.location)} (${escapeHTML(property.zone)})</div>
         <p class="description">${escapeHTML(property.description)}</p>
         <div class="property-actions">
           <a class="button whatsapp" href="https://wa.me/${WHATSAPP_NUMBER}?text=${message}" target="_blank">💬 WHATSAPP JACKSON</a>
