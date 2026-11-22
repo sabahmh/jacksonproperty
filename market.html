@@ -28,6 +28,11 @@
     .zone-button.active { background: #111; color: #fff; }
     .section-title { margin: 15px 0; font-size: 20px; }
     .property-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+    .pagination-bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 22px; }
+    .page-btn { background: #fff; color: #222; border: 1px solid #ddd; padding: 10px 14px; font-size: 13px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .page-btn.active { background: #111; color: #fff; border-color: #111; }
+    .page-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .pagination-info { width: 100%; text-align: center; font-size: 13px; color: #666; margin-top: 4px; }
     .property-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
     .image-wrapper { position: relative; cursor: pointer; background: #ddd; }
     .property-image { width: 100%; height: 220px; object-fit: cover; display: block; background: #ddd; }
@@ -124,6 +129,7 @@
     <div class="property-grid" id="propertyList">
       <div class="empty">Sedang memuatkan senarai listing...</div>
     </div>
+    <div id="paginationBar" class="pagination-bar"></div>
   </div>
 </main>
 
@@ -231,6 +237,8 @@ const auth = firebase.auth();
 const rtdb = firebase.database();
 
 let selectedZone = "ALL";
+const LISTINGS_PER_PAGE = 10;
+let currentPage = 1;
 let editingId = null;
 let currentImageUrl = FALLBACK_IMAGE;
 let currentAttachments = [];
@@ -566,12 +574,50 @@ function formatPrice(price) {
 
 function changeZone(zone, button) {
   selectedZone = zone;
+  currentPage = 1;
   document.querySelectorAll(".zone-button").forEach(item => item.classList.remove("active"));
   button.classList.add("active");
   document.getElementById("zoneTitle").innerText = zone === "ALL"
     ? "Property Available (Semua Zone)"
     : "Property Available di " + zone;
   renderPublicListings();
+}
+
+function goToPage(pageNum, totalPages) {
+  if (pageNum < 1 || pageNum > totalPages || pageNum === currentPage) return;
+  currentPage = pageNum;
+  renderPublicListings();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function renderPagination(totalItems) {
+  const paginationEl = document.getElementById("paginationBar");
+  if (!paginationEl) return;
+
+  if (totalItems <= LISTINGS_PER_PAGE) {
+    paginationEl.innerHTML = "";
+    return;
+  }
+
+  const totalPages = Math.ceil(totalItems / LISTINGS_PER_PAGE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  const startIdx = (currentPage - 1) * LISTINGS_PER_PAGE;
+  const endIdx = Math.min(startIdx + LISTINGS_PER_PAGE, totalItems);
+
+  let buttonsHtml = `<button type="button" class="page-btn" onclick="goToPage(${currentPage - 1}, ${totalPages})" ${currentPage === 1 ? "disabled" : ""}>&#9664; Prev</button>`;
+
+  for (let p = 1; p <= totalPages; p++) {
+    buttonsHtml += `<button type="button" class="page-btn ${p === currentPage ? "active" : ""}" onclick="goToPage(${p}, ${totalPages})">${p}</button>`;
+  }
+
+  buttonsHtml += `<button type="button" class="page-btn" onclick="goToPage(${currentPage + 1}, ${totalPages})" ${currentPage === totalPages ? "disabled" : ""}>Next &#9654;</button>`;
+
+  paginationEl.innerHTML = `
+    ${buttonsHtml}
+    <div class="pagination-info">Halaman ${currentPage} daripada ${totalPages} • Memaparkan ${startIdx + 1}–${endIdx} daripada ${totalItems} listing</div>
+  `;
 }
 
 function getStatusClass(status) {
@@ -702,10 +748,18 @@ function renderPublicListings() {
   if (filtered.length === 0) {
     const label = selectedZone === "ALL" ? "semua zone" : selectedZone;
     list.innerHTML = `<div class="empty">Belum ada property available di ${escapeHTML(label)}.</div>`;
+    renderPagination(0);
     return;
   }
 
-  list.innerHTML = filtered.map(property => {
+  const totalPages = Math.ceil(filtered.length / LISTINGS_PER_PAGE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  const startIndex = (currentPage - 1) * LISTINGS_PER_PAGE;
+  const pageItems = filtered.slice(startIndex, startIndex + LISTINGS_PER_PAGE);
+
+  list.innerHTML = pageItems.map(property => {
     const message = encodeURIComponent(`Hi Jackson, saya berminat dengan property ${property.name}. Boleh bagi maklumat lanjut?`);
     const hasLink = Boolean(property.listingLink);
     const imgCount = (property.images && property.images.length) || 1;
@@ -728,6 +782,8 @@ function renderPublicListings() {
       </div>
     </div>`;
   }).join("");
+
+  renderPagination(filtered.length);
 }
 
 /* =========================================
