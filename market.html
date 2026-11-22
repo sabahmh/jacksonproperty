@@ -63,6 +63,8 @@
     .manage-title { margin-top: 30px; }
     #imageStatus { font-size: 13px; color: #666; margin-top: 4px; display: block; }
     #loadingScreen { text-align: center; padding: 20px; font-weight: bold; color: #555; }
+    .attachment-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .attachment-thumb { width: 68px; height: 52px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; cursor: pointer; }
 
     /* POPUP GALERI GAMBAR KIRI / KANAN */
     .gallery-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92); z-index: 999; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 16px; }
@@ -142,9 +144,12 @@
         <option value="Kota Kinabalu">Kota Kinabalu</option>
         <option value="Tawau">Tawau</option>
       </select>
-      <label>Gambar Property (Boleh pilih banyak gambar sekaligus -> Auto Upload ke ImgBB)</label>
+      <label>Gambar Property (Fail - Boleh pilih banyak gambar sekaligus -> Auto Upload ke ImgBB)</label>
       <input type="file" id="propertyImageFile" accept="image/*" multiple>
       <span id="imageStatus"></span>
+      <label>Add Image Link (Contoh: Link gambar Facebook Marketplace - Auto Upload ke ImgBB)</label>
+      <textarea id="propertyImageLinks" rows="3" placeholder="Tampal 1 atau lebih link gambar (pisahkan dengan baris baharu atau koma)"></textarea>
+      <div id="attachmentPreview" class="attachment-preview"></div>
       <label>Link Listing (Facebook Marketplace / Portal)</label>
       <input type="url" id="propertyListingLink" placeholder="https://web.facebook.com/marketplace/item/1347332260766765">
       <label>Nama Property</label>
@@ -213,6 +218,7 @@ const rtdb = marketApp.database();
 let selectedZone = "ALL";
 let editingId = null;
 let currentImageUrl = FALLBACK_IMAGE;
+let currentAttachments = [];
 let properties = [];
 
 // Keadaan galeri popup
@@ -252,10 +258,20 @@ function splitUrlLinks(rawVal) {
     .filter(u => /^https?:\/\//i.test(u) || u.startsWith("data:image/"));
 }
 
+function isMarketplaceItemPage(url) {
+  return /facebook\.com\/marketplace\/item\//i.test(url);
+}
+
 function isImageUrl(url) {
   if (!url) return false;
   if (url.startsWith("data:image/")) return true;
-  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/i.test(url) || url.includes("ibb.co") || url.includes("imgbb.com") || url.includes("placehold.co");
+  if (isMarketplaceItemPage(url)) return false;
+  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/i.test(url)
+    || /fbcdn\.net|scontent|ibb\.co|imgbb\.com|placehold\.co/i.test(url);
+}
+
+function isImgBBUrl(url) {
+  return /i\.ibb\.co|ibb\.co|imgbb\.com/i.test(String(url || ""));
 }
 
 function extractListingLink(item) {
@@ -266,7 +282,7 @@ function extractListingLink(item) {
   for (const raw of candidates) {
     const links = splitUrlLinks(raw);
     for (const link of links) {
-      if (/^https?:\/\//i.test(link) && !isImageUrl(link)) {
+      if (/^https?:\/\//i.test(link) && (isMarketplaceItemPage(link) || !isImageUrl(link))) {
         return link;
       }
     }
@@ -361,6 +377,15 @@ function openGalleryById(propertyId, event) {
   galleryImages = imgs;
   galleryIndex = 0;
   document.getElementById("galleryTitle").innerText = prop ? prop.name : "Galeri Gambar";
+  document.getElementById("galleryModal").classList.remove("hidden");
+  renderGalleryState();
+}
+
+function openGalleryFromUrls(title, urls) {
+  const validUrls = (urls || []).filter(u => u && u !== FALLBACK_IMAGE);
+  galleryImages = validUrls.length > 0 ? validUrls : [FALLBACK_IMAGE];
+  galleryIndex = 0;
+  document.getElementById("galleryTitle").innerText = title || "Attachment Preview";
   document.getElementById("galleryModal").classList.remove("hidden");
   renderGalleryState();
 }
@@ -543,6 +568,28 @@ function escapeHTML(text) {
   return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
+function renderAttachmentPreview() {
+  const previewEl = document.getElementById("attachmentPreview");
+  if (!previewEl) return;
+
+  const validImgs = (currentAttachments || []).filter(u => u && u !== FALLBACK_IMAGE);
+  if (validImgs.length === 0) {
+    previewEl.innerHTML = "";
+    return;
+  }
+
+  previewEl.innerHTML = validImgs.map((url, idx) => `
+    <img
+      src="${escapeHTML(url)}"
+      alt="Attachment ${idx + 1}"
+      title="Klik untuk view attachment"
+      class="attachment-thumb"
+      onclick="openGalleryFromUrls('Attachment Listing (${validImgs.length})', ${JSON.stringify(validImgs).replace(/"/g, '&quot;')})"
+      onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';"
+    >
+  `).join("");
+}
+
 /* =========================================
    PUBLIC LISTINGS (AVAILABLE SAHAJA, SEMUA ZONE)
 ========================================= */
@@ -600,7 +647,7 @@ function backToWebsite() {
 }
 
 /* =========================================
-   FUNGSI TUKAR FILE KEPADA BASE64 & AUTO UPLOAD IMGBB
+   FUNGSI TUKAR FILE / LINK KEPADA BASE64 & AUTO UPLOAD IMGBB
 ========================================= */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
@@ -611,8 +658,16 @@ function fileToBase64(file) {
   });
 }
 
-async function uploadSingleToImgBB(file) {
-  const base64Image = await fileToBase64(file);
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = error => reject(error);
+  });
+}
+
+async function uploadBase64ToImgBB(base64Image) {
   const formData = new FormData();
   formData.append("key", IMGBB_API_KEY);
   formData.append("image", base64Image);
@@ -629,6 +684,35 @@ async function uploadSingleToImgBB(file) {
   throw new Error("Gagal upload ke ImgBB. Sila semak API Key anda.");
 }
 
+async function uploadSingleToImgBB(file) {
+  const base64Image = await fileToBase64(file);
+  return uploadBase64ToImgBB(base64Image);
+}
+
+async function uploadImageUrlToImgBB(imageUrl) {
+  if (!imageUrl || imageUrl === FALLBACK_IMAGE) return null;
+  if (isImgBBUrl(imageUrl)) return imageUrl;
+
+  if (imageUrl.startsWith("data:image/")) {
+    const base64Part = imageUrl.split(",")[1];
+    return base64Part ? uploadBase64ToImgBB(base64Part) : imageUrl;
+  }
+
+  try {
+    const res = await fetch(imageUrl, { mode: "cors" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const blob = await res.blob();
+    if (!blob || !blob.type.startsWith("image/")) {
+      throw new Error("Bukan fail gambar");
+    }
+    const base64Data = await blobToBase64(blob);
+    return await uploadBase64ToImgBB(base64Data);
+  } catch (err) {
+    console.warn("Tidak dapat fetch terus link gambar ke ImgBB (kemungkinan CORS), simpan link asal sebagai lampiran:", imageUrl, err);
+    return imageUrl;
+  }
+}
+
 document.getElementById("propertyImageFile").addEventListener("change", function(event) {
   const count = event.target.files ? event.target.files.length : 0;
   if (count > 0) {
@@ -643,7 +727,8 @@ document.getElementById("propertyImageFile").addEventListener("change", function
 ========================================= */
 async function saveProperty() {
   const zone = document.getElementById("propertyZone").value;
-  const listingLink = document.getElementById("propertyListingLink").value.trim();
+  const rawImageLinks = document.getElementById("propertyImageLinks").value.trim();
+  const listingLinkInput = document.getElementById("propertyListingLink").value.trim();
   const name = document.getElementById("propertyName").value.trim().toUpperCase();
   const price = document.getElementById("propertyPrice").value.replace(/[^0-9]/g, "");
   const location = document.getElementById("propertyLocation").value.trim();
@@ -660,13 +745,27 @@ async function saveProperty() {
   publishBtn.disabled = true;
 
   try {
+    const parsedLinks = splitUrlLinks(rawImageLinks);
+    const imageLinkCandidates = parsedLinks.filter(u => !isMarketplaceItemPage(u));
+    const detectedMarketplaceLink = parsedLinks.find(u => isMarketplaceItemPage(u)) || "";
+    const listingLink = listingLinkInput || detectedMarketplaceLink;
+
     let uploadedUrls = [];
 
     if (imageFileInput.files.length > 0) {
-      publishBtn.innerText = `⏳ Sedang upload ${imageFileInput.files.length} gambar ke ImgBB...`;
-      uploadedUrls = await Promise.all(
+      publishBtn.innerText = `⏳ Sedang upload ${imageFileInput.files.length} fail gambar ke ImgBB...`;
+      const fileUploads = await Promise.all(
         Array.from(imageFileInput.files).map(file => uploadSingleToImgBB(file))
       );
+      uploadedUrls.push(...fileUploads);
+    }
+
+    if (imageLinkCandidates.length > 0) {
+      publishBtn.innerText = `⏳ Sedang upload ${imageLinkCandidates.length} link gambar ke ImgBB...`;
+      const linkUploads = await Promise.all(
+        imageLinkCandidates.map(link => uploadImageUrlToImgBB(link))
+      );
+      uploadedUrls.push(...linkUploads.filter(Boolean));
     }
 
     publishBtn.innerText = "⏳ Sedang simpan ke Database...";
@@ -678,12 +777,13 @@ async function saveProperty() {
       : [];
 
     const finalImageUrls = uploadedUrls.length > 0
-      ? [...uploadedUrls, ...existingImageUrls.filter(u => !uploadedUrls.includes(u))]
+      ? [...new Set([...uploadedUrls, ...existingImageUrls])]
       : (existingImageUrls.length > 0 ? existingImageUrls : [currentImageUrl || FALLBACK_IMAGE]);
 
     const updatedImages = finalImageUrls.map(url => ({ url, path: "" }));
+    const resolvedListingLink = listingLink || extractListingLink(existingRaw);
     const combinedUrlField = [
-      listingLink || extractListingLink(existingRaw),
+      resolvedListingLink,
       ...finalImageUrls.filter(u => u !== FALLBACK_IMAGE)
     ].filter(Boolean).join(" ");
 
@@ -698,7 +798,7 @@ async function saveProperty() {
       location: location,
       REMARK: description,
       STATUS: status.toUpperCase(),
-      LINK: listingLink || extractListingLink(existingRaw),
+      LINK: resolvedListingLink,
       URL: combinedUrlField,
       IMAGES: updatedImages,
       createdAt: existingRaw.createdAt || Date.now()
@@ -759,16 +859,19 @@ function editProperty(id) {
 
   editingId = id;
   currentImageUrl = property.image;
+  currentAttachments = Array.isArray(property.images) ? [...property.images] : [property.image];
 
   document.getElementById("propertyZone").value = property.zone;
   document.getElementById("propertyListingLink").value = property.listingLink || "";
+  document.getElementById("propertyImageLinks").value = "";
   document.getElementById("propertyName").value = property.name;
   document.getElementById("propertyPrice").value = property.price;
   document.getElementById("propertyLocation").value = property.location;
   document.getElementById("propertyDescription").value = property._raw?.REMARK ?? property.description;
   document.getElementById("propertyStatus").value = property.status;
   document.getElementById("propertyImageFile").value = "";
-  document.getElementById("imageStatus").innerText = "Gunakan gambar sedia ada (pilih fail baru jika mahu tukar/tambah).";
+  document.getElementById("imageStatus").innerText = "Tambah link gambar baru atau pilih fail untuk auto upload ke ImgBB sebagai lampiran.";
+  renderAttachmentPreview();
 
   document.getElementById("formTitle").innerText = "✏️ Edit Property";
   document.getElementById("cancelEditButton").classList.remove("hidden");
@@ -778,17 +881,20 @@ function editProperty(id) {
 function cancelEdit() {
   editingId = null;
   currentImageUrl = FALLBACK_IMAGE;
+  currentAttachments = [];
   document.getElementById("formTitle").innerText = "➕ Tambah Property";
   document.getElementById("cancelEditButton").classList.add("hidden");
   document.getElementById("propertyZone").value = "Sandakan";
-  document.getElementById("propertyListingLink").value = "";
   document.getElementById("propertyImageFile").value = "";
+  document.getElementById("propertyImageLinks").value = "";
+  document.getElementById("propertyListingLink").value = "";
   document.getElementById("propertyName").value = "";
   document.getElementById("propertyPrice").value = "";
   document.getElementById("propertyLocation").value = "";
   document.getElementById("propertyDescription").value = "";
   document.getElementById("propertyStatus").value = "Available";
   document.getElementById("imageStatus").innerText = "";
+  renderAttachmentPreview();
 }
 
 async function deleteProperty(id) {
