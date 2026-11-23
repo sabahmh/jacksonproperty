@@ -1,1080 +1,849 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jackson Property Market | Semua Listing Available</title>
-  
-  <!-- Firebase SDK (Auth, Realtime Database & Firestore) -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: Arial, sans-serif; background: #f5f5f5; color: #222; }
-    header { background: #111; color: #fff; padding: 14px 16px; position: sticky; top: 0; z-index: 100; }
-    .header-content { max-width: 1000px; margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-    .brand-wrapper { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .property-logo { width: 50px; height: 50px; object-fit: contain; border-radius: 8px; background: #fff; flex-shrink: 0; }
-    .brand h1 { margin: 0; font-size: 21px; white-space: nowrap; }
-    .brand p { margin: 4px 0 0; font-size: 13px; color: #ccc; }
-    button, .button { border: none; border-radius: 10px; padding: 12px 15px; font-size: 14px; font-weight: bold; cursor: pointer; }
-    .admin-photo { width: 32px; height: 32px; object-fit: cover; border-radius: 50%; cursor: pointer; flex-shrink: 0; border: 1.5px solid #fff; }
-    .container { max-width: 1000px; margin: auto; padding: 20px 16px; }
-    .zone-buttons { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; }
-    .zone-button { background: #fff; color: #222; border: 1px solid #ddd; white-space: nowrap; }
-    .zone-button.active { background: #111; color: #fff; }
-    .section-title { margin: 15px 0; font-size: 20px; }
-    .property-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
-    .pagination-bar { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; margin-top: 22px; }
-    .page-btn { background: #fff; color: #222; border: 1px solid #ddd; padding: 10px 14px; font-size: 13px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-    .page-btn.active { background: #111; color: #fff; border-color: #111; }
-    .page-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-    .pagination-info { width: 100%; text-align: center; font-size: 13px; color: #666; margin-top: 4px; }
-    .property-card { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
-    .image-wrapper { position: relative; cursor: pointer; background: #ddd; }
-    .property-image { width: 100%; height: 220px; object-fit: cover; display: block; background: #ddd; }
-    .photo-badge { position: absolute; right: 10px; bottom: 10px; background: rgba(0,0,0,0.72); color: #fff; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: bold; }
-    .gallery-trigger-badge { position: absolute; left: 10px; bottom: 10px; background: rgba(17,17,17,0.78); color: #fff; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: bold; }
-    .property-content { padding: 16px; }
-    .property-name { margin: 8px 0; font-size: 19px; }
-    .price { font-size: 23px; font-weight: bold; margin: 8px 0; }
-    .location { color: #666; margin: 8px 0; }
-    .description { line-height: 1.5; color: #444; font-size: 14px; white-space: pre-line; }
-    .status { display: inline-block; padding: 6px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; margin-top: 8px; }
-    .available { background: #e7f7eb; color: #187a37; }
-    .booked { background: #fff4d6; color: #996300; }
-    .sold { background: #ffe3e3; color: #b02020; }
-    .property-actions { display: flex; gap: 8px; margin-top: 16px; }
-    .whatsapp { background: #25D366; color: #fff; flex: 1; text-align: center; text-decoration: none; }
-    
-    #adminPage { display: none; }
-    .panel { background: #fff; border-radius: 14px; padding: 20px; max-width: 650px; margin: auto; box-shadow: 0 3px 12px rgba(0,0,0,0.08); }
-    .login-panel { max-width: 380px; margin-top: 40px; }
-    label { display: block; font-size: 14px; font-weight: bold; margin-top: 12px; }
-    input, textarea, select { width: 100%; margin-top: 6px; padding: 13px; border: 1px solid #ddd; border-radius: 9px; font-size: 15px; }
-    textarea { resize: vertical; }
-    #propertyName { text-transform: uppercase; }
-    .publish-button { width: 100%; margin-top: 20px; background: #111; color: #fff; }
-    .edit-button { width: 100%; background: #111; color: #fff; margin-top: 10px; }
-    .delete-button { width: 100%; background: #ffe5e5; color: #b02020; margin-top: 8px; }
-    .cancel-button { width: 100%; margin-top: 10px; background: #eee; color: #222; }
-    .logout-button { background: #b02020; color: #fff; margin-left: auto; }
-    .top-admin-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 15px; }
-    .hidden { display: none !important; }
-    .empty { text-align: center; padding: 50px 20px; color: #777; grid-column: 1 / -1; }
-    .manage-title { margin-top: 30px; }
-    #imageStatus { font-size: 13px; color: #666; margin-top: 4px; display: block; }
-    #loadingScreen { text-align: center; padding: 20px; font-weight: bold; color: #555; }
-    /* DRAG & DROP ATTACHMENT REORDER */
-    .attachment-helper { font-size: 12px; color: #555; margin-top: 10px; font-weight: bold; }
-    .attachment-preview { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-    .attachment-item { position: relative; width: 88px; height: 68px; border-radius: 8px; overflow: hidden; border: 2px solid #ddd; background: #eee; cursor: grab; user-select: none; transition: transform 0.15s ease, border-color 0.15s ease, opacity 0.15s ease; }
-    .attachment-item:active { cursor: grabbing; }
-    .attachment-item.cover { border-color: #25D366; }
-    .attachment-item.dragging { opacity: 0.45; transform: scale(0.95); }
-    .attachment-item.drag-over { border-color: #111; border-style: dashed; transform: scale(1.04); }
-    .attachment-thumb { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-    .attachment-order-badge { position: absolute; left: 4px; top: 4px; background: rgba(17,17,17,0.82); color: #fff; font-size: 10px; font-weight: bold; padding: 2px 6px; border-radius: 999px; pointer-events: none; }
-    .attachment-item.cover .attachment-order-badge { background: #187a37; }
-    .attachment-remove-btn { position: absolute; right: 4px; top: 4px; width: 20px; height: 20px; border-radius: 50%; background: rgba(176,32,32,0.9); color: #fff; border: none; font-size: 12px; line-height: 1; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-    .attachment-move-bar { position: absolute; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; background: rgba(0,0,0,0.62); }
-    .attachment-move-btn { flex: 1; background: transparent; color: #fff; border: none; border-radius: 0; padding: 2px 0; font-size: 11px; font-weight: bold; cursor: pointer; }
-    .attachment-move-btn:hover { background: rgba(255,255,255,0.2); }
-
-    /* POPUP GALERI GAMBAR KIRI / KANAN */
-    .gallery-modal { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.92); z-index: 999; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 16px; }
-    .gallery-header { width: 100%; max-width: 900px; display: flex; justify-content: space-between; align-items: center; color: #fff; gap: 12px; }
-    .gallery-title { font-size: 15px; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .gallery-counter { font-size: 13px; color: #ccc; white-space: nowrap; }
-    .gallery-close { background: rgba(255,255,255,0.16); color: #fff; border-radius: 8px; padding: 8px 14px; font-size: 16px; }
-    .gallery-stage { position: relative; width: 100%; max-width: 900px; flex: 1; display: flex; align-items: center; justify-content: center; margin: 12px 0; min-height: 240px; }
-    .gallery-main-img { max-width: 100%; max-height: 75vh; object-fit: contain; border-radius: 10px; background: #181818; }
-    .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(17, 17, 17, 0.78); color: #fff; border: 1px solid rgba(255,255,255,0.25); width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; padding: 0; }
-    .gallery-nav.prev { left: 10px; }
-    .gallery-nav.next { right: 10px; }
-    .gallery-thumbs { display: flex; gap: 8px; overflow-x: auto; max-width: 900px; padding-bottom: 4px; }
-    .gallery-thumb { width: 58px; height: 44px; object-fit: cover; border-radius: 6px; opacity: 0.55; border: 2px solid transparent; cursor: pointer; flex-shrink: 0; }
-    .gallery-thumb.active { opacity: 1; border-color: #25D366; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katalog Hartanah Sabah | Jackson Property</title>
+    <link rel="icon" type="image/png" href="jack.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Firebase SDK (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 font-sans pb-16 antialiased" x-data="marketApp()">
 
-<!-- HEADER -->
-<header>
-  <div class="header-content">
-    <div class="brand-wrapper">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9sKS7o8ocx7jnNJ5DA-_CZv1c356r_iMwID9sfySZKw&s=10" alt="Jackson Property Logo" class="property-logo">
-      <div class="brand">
-        <h1>JACKSON PROPERTY</h1>
-        <p>Senarai Listing Available (Semua Zone) 🏠</p>
-      </div>
-    </div>
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0WMTAjKCx3_U3vBwRFfCmQKIE-6eJd8BqxUR2aBWdcg&s=10" alt="Admin" class="admin-photo" onclick="openAdmin()">
-  </div>
-</header>
-
-<!-- PUBLIC PAGE -->
-<main id="publicPage">
-  <div class="container">
-    <div class="zone-buttons">
-      <button class="zone-button active" onclick="changeZone('ALL', this)">Semua Zone</button>
-      <button class="zone-button" onclick="changeZone('Sandakan', this)">Sandakan</button>
-      <button class="zone-button" onclick="changeZone('Kota Kinabalu', this)">Kota Kinabalu</button>
-      <button class="zone-button" onclick="changeZone('Tawau', this)">Tawau</button>
-    </div>
-    <h2 class="section-title" id="zoneTitle">Property Available (Semua Zone)</h2>
-    <div class="property-grid" id="propertyList">
-      <div class="empty">Sedang memuatkan senarai listing...</div>
-    </div>
-    <div id="paginationBar" class="pagination-bar"></div>
-  </div>
-</main>
-
-<!-- ADMIN PAGE -->
-<main id="adminPage">
-  <div id="loadingScreen">Memeriksa sesi log masuk...</div>
-
-  <!-- LOGIN SECTION -->
-  <div id="loginSection" class="panel login-panel hidden">
-    <h2>🔐 Admin Login</h2>
-    <label>Email Admin</label>
-    <input type="email" id="adminEmail" placeholder="Masukkan e-mel anda" autocomplete="email">
-    <label>Password</label>
-    <input type="password" id="password" placeholder="Masukkan password" autocomplete="current-password" onkeydown="if(event.key === 'Enter') login()">
-    <button class="publish-button" onclick="login()">LOGIN</button>
-  </div>
-
-  <!-- PORTAL / DASHBOARD SECTION -->
-  <div id="portalSection" class="container hidden">
-    <div class="panel">
-      <div class="top-admin-actions">
-        <h2 id="formTitle">➕ Tambah Property</h2>
-        <div>
-          <button onclick="backToWebsite()">Website</button>
-          <button class="logout-button" onclick="logout()">Log Keluar</button>
+    <!-- Header Katalog Pelanggan -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div class="max-w-6xl mx-auto px-3 py-2.5 flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQh4BKiyvgK3c6XwcrQXVOW-9tGNkR583IpNIIBxEZU_6WGty0otjwrwKOn&s=10" alt="Jackson Property" class="w-8 h-8 object-contain rounded-lg border border-slate-100">
+                <div>
+                    <h1 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">🏠 Katalog Hartanah Sabah</h1>
+                    <p class="text-[10px] sm:text-xs text-slate-500 font-medium">Jackson Property • Senarai Unit Available</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Butang Buka Panel Upload / Urus Galeri -->
+                <button @click="openUploadManager()" class="bg-slate-900 hover:bg-slate-800 text-white px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold flex items-center gap-1 shadow-xs transition">
+                    <span>📤</span>
+                    <span class="hidden sm:inline">Upload Gambar</span>
+                    <span class="sm:hidden">Upload</span>
+                </button>
+                <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold">
+                    <span x-text="totalFilteredCount"></span> Unit
+                </span>
+            </div>
         </div>
-      </div>
-      <label>Zone</label>
-      <select id="propertyZone">
-        <option value="Sandakan" selected>Sandakan</option>
-        <option value="Kota Kinabalu">Kota Kinabalu</option>
-        <option value="Tawau">Tawau</option>
-      </select>
-      <label>Gambar Property (Fail - Boleh pilih banyak gambar sekaligus -> Auto Upload ke ImgBB)</label>
-      <input type="file" id="propertyImageFile" accept="image/*" multiple>
-      <span id="imageStatus"></span>
-      <label>Add Image Link (Contoh: Link gambar Facebook Marketplace - Auto Upload ke ImgBB)</label>
-      <textarea id="propertyImageLinks" rows="3" placeholder="Tampal 1 atau lebih link gambar (pisahkan dengan baris baharu atau koma)"></textarea>
-      <div id="attachmentHelper" class="attachment-helper hidden">✋ Seret (drag) gambar untuk ubah susunan (#1 Cover Utama). Klik gambar untuk preview.</div>
-      <div id="attachmentPreview" class="attachment-preview"></div>
-      <label>Link Listing (Facebook Marketplace / Portal)</label>
-      <input type="url" id="propertyListingLink" placeholder="https://web.facebook.com/marketplace/item/1347332260766765">
-      <label>Nama Property</label>
-      <input type="text" id="propertyName" placeholder="Contoh: TAMAN MAWAR FASA 7" oninput="this.value = this.value.toUpperCase()">
-      <label>Harga</label>
-      <input type="text" id="propertyPrice" inputmode="numeric" placeholder="Contoh: 190000">
-      <label>Lokasi</label>
-      <input type="text" id="propertyLocation" placeholder="Contoh: Bandar Indah, Sandakan">
-      <label>Description Pendek</label>
-      <textarea id="propertyDescription" rows="4" placeholder="Masukkan description pendek"></textarea>
-      <label>Status</label>
-      <select id="propertyStatus">
-        <option value="Available">Available</option>
-        <option value="Booked">Booked</option>
-        <option value="Sold">Sold</option>
-      </select>
-      <button type="button" id="publishBtn" class="publish-button" onclick="saveProperty()">🚀 PUBLISH PROPERTY</button>
-      <button type="button" id="cancelEditButton" class="cancel-button hidden" onclick="cancelEdit()">Cancel Edit</button>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-3 py-4 space-y-4">
+        
+        <!-- Bahagian Carian & Penapis -->
+        <section class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 space-y-2.5">
+            <!-- Kotak Carian -->
+            <div class="relative">
+                <input type="text" x-model="search" placeholder="🔍 Cari nama projek, lokasi, atau ciri rumah..." class="w-full pl-3.5 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition">
+                <template x-if="search">
+                    <button @click="search = ''" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 font-bold text-base px-1">&times;</button>
+                </template>
+            </div>
+
+            <!-- Baris Penapis -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                <select x-model="zoneFilter" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="">📍 Semua Zon</option>
+                    <option value="SDK">Sandakan (SDK)</option>
+                    <option value="KK">Kota Kinabalu (KK)</option>
+                    <option value="TWU">Tawau (TWU)</option>
+                    <option value="LDU">Lahad Datu (LDU)</option>
+                    <option value="SPA">Semporna (SPA)</option>
+                    <option value="RNU">Ranau (RNU)</option>
+                </select>
+
+                <select x-model="forFilter" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="">🏷️ Jual / Sewa</option>
+                    <option value="SELL">Untuk Dijual (SELL)</option>
+                    <option value="RENT">Untuk Disewa (RENT)</option>
+                </select>
+
+                <select x-model="typeFilter" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="">🏘️ Jenis Rumah</option>
+                    <option value="LANDED">Landed (Teres/Semi-D/Banglo)</option>
+                    <option value="APT">Apartment / Kondo</option>
+                    <option value="COMMERCIAL">Komersial / Kedai</option>
+                </select>
+
+                <select x-model="lotFilter" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="">📐 Jenis Lot</option>
+                    <option value="INTERMEDIATE">Intermediate</option>
+                    <option value="CORNER">Corner Lot</option>
+                    <option value="END LOT">End Lot</option>
+                </select>
+
+                <select x-model="priceRangeFilter" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="">💰 Julat Harga</option>
+                    <option value="under_250k">Bawah RM 250,000</option>
+                    <option value="250k_400k">RM 250,000 - RM 400,000</option>
+                    <option value="400k_600k">RM 400,000 - RM 600,000</option>
+                    <option value="above_600k">RM 600,000 ke atas</option>
+                </select>
+
+                <select x-model="sortBy" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:border-blue-500">
+                    <option value="latest">✨ Paling Terkini</option>
+                    <option value="price_asc">Harga: Rendah ➔ Tinggi</option>
+                    <option value="price_desc">Harga: Tinggi ➔ Rendah</option>
+                    <option value="name_asc">Nama: A - Z</option>
+                </select>
+            </div>
+
+            <!-- Info Hasil & Butang Reset -->
+            <div class="flex justify-between items-center pt-1 text-xs text-slate-500 border-t border-slate-100">
+                <span>Menunjukkan <strong class="text-slate-800" x-text="totalFilteredCount"></strong> unit tersedia</span>
+                <button x-show="hasActiveFilters" @click="resetFilters()" class="text-rose-600 hover:text-rose-700 font-semibold text-xs underline">
+                    Reset Penapis
+                </button>
+            </div>
+        </section>
+
+        <!-- Grid Kad Hartanah (Responsive) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <template x-for="item in paginatedProperties" :key="item.id">
+                <article class="bg-white rounded-xl shadow-xs border border-slate-200 overflow-hidden flex flex-col hover:shadow-md transition group">
+                    
+                    <!-- Gambar Hadapan (Main Photo = Gambar Pertama) -->
+                    <div @click="openGallery(item)" class="relative aspect-[16/10] bg-slate-200 overflow-hidden cursor-pointer">
+                        <img :src="getCoverImage(item)" :alt="item.PROPERTY" loading="lazy"
+                             @error="$event.target.src = getFallbackImage(item)"
+                             class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                        
+                        <!-- Lencana Atas Gambar -->
+                        <div class="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase shadow-xs"
+                                  :class="item.FOR === 'RENT' ? 'bg-amber-500 text-white' : 'bg-blue-600 text-white'"
+                                  x-text="item.FOR === 'RENT' ? 'SEWA' : 'JUAL'"></span>
+                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-900/80 text-white backdrop-blur-xs" x-text="item.ZONE"></span>
+                        </div>
+
+                        <!-- Butang Pantas Tambah Gambar pada Kad -->
+                        <button @click.stop="openUploadManager(item.id)" title="Tambah / Urus Gambar Unit Ini"
+                                class="absolute top-2.5 right-2.5 bg-white/90 hover:bg-white text-slate-800 text-[10px] font-bold px-2 py-1 rounded-md shadow-xs backdrop-blur-xs transition">
+                            ➕ Gambar
+                        </button>
+
+                        <!-- Petunjuk Klik Lihat Gambar -->
+                        <div class="absolute bottom-2.5 right-2.5 bg-black/75 text-white text-[10px] font-medium px-2.5 py-1 rounded-full backdrop-blur-xs flex items-center gap-1">
+                            <span>🖼️</span>
+                            <span x-text="getRealImages(item).length > 0 ? getRealImages(item).length + ' Gambar' : 'Lihat Butiran'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Kandungan Kad -->
+                    <div class="p-3.5 flex-1 flex flex-col justify-between space-y-3">
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide">
+                                <span class="text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" x-text="item.TYPE"></span>
+                                <template x-if="item.LOT">
+                                    <span class="text-purple-700 bg-purple-50 px-2 py-0.5 rounded" x-text="item.LOT"></span>
+                                </template>
+                                <span class="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded ml-auto">AVAILABLE</span>
+                            </div>
+
+                            <h2 @click="openGallery(item)" class="font-bold text-slate-900 text-sm sm:text-base leading-snug uppercase cursor-pointer hover:text-blue-600 transition line-clamp-2" x-text="item.PROPERTY"></h2>
+
+                            <div class="text-lg font-extrabold text-blue-600" x-text="formatPrice(item.PRICE)"></div>
+
+                            <p class="text-xs text-slate-600 line-clamp-2 leading-relaxed" x-text="item.REMARK || 'Hubungi kami untuk maklumat lanjut dan sesi viewing.'"></p>
+                        </div>
+
+                        <!-- Butang Tindakan Bawah Kad -->
+                        <div class="pt-2.5 border-t border-slate-100 flex items-center gap-1.5">
+                            <button @click="openGallery(item)" class="flex-1 py-2 px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold transition text-center">
+                                🖼️ Galeri
+                            </button>
+
+                            <!-- Butang Link Facebook Marketplace Setiap Listing -->
+                            <template x-if="getMarketplaceUrl(item)">
+                                <a :href="getMarketplaceUrl(item)" target="_blank" rel="noopener noreferrer" title="Lihat di Facebook Marketplace"
+                                   class="py-2 px-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition text-center flex items-center justify-center gap-1 shrink-0">
+                                    <span>📘</span>
+                                    <span>FB</span>
+                                </a>
+                            </template>
+
+                            <a :href="getWhatsAppLink(item)" target="_blank" class="flex-1 py-2 px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition text-center flex items-center justify-center gap-1">
+                                <span>💬 WhatsApp</span>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </template>
+        </section>
+
+        <!-- Paparan Kosong Jika Tiada Hasil -->
+        <template x-if="totalFilteredCount === 0">
+            <div class="bg-white rounded-xl border border-slate-200 p-10 text-center space-y-2">
+                <div class="text-3xl">🏘️</div>
+                <h3 class="font-bold text-slate-800 text-sm">Tiada hartanah sepadan ditemui</h3>
+                <p class="text-xs text-slate-500">Cuba tukar kata kunci carian atau reset pilihan penapis anda.</p>
+                <button @click="resetFilters()" class="mt-2 px-4 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold">Reset Penapis</button>
+            </div>
+        </template>
+
+        <!-- Navigasi Halaman (Pagination) -->
+        <div class="flex justify-between items-center bg-white px-4 py-3 rounded-xl shadow-xs border border-slate-200 text-xs" x-show="totalPages > 1">
+            <button @click="currentPage > 1 ? currentPage-- : null; window.scrollTo({top: 0, behavior: 'smooth'})"
+                    :class="currentPage === 1 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'"
+                    class="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 font-semibold text-slate-700">
+                ⬅ Sebelumnya
+            </button>
+            
+            <span class="text-slate-600 font-medium">
+                Halaman <strong class="text-slate-900" x-text="currentPage"></strong> daripada <strong class="text-slate-900" x-text="totalPages"></strong>
+            </span>
+
+            <button @click="currentPage < totalPages ? currentPage++ : null; window.scrollTo({top: 0, behavior: 'smooth'})"
+                    :class="currentPage === totalPages ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-100'"
+                    class="px-3 py-1.5 border border-slate-200 rounded-lg bg-slate-50 font-semibold text-slate-700">
+                Seterusnya ➡
+            </button>
+        </div>
+    </main>
+
+    <!-- ===================================================================== -->
+    <!-- BAHAGIAN UPLOAD GAMBAR KE IMGBB & URUS GALERI HARTANAH              -->
+    <!-- ===================================================================== -->
+    <div x-show="showUploadModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50" style="display: none;" @click.self="closeUploadManager()">
+        <div class="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            
+            <!-- Header Modal Upload -->
+            <div class="px-4 py-3 border-b border-slate-200 flex justify-between items-center bg-slate-900 text-white">
+                <div>
+                    <h3 class="font-bold text-sm sm:text-base flex items-center gap-1.5">
+                        <span>📤 Upload & Urus Galeri ImgBB</span>
+                    </h3>
+                    <p class="text-[11px] text-slate-300">Akaun Sasaran: <a href="https://jacksondnp.imgbb.com/" target="_blank" class="underline text-sky-400">jacksondnp.imgbb.com</a></p>
+                </div>
+                <button @click="closeUploadManager()" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white font-bold text-lg">&times;</button>
+            </div>
+
+            <!-- Kandungan Boleh Skrol -->
+            <div class="p-4 overflow-y-auto space-y-4 text-xs sm:text-sm">
+
+                <!-- 1. Pilih Unit Hartanah -->
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-bold text-slate-700 uppercase">1. Pilih Unit Hartanah</label>
+                    <select x-model="uploadTargetId" @change="loadTargetImages()" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="">-- Sila Pilih Hartanah --</option>
+                        <template x-for="prop in allPropertiesSorted" :key="prop.id">
+                            <option :value="prop.id" x-text="`[${prop.ZONE || '-'}] ${prop.PROPERTY} (${formatPrice(prop.PRICE)})`"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Papar bahagian bawah hanya jika unit telah dipilih -->
+                <template x-if="uploadTargetId">
+                    <div class="space-y-4">
+
+                        <!-- 2A. Pilihan Upload Terus dari Peranti (ImgBB API) -->
+                        <div class="p-3.5 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-blue-900 uppercase">2A. Upload Terus dari Peranti (ImgBB API)</span>
+                                <button @click="showApiKeyInput = !showApiKeyInput" class="text-[11px] text-blue-600 underline font-semibold">
+                                    <span x-text="showApiKeyInput ? 'Tutup API Key' : 'Lihat / Tukar API Key'"></span>
+                                </button>
+                            </div>
+
+                            <!-- Input API Key (Pilihan jika mahu tukar) -->
+                            <div x-show="showApiKeyInput" class="space-y-1.5 bg-white p-2.5 rounded-lg border border-blue-100">
+                                <p class="text-[11px] text-slate-600">
+                                    API Key aktif telah dikonfigurasi. Anda boleh mengemas kini atau menyimpannya pada peranti ini:
+                                </p>
+                                <div class="flex gap-2">
+                                    <input type="text" x-model="imgbbApiKey" @input="saveApiKey()" placeholder="Tampal ImgBB API Key di sini..." class="flex-1 px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs">
+                                    <button @click="saveApiKey(); showApiKeyInput = false" class="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs font-semibold">Simpan</button>
+                                </div>
+                            </div>
+
+                            <!-- Pilih Fail Gambar -->
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                <input type="file" multiple accept="image/*" @change="handleDirectImgbbUpload($event)" :disabled="isUploading"
+                                       class="block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 disabled:opacity-50 cursor-pointer">
+                            </div>
+
+                            <!-- Status Progress Upload -->
+                            <template x-if="isUploading">
+                                <div class="text-xs font-semibold text-blue-700 flex items-center gap-2">
+                                    <span class="animate-spin">⏳</span>
+                                    <span x-text="uploadStatusText"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- 2B. Pilihan Manual Upload ke jacksondnp.imgbb.com -->
+                        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                            <div class="flex flex-wrap justify-between items-center gap-2">
+                                <span class="text-xs font-bold text-slate-800 uppercase">2B. Upload Manual ke jacksondnp.imgbb.com</span>
+                                <a href="https://jacksondnp.imgbb.com/" target="_blank" rel="noopener noreferrer"
+                                   class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold inline-flex items-center gap-1 shadow-xs transition">
+                                    <span>🌐 Buka jacksondnp.imgbb.com ↗</span>
+                                </a>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed">
+                                1. Klik butang biru di atas & upload gambar di laman ImgBB anda.<br>
+                                2. Tukar <em>Embed codes</em> kepada <strong>Direct links</strong>, salin pautan (<code class="bg-slate-200 px-1 rounded">https://i.ibb.co/...</code>) & tampal di bawah (boleh tampal banyak baris sekali gus):
+                            </p>
+                            <textarea x-model="manualUrlsInput" rows="3" placeholder="https://i.ibb.co/xxxxxxx/gambar1.jpg&#10;https://i.ibb.co/yyyyyyy/gambar2.jpg"
+                                      class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            <button @click="addManualUrls()" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg text-xs font-bold transition">
+                                ➕ Masukkan Pautan ke Galeri Unit Ini
+                            </button>
+                        </div>
+
+                        <!-- 3. Senarai Gambar Sedia Ada & Susunan -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-slate-700 uppercase">
+                                    3. Galeri Semasa (<span x-text="targetImagesList.length"></span> Gambar)
+                                </label>
+                                <span class="text-[11px] text-emerald-700 font-semibold">★ Gambar #1 = Cover Depan</span>
+                            </div>
+
+                            <template x-if="targetImagesList.length === 0">
+                                <div class="p-6 text-center bg-slate-50 border border-dashed border-slate-300 rounded-xl text-xs text-slate-500">
+                                    Belum ada gambar untuk unit ini. Sila muat naik atau tampal pautan ImgBB di atas.
+                                </div>
+                            </template>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                <template x-for="(imgUrl, index) in targetImagesList" :key="index">
+                                    <div class="relative border rounded-xl overflow-hidden bg-slate-100 group"
+                                         :class="index === 0 ? 'border-emerald-500 ring-2 ring-emerald-200' : 'border-slate-200'">
+                                        <div class="aspect-[16/10] bg-slate-200">
+                                            <img :src="imgUrl" class="w-full h-full object-cover">
+                                        </div>
+                                        
+                                        <!-- Label Cover -->
+                                        <div x-show="index === 0" class="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-xs">
+                                            ★ COVER UTAMA
+                                        </div>
+
+                                        <!-- Kawalan Susunan & Padam -->
+                                        <div class="p-1.5 bg-white flex justify-between items-center gap-1 border-t border-slate-100">
+                                            <button x-show="index > 0" @click="setAsCover(index)" title="Jadikan Gambar Utama"
+                                                    class="px-2 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded text-[10px] font-bold">
+                                                ★ Set Cover
+                                            </button>
+                                            <span x-show="index === 0" class="text-[10px] text-slate-400 font-medium px-1">#1</span>
+
+                                            <button @click="removeTargetImage(index)" title="Padam Gambar"
+                                                    class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded text-[10px] font-bold ml-auto">
+                                                🗑️ Padam
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+            </div>
+
+            <!-- Footer Simpan Perubahan ke Firebase -->
+            <div class="p-3 border-t border-slate-200 bg-slate-50 flex justify-between items-center gap-2">
+                <button @click="closeUploadManager()" class="px-4 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold">
+                    Batal / Tutup
+                </button>
+                <button @click="saveGalleryToFirebase()" :disabled="!uploadTargetId || isSaving"
+                        class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold shadow-xs transition">
+                    <span x-text="isSaving ? '⏳ Menyimpan ke Database...' : '💾 Simpan Perubahan ke Katalog'"></span>
+                </button>
+            </div>
+        </div>
     </div>
-    <h2 class="manage-title">Manage Listing</h2>
-    <div class="property-grid" id="manageList"></div>
-  </div>
-</main>
 
-<!-- POPUP GALERI GAMBAR (KIRI / KANAN) -->
-<div id="galleryModal" class="gallery-modal hidden" onclick="handleGalleryBackdropClick(event)">
-  <div class="gallery-header">
-    <div class="gallery-title" id="galleryTitle">Galeri Gambar</div>
-    <div class="gallery-counter" id="galleryCounter">1 / 1</div>
-    <button type="button" class="gallery-close" onclick="closeGallery()">&times;</button>
-  </div>
+    <!-- POPUP MODAL GALERI GAMBAR & BUTIRAN LISTING (PELANGGAN) -->
+    <div x-show="selectedItem" class="fixed inset-0 bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 z-50" style="display: none;" @click.self="closeGallery()">
+        <div class="bg-white rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+            
+            <!-- Header Popup -->
+            <div class="px-4 py-3 border-b border-slate-100 flex justify-between items-center bg-white">
+                <div class="min-w-0 pr-2">
+                    <div class="flex items-center gap-1.5 text-[10px] font-bold uppercase text-blue-600">
+                        <span x-text="selectedItem?.ZONE"></span> • <span x-text="selectedItem?.TYPE"></span> • <span x-text="selectedItem?.LOT || 'INTERMEDIATE'"></span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 text-sm sm:text-base uppercase truncate" x-text="selectedItem?.PROPERTY"></h3>
+                </div>
+                <button @click="closeGallery()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-lg shrink-0">&times;</button>
+            </div>
 
-  <div class="gallery-stage">
-    <button type="button" class="gallery-nav prev" id="galleryPrevBtn" onclick="prevGalleryImage()" aria-label="Gambar Sebelumnya">&#10094;</button>
-    <img id="galleryMainImage" class="gallery-main-img" src="" alt="Gambar Property" onerror="this.onerror=null;this.src='https://placehold.co/800x500?text=Property+Photo';">
-    <button type="button" class="gallery-nav next" id="galleryNextBtn" onclick="nextGalleryImage()" aria-label="Gambar Seterusnya">&#10095;</button>
-  </div>
+            <!-- Kandungan Boleh Skrol -->
+            <div class="overflow-y-auto flex-1">
+                <div class="relative bg-slate-900 aspect-[16/10] sm:aspect-[16/9] flex items-center justify-center select-none">
+                    <template x-if="activeImages.length > 0">
+                        <img :src="activeImages[activeImageIndex]" :alt="selectedItem?.PROPERTY"
+                             @error="$event.target.src = getFallbackImage(selectedItem)"
+                             class="max-h-full max-w-full object-contain">
+                    </template>
 
-  <div class="gallery-thumbs" id="galleryThumbs"></div>
-</div>
+                    <template x-if="activeImages.length > 1">
+                        <div>
+                            <button @click="prevImage()" class="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center font-bold text-base">‹</button>
+                            <button @click="nextImage()" class="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center font-bold text-base">›</button>
+                            <div class="absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs px-3 py-1 rounded-full">
+                                Gambar <span x-text="activeImageIndex + 1"></span> / <span x-text="activeImages.length"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
 
-<script>
-/* =========================================
-   SETTINGS & FIREBASE CONFIG
-========================================= */
-const WHATSAPP_NUMBER = "60138885020";
-const IMGBB_API_KEY = "6c2f224bc6526cb2c326211aa6439e76";
-const FALLBACK_IMAGE = "https://placehold.co/800x500?text=Property+Photo";
+                <!-- Baris Thumbnail Gambar -->
+                <template x-if="activeImages.length > 1">
+                    <div class="flex gap-2 p-2.5 bg-slate-100 overflow-x-auto border-b border-slate-200">
+                        <template x-for="(imgUrl, idx) in activeImages" :key="idx">
+                            <button @click="activeImageIndex = idx"
+                                    :class="activeImageIndex === idx ? 'ring-2 ring-blue-600 opacity-100' : 'opacity-60 hover:opacity-100'"
+                                    class="w-16 h-12 rounded-md overflow-hidden shrink-0 bg-slate-300 transition">
+                                <img :src="imgUrl" class="w-full h-full object-cover">
+                            </button>
+                        </template>
+                    </div>
+                </template>
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
-    authDomain: "listing-2a59c.firebaseapp.com",
-    databaseURL: "https://jacksonlisting-5b878-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "listing-2a59c",
-    storageBucket: "listing-2a59c.firebasestorage.app",
-    messagingSenderId: "363739620416",
-    appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
-    measurementId: "G-SZ47HNR9PT"
-};
+                <!-- Maklumat Terperinci & Pautan Facebook Marketplace -->
+                <div class="p-4 space-y-3">
+                    <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+                        <div>
+                            <span class="text-xs text-slate-500 block">Harga Tawaran</span>
+                            <span class="text-xl font-extrabold text-blue-600" x-text="formatPrice(selectedItem?.PRICE)"></span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="const id = selectedItem.id; closeGallery(); openUploadManager(id);"
+                                    class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-semibold">
+                                ➕ Edit Gambar
+                            </button>
+                            <template x-if="selectedItem && getMarketplaceUrl(selectedItem)">
+                                <a :href="getMarketplaceUrl(selectedItem)" target="_blank" rel="noopener noreferrer"
+                                   class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-xs transition">
+                                    <span>📘 Lihat di Facebook Marketplace</span>
+                                </a>
+                            </template>
+                        </div>
+                    </div>
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const auth = firebase.auth();
-const rtdb = firebase.database();
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-700 uppercase mb-1">Butiran Hartanah</h4>
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-700 whitespace-pre-line leading-relaxed"
+                             x-text="selectedItem?.REMARK || 'Tiada penerangan tambahan.'"></div>
+                    </div>
+                </div>
+            </div>
 
-let selectedZone = "ALL";
-const LISTINGS_PER_PAGE = 10;
-let currentPage = 1;
-let editingId = null;
-let currentImageUrl = FALLBACK_IMAGE;
-let currentAttachments = [];
-let draggedAttachmentIndex = null;
-let properties = [];
+            <!-- Footer Butang WhatsApp & Tutup -->
+            <div class="p-3 border-t border-slate-200 bg-slate-50 flex gap-2">
+                <button @click="closeGallery()" class="w-1/3 py-2.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold">
+                    Tutup
+                </button>
+                <a :href="selectedItem ? getWhatsAppLink(selectedItem) : '#'" target="_blank"
+                   class="w-2/3 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-1.5 shadow-xs">
+                    <span>💬 Tanya / Semak Kelayakan Pinjaman (WhatsApp)</span>
+                </a>
+            </div>
+        </div>
+    </div>
 
-// Keadaan galeri popup
-let galleryImages = [];
-let galleryIndex = 0;
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIB8qLZWjGVitHnJzS58BHPYoYdD_i7uM",
+            authDomain: "listing-2a59c.firebaseapp.com",
+            databaseURL: "https://jacksonlisting-5b878-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "listing-2a59c",
+            storageBucket: "listing-2a59c.firebasestorage.app",
+            messagingSenderId: "363739620416",
+            appId: "1:363739620416:web:b14bd9043ac09a8032eba5",
+            measurementId: "G-SZ47HNR9PT"
+        };
 
-/* =========================================
-   NORMALISASI DATA & KUMPUL GAMBAR / LINK
-========================================= */
-function normalizeZone(zoneVal) {
-  const z = String(zoneVal || "").trim().toUpperCase();
-  if (z === "SDK" || z.includes("SANDAKAN")) return "Sandakan";
-  if (z === "KK" || z.includes("KOTA KINABALU")) return "Kota Kinabalu";
-  if (z === "TWU" || z.includes("TAWAU")) return "Tawau";
-  return zoneVal || "Sandakan";
-}
+        const DEFAULT_IMGBB_API_KEY = "6c2f224bc6526cb2c326211aa6439e76";
 
-function normalizeStatus(statusVal) {
-  const s = String(statusVal || "Available").trim().toUpperCase();
-  if (s === "AVAILABLE") return "Available";
-  if (s === "BOOKED") return "Booked";
-  if (s === "SOLD") return "Sold";
-  return statusVal || "Available";
-}
+        firebase.initializeApp(firebaseConfig);
+        firebase.database().goOnline();
+        const db = firebase.database();
 
-function splitUrlLinks(rawVal) {
-  if (!rawVal) return [];
-  if (Array.isArray(rawVal)) {
-    return rawVal.flatMap(entry => splitUrlLinks(entry));
-  }
-  if (typeof rawVal === "object" && rawVal.url) {
-    return splitUrlLinks(rawVal.url);
-  }
-  return String(rawVal)
-    .split(/[\s,\n;|]+/)
-    .map(u => u.trim())
-    .filter(u => /^https?:\/\//i.test(u) || u.startsWith("data:image/"));
-}
+        function marketApp() {
+            return {
+                search: '',
+                zoneFilter: '',
+                forFilter: '',
+                typeFilter: '',
+                lotFilter: '',
+                priceRangeFilter: '',
+                sortBy: 'latest',
+                properties: {},
+                selectedItem: null,
+                activeImages: [],
+                activeImageIndex: 0,
+                currentPage: 1,
+                itemsPerPage: 12,
+                whatsappNumber: '60198000000',
 
-function isMarketplaceItemPage(url) {
-  return /facebook\.com\/marketplace\/item\//i.test(url);
-}
+                // State untuk Bahagian Upload & Pengurusan Galeri ImgBB
+                showUploadModal: false,
+                uploadTargetId: '',
+                targetImagesList: [],
+                manualUrlsInput: '',
+                imgbbApiKey: DEFAULT_IMGBB_API_KEY,
+                showApiKeyInput: false,
+                isUploading: false,
+                uploadStatusText: '',
+                isSaving: false,
 
-function isImageUrl(url) {
-  if (!url) return false;
-  if (url.startsWith("data:image/")) return true;
-  if (isMarketplaceItemPage(url)) return false;
-  return /\.(png|jpe?g|gif|webp|bmp|svg)(\?|#|$)/i.test(url)
-    || /fbcdn\.net|scontent|ibb\.co|imgbb\.com|placehold\.co/i.test(url);
-}
+                init() {
+                    const cachedData = localStorage.getItem('jackson_properties');
+                    if (cachedData) {
+                        try {
+                            this.properties = JSON.parse(cachedData);
+                        } catch (e) {}
+                    }
 
-function isImgBBUrl(url) {
-  return /i\.ibb\.co|ibb\.co|imgbb\.com/i.test(String(url || ""));
-}
+                    this.imgbbApiKey = localStorage.getItem('jackson_imgbb_api_key') || DEFAULT_IMGBB_API_KEY;
 
-function extractListingLink(item) {
-  const candidates = [
-    item.LINK, item.link, item.listingUrl, item.listing_url,
-    item.URL, item.url, item.image
-  ];
-  for (const raw of candidates) {
-    const links = splitUrlLinks(raw);
-    for (const link of links) {
-      if (/^https?:\/\//i.test(link) && (isMarketplaceItemPage(link) || !isImageUrl(link))) {
-        return link;
-      }
-    }
-  }
-  return "";
-}
+                    db.ref('properties').on('value', snapshot => {
+                        const data = snapshot.val() || {};
+                        this.properties = { ...data };
+                        localStorage.setItem('jackson_properties', JSON.stringify(data));
+                    });
 
-function collectImagesFromListing(item) {
-  const collected = [];
+                    ['search', 'zoneFilter', 'forFilter', 'typeFilter', 'lotFilter', 'priceRangeFilter', 'sortBy'].forEach(prop => {
+                        this.$watch(prop, () => this.currentPage = 1);
+                    });
+                },
 
-  if (Array.isArray(item.IMAGES)) {
-    for (const imgEntry of item.IMAGES) {
-      const candidate = typeof imgEntry === "string" ? imgEntry : (imgEntry && imgEntry.url);
-      for (const link of splitUrlLinks(candidate)) {
-        if (isImageUrl(link) && !collected.includes(link)) {
-          collected.push(link);
+                // --- FUNGSI UPLOAD & URUS GALERI IMGBB ---
+                openUploadManager(propertyId = '') {
+                    this.showUploadModal = true;
+                    this.manualUrlsInput = '';
+                    if (propertyId) {
+                        this.uploadTargetId = propertyId;
+                        this.loadTargetImages();
+                    } else if (!this.uploadTargetId && this.allPropertiesSorted.length > 0) {
+                        this.uploadTargetId = this.allPropertiesSorted[0].id;
+                        this.loadTargetImages();
+                    }
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeUploadManager() {
+                    this.showUploadModal = false;
+                    document.body.style.overflow = '';
+                },
+
+                saveApiKey() {
+                    localStorage.setItem('jackson_imgbb_api_key', (this.imgbbApiKey || DEFAULT_IMGBB_API_KEY).trim());
+                },
+
+                loadTargetImages() {
+                    const item = this.properties[this.uploadTargetId];
+                    if (!item) {
+                        this.targetImagesList = [];
+                        return;
+                    }
+                    this.targetImagesList = [...this.getRealImages(item)];
+                },
+
+                // Kaedah A: Upload terus dari fail peranti ke ImgBB guna API Key
+                async handleDirectImgbbUpload(event) {
+                    const files = Array.from(event.target.files || []);
+                    if (!files.length) return;
+
+                    const activeKey = (this.imgbbApiKey || DEFAULT_IMGBB_API_KEY).trim();
+                    if (!activeKey) {
+                        alert('Sila masukkan ImgBB API Key anda terlebih dahulu.');
+                        this.showApiKeyInput = true;
+                        return;
+                    }
+
+                    this.isUploading = true;
+                    let uploadedCount = 0;
+
+                    for (let i = 0; i < files.length; i++) {
+                        this.uploadStatusText = `Memuat naik gambar ${i + 1} daripada ${files.length} ke ImgBB...`;
+                        const formData = new FormData();
+                        formData.append('image', files[i]);
+
+                        try {
+                            const response = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(activeKey)}`, {
+                                method: 'POST',
+                                body: formData
+                            });
+                            const result = await response.json();
+
+                            if (result.success && result.data && result.data.url) {
+                                if (!this.targetImagesList.includes(result.data.url)) {
+                                    this.targetImagesList.push(result.data.url);
+                                    uploadedCount++;
+                                }
+                            } else {
+                                alert(`Gagal memuat naik ${files[i].name}: ${result.error?.message || 'Ralat API Key'}`);
+                            }
+                        } catch (err) {
+                            alert(`Ralat rangkaian semasa memuat naik ${files[i].name}.`);
+                        }
+                    }
+
+                    this.isUploading = false;
+                    this.uploadStatusText = '';
+                    event.target.value = '';
+
+                    if (uploadedCount > 0) {
+                        await this.saveGalleryToFirebase(false);
+                    }
+                },
+
+                // Kaedah B: Tampal Direct Link manual selepas upload di https://jacksondnp.imgbb.com/
+                addManualUrls() {
+                    if (!this.manualUrlsInput.trim()) return;
+
+                    const lines = this.manualUrlsInput
+                        .split(/[\n,\s]+/)
+                        .map(u => u.trim())
+                        .filter(u => u.startsWith('http://') || u.startsWith('https://'));
+
+                    if (lines.length === 0) {
+                        alert('Sila masukkan pautan gambar yang sah (bermula dengan https://i.ibb.co/...)');
+                        return;
+                    }
+
+                    lines.forEach(url => {
+                        if (!this.targetImagesList.includes(url)) {
+                            this.targetImagesList.push(url);
+                        }
+                    });
+
+                    this.manualUrlsInput = '';
+                },
+
+                setAsCover(index) {
+                    if (index <= 0 || index >= this.targetImagesList.length) return;
+                    const [selectedImg] = this.targetImagesList.splice(index, 1);
+                    this.targetImagesList.unshift(selectedImg);
+                },
+
+                removeTargetImage(index) {
+                    this.targetImagesList.splice(index, 1);
+                },
+
+                async saveGalleryToFirebase(closeAfter = true) {
+                    if (!this.uploadTargetId) return;
+                    this.isSaving = true;
+
+                    try {
+                        await db.ref(`properties/${this.uploadTargetId}`).update({
+                            IMAGES: this.targetImagesList,
+                            IMAGE: this.targetImagesList[0] || ''
+                        });
+
+                        if (closeAfter) {
+                            alert('✅ Galeri gambar berjaya dikemas kini ke katalog!');
+                            this.closeUploadManager();
+                        }
+                    } catch (error) {
+                        alert('❌ Gagal menyimpan ke Firebase: ' + error.message);
+                    } finally {
+                        this.isSaving = false;
+                    }
+                },
+
+                get allPropertiesSorted() {
+                    return Object.entries(this.properties)
+                        .map(([id, item]) => ({ id, ...item }))
+                        .filter(item => (item.STATUS || '').toUpperCase() === 'AVAILABLE')
+                        .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                },
+
+                // --- FUNGSI KATALOG SEDIA ADA ---
+                get hasActiveFilters() {
+                    return !!(this.search || this.zoneFilter || this.forFilter || this.typeFilter || this.lotFilter || this.priceRangeFilter);
+                },
+
+                resetFilters() {
+                    this.search = '';
+                    this.zoneFilter = '';
+                    this.forFilter = '';
+                    this.typeFilter = '';
+                    this.lotFilter = '';
+                    this.priceRangeFilter = '';
+                    this.sortBy = 'latest';
+                    this.currentPage = 1;
+                },
+
+                parseNumericPrice(val) {
+                    if (!val) return 0;
+                    let cleanNum = String(val).replace(/[^0-9.]/g, '');
+                    return parseFloat(cleanNum) || 0;
+                },
+
+                formatPrice(val) {
+                    let num = this.parseNumericPrice(val);
+                    if (num === 0) return 'Hubungi Untuk Harga';
+                    return 'RM ' + num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+                },
+
+                isDirectImageUrl(url) {
+                    if (!url) return false;
+                    const rawUrl = String(url).trim();
+                    return /\.(jpeg|jpg|png|webp|gif)(\?.*)?$/i.test(rawUrl) || rawUrl.includes('i.ibb.co') || rawUrl.includes('fbcdn.net');
+                },
+
+                // Dapatkan URL Facebook Marketplace yang sah (bukan direct image URL)
+                getMarketplaceUrl(item) {
+                    if (!item) return '';
+                    const candidate = item.FB_URL || item.MARKETPLACE_URL || item.URL || '';
+                    const trimmed = String(candidate).trim();
+                    if (!trimmed || !(trimmed.startsWith('http://') || trimmed.startsWith('https://'))) {
+                        return '';
+                    }
+                    if (this.isDirectImageUrl(trimmed)) {
+                        return '';
+                    }
+                    return trimmed;
+                },
+
+                getRealImages(item) {
+                    if (!item) return [];
+                    let urls = [];
+
+                    if (Array.isArray(item.IMAGES)) {
+                        urls.push(...item.IMAGES);
+                    } else if (typeof item.IMAGES === 'string' && item.IMAGES.trim()) {
+                        urls.push(...item.IMAGES.split(/[\n,]+/));
+                    }
+
+                    if (typeof item.IMAGE === 'string' && item.IMAGE.trim()) {
+                        urls.push(...item.IMAGE.split(/[\n,]+/));
+                    }
+
+                    if (typeof item.URL === 'string' && item.URL.trim() && this.isDirectImageUrl(item.URL)) {
+                        urls.push(item.URL.trim());
+                    }
+
+                    return [...new Set(
+                        urls.map(u => String(u || '').trim())
+                            .filter(u => u.startsWith('http://') || u.startsWith('https://'))
+                    )];
+                },
+
+                getAllImages(item) {
+                    const realImgs = this.getRealImages(item);
+                    return realImgs.length > 0 ? realImgs : [this.getFallbackImage(item)];
+                },
+
+                getCoverImage(item) {
+                    const imgs = this.getAllImages(item);
+                    return imgs[0];
+                },
+
+                getFallbackImage(item) {
+                    const type = (item?.TYPE || 'PROPERTY').toUpperCase();
+                    if (type === 'APT') {
+                        return 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=800&q=80';
+                    } else if (type === 'COMMERCIAL') {
+                        return 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80';
+                    }
+                    return 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80';
+                },
+
+                openGallery(item) {
+                    this.selectedItem = item;
+                    this.activeImages = this.getAllImages(item);
+                    this.activeImageIndex = 0;
+                    document.body.style.overflow = 'hidden';
+                },
+
+                closeGallery() {
+                    this.selectedItem = null;
+                    this.activeImages = [];
+                    this.activeImageIndex = 0;
+                    document.body.style.overflow = '';
+                },
+
+                nextImage() {
+                    if (this.activeImages.length <= 1) return;
+                    this.activeImageIndex = (this.activeImageIndex + 1) % this.activeImages.length;
+                },
+
+                prevImage() {
+                    if (this.activeImages.length <= 1) return;
+                    this.activeImageIndex = (this.activeImageIndex - 1 + this.activeImages.length) % this.activeImages.length;
+                },
+
+                getWhatsAppLink(item) {
+                    const priceText = this.formatPrice(item.PRICE);
+                    const msg = `Salam Jackson Property, saya berminat dengan unit ini dari Katalog Hartanah:\n\n🏠 *${item.PROPERTY}*\n📍 Zon: ${item.ZONE || '-'}\n💰 Harga: ${priceText}\n\nBoleh kongsi maklumat lanjut & sesi viewing?`;
+                    return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+                },
+
+                get filteredList() {
+                    let entries = Object.entries(this.properties);
+                    let mapped = entries
+                        .map(([id, item]) => ({ id, ...item }))
+                        .filter(item => (item.STATUS || '').toUpperCase() === 'AVAILABLE')
+                        .filter(item => {
+                            const keyword = this.search.toLowerCase().trim();
+                            const matchSearch = !keyword || (
+                                (item.PROPERTY || '') + ' ' +
+                                (item.ZONE || '') + ' ' +
+                                (item.TYPE || '') + ' ' +
+                                (item.LOT || '') + ' ' +
+                                (item.REMARK || '')
+                            ).toLowerCase().includes(keyword);
+
+                            const matchZone = !this.zoneFilter || item.ZONE === this.zoneFilter;
+                            const matchFor = !this.forFilter || item.FOR === this.forFilter;
+                            const matchType = !this.typeFilter || item.TYPE === this.typeFilter;
+                            const matchLot = !this.lotFilter || (item.LOT || 'INTERMEDIATE') === this.lotFilter;
+
+                            const price = this.parseNumericPrice(item.PRICE);
+                            let matchPrice = true;
+                            if (this.priceRangeFilter === 'under_250k') matchPrice = price > 0 && price < 250000;
+                            else if (this.priceRangeFilter === '250k_400k') matchPrice = price >= 250000 && price <= 400000;
+                            else if (this.priceRangeFilter === '400k_600k') matchPrice = price > 400000 && price <= 600000;
+                            else if (this.priceRangeFilter === 'above_600k') matchPrice = price > 600000;
+
+                            return matchSearch && matchZone && matchFor && matchType && matchLot && matchPrice;
+                        });
+
+                    return mapped.sort((a, b) => {
+                        if (this.sortBy === 'latest') {
+                            return (b.createdAt || 0) - (a.createdAt || 0);
+                        } else if (this.sortBy === 'name_asc') {
+                            return (a.PROPERTY || '').localeCompare(b.PROPERTY || '');
+                        } else if (this.sortBy === 'price_asc') {
+                            return this.parseNumericPrice(a.PRICE) - this.parseNumericPrice(b.PRICE);
+                        } else if (this.sortBy === 'price_desc') {
+                            return this.parseNumericPrice(b.PRICE) - this.parseNumericPrice(a.PRICE);
+                        }
+                        return 0;
+                    });
+                },
+
+                get totalFilteredCount() {
+                    return this.filteredList.length;
+                },
+
+                get totalPages() {
+                    return Math.ceil(this.totalFilteredCount / this.itemsPerPage) || 1;
+                },
+
+                get paginatedProperties() {
+                    const start = (this.currentPage - 1) * this.itemsPerPage;
+                    return this.filteredList.slice(start, start + this.itemsPerPage);
+                }
+            }
         }
-      }
-    }
-  }
-
-  const linkUrls = [...splitUrlLinks(item.URL), ...splitUrlLinks(item.url), ...splitUrlLinks(item.image)];
-  for (const link of linkUrls) {
-    if (isImageUrl(link) && !collected.includes(link)) {
-      collected.push(link);
-    }
-  }
-
-  if (collected.length === 0) {
-    collected.push(FALLBACK_IMAGE);
-  }
-
-  return collected;
-}
-
-function mapListingRecord(id, item) {
-  const metaParts = [
-    item.FOR ? `[${item.FOR}]` : "",
-    item.TYPE || "",
-    item.LOT || ""
-  ].filter(Boolean).join(" • ");
-
-  const remarkText = item.REMARK || item.description || "";
-  const combinedDesc = metaParts && remarkText
-    ? `${metaParts}\n${remarkText}`
-    : (remarkText || metaParts);
-
-  const images = collectImagesFromListing(item);
-  const listingLink = extractListingLink(item);
-
-  return {
-    id,
-    zone: normalizeZone(item.ZONE || item.zone),
-    image: images[0],
-    images,
-    listingLink,
-    name: String(item.PROPERTY || item.name || "PROPERTY").toUpperCase(),
-    price: Number(String(item.PRICE ?? item.price ?? 0).replace(/[^0-9.]/g, "")) || 0,
-    location: item.location || item.ZONE || "Sabah",
-    description: combinedDesc,
-    status: normalizeStatus(item.STATUS || item.status),
-    createdAt: item.createdAt || 0,
-    _raw: item
-  };
-}
-
-/* =========================================
-   BUKA LINK LISTING / VIEW PHOTO
-========================================= */
-function handlePropertyPhotoClick(propertyId, startIndex = 0) {
-  openGalleryById(propertyId, null, startIndex);
-}
-
-/* =========================================
-   POPUP GALERI GAMBAR (VIEW PHOTO KIRI / KANAN)
-========================================= */
-function openGalleryById(propertyId, event) {
-  if (event) event.stopPropagation();
-  const prop = properties.find(p => p.id === propertyId);
-  const imgs = (prop && Array.isArray(prop.images) && prop.images.length > 0)
-    ? prop.images
-    : [FALLBACK_IMAGE];
-
-  galleryImages = imgs;
-  galleryIndex = 0;
-  document.getElementById("galleryTitle").innerText = prop ? prop.name : "Galeri Gambar";
-  document.getElementById("galleryModal").classList.remove("hidden");
-  renderGalleryState();
-}
-
-function openGalleryFromUrls(title, urls) {
-  const validUrls = (urls || []).filter(u => u && u !== FALLBACK_IMAGE);
-  galleryImages = validUrls.length > 0 ? validUrls : [FALLBACK_IMAGE];
-  galleryIndex = 0;
-  document.getElementById("galleryTitle").innerText = title || "Attachment Preview";
-  document.getElementById("galleryModal").classList.remove("hidden");
-  renderGalleryState();
-}
-
-function renderGalleryState() {
-  const total = galleryImages.length;
-  if (total === 0) return;
-
-  galleryIndex = ((galleryIndex % total) + total) % total;
-  const currentUrl = galleryImages[galleryIndex];
-
-  const mainImg = document.getElementById("galleryMainImage");
-  mainImg.src = currentUrl;
-  document.getElementById("galleryCounter").innerText = `${galleryIndex + 1} / ${total}`;
-
-  const showNav = total > 1;
-  document.getElementById("galleryPrevBtn").classList.toggle("hidden", !showNav);
-  document.getElementById("galleryNextBtn").classList.toggle("hidden", !showNav);
-
-  const thumbsEl = document.getElementById("galleryThumbs");
-  thumbsEl.innerHTML = galleryImages.map((url, idx) => `
-    <img
-      src="${escapeHTML(url)}"
-      alt="Thumbnail ${idx + 1}"
-      class="gallery-thumb ${idx === galleryIndex ? "active" : ""}"
-      onclick="selectGalleryIndex(${idx})"
-      onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';"
-    >
-  `).join("");
-}
-
-function selectGalleryIndex(idx) {
-  galleryIndex = idx;
-  renderGalleryState();
-}
-
-function prevGalleryImage() {
-  if (galleryImages.length <= 1) return;
-  galleryIndex = (galleryIndex - 1 + galleryImages.length) % galleryImages.length;
-  renderGalleryState();
-}
-
-function nextGalleryImage() {
-  if (galleryImages.length <= 1) return;
-  galleryIndex = (galleryIndex + 1) % galleryImages.length;
-  renderGalleryState();
-}
-
-function closeGallery() {
-  document.getElementById("galleryModal").classList.add("hidden");
-}
-
-function handleGalleryBackdropClick(event) {
-  if (event.target.id === "galleryModal") {
-    closeGallery();
-  }
-}
-
-document.addEventListener("keydown", (e) => {
-  const modal = document.getElementById("galleryModal");
-  if (modal.classList.contains("hidden")) return;
-  if (e.key === "Escape") closeGallery();
-  if (e.key === "ArrowLeft") prevGalleryImage();
-  if (e.key === "ArrowRight") nextGalleryImage();
-});
-
-/* =========================================
-   FIREBASE AUTH STATE & LOGIN
-========================================= */
-auth.onAuthStateChanged((user) => {
-  document.getElementById("loadingScreen").style.display = "none";
-  if (user) {
-    sessionStorage.setItem("jackson_market_logged_in", "true");
-    document.getElementById("loginSection").classList.add("hidden");
-    document.getElementById("portalSection").classList.remove("hidden");
-    loadPropertiesFromFirebase();
-  } else {
-    sessionStorage.removeItem("jackson_market_logged_in");
-    document.getElementById("portalSection").classList.add("hidden");
-    document.getElementById("loginSection").classList.remove("hidden");
-  }
-});
-
-function login() {
-  const email = document.getElementById("adminEmail").value.trim();
-  const password = document.getElementById("password").value;
-
-  if (!email || !password) {
-    alert("Sila masukkan e-mel dan password.");
-    return;
-  }
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      document.getElementById("adminEmail").value = "";
-      document.getElementById("password").value = "";
-    })
-    .catch((error) => {
-      alert("Log masuk gagal. E-mel atau password salah.");
-      console.error(error.message);
-    });
-}
-
-function logout() {
-  auth.signOut().then(() => {
-    alert("Anda telah berjaya log keluar.");
-    backToWebsite();
-  });
-}
-
-/* =========================================
-   AUTO LIVE SYNC DARI LISTING (REALTIME DB)
-========================================= */
-let isListeningRtdb = false;
-
-function subscribeListingsRealtime({ includeAdmin = false } = {}) {
-  if (!isListeningRtdb) {
-    isListeningRtdb = true;
-    const listEl = document.getElementById("propertyList");
-
-    const loadTimer = setTimeout(() => {
-      if (listEl && listEl.innerText.includes("Sedang memuatkan senarai listing")) {
-        listEl.innerHTML = `<div class="empty">Tiada respon daripada Realtime Database. Sila semak sambungan internet/WebSocket, Console (F12), atau Realtime Database Rules.</div>`;
-      }
-    }, 8000);
-
-    rtdb.ref("properties").on("value", (snapshot) => {
-      clearTimeout(loadTimer);
-      const raw = snapshot.val();
-      if (!raw || typeof raw !== "object") {
-        properties = [];
-      } else {
-        properties = Object.entries(raw)
-          .map(([id, item]) => mapListingRecord(id, item || {}))
-          .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-      }
-
-      renderPublicListings();
-      if (!document.getElementById("portalSection").classList.contains("hidden")) {
-        renderManageListings();
-      }
-    }, (error) => {
-      clearTimeout(loadTimer);
-      console.error("Ralat membaca Realtime DB:", error);
-      if (listEl) {
-        listEl.innerHTML = `<div class="empty">Gagal memuatkan senarai listing: ${escapeHTML(error.message)}</div>`;
-      }
-    });
-  } else if (includeAdmin) {
-    renderManageListings();
-  }
-}
-
-function loadPropertiesFromFirebase() {
-  subscribeListingsRealtime({ includeAdmin: true });
-}
-
-function loadPublicProperties() {
-  subscribeListingsRealtime({ includeAdmin: false });
-}
-
-/* =========================================
-   HELPERS & FORMATTING
-========================================= */
-function formatPrice(price) {
-  const number = String(price).replace(/[^0-9]/g, "");
-  if (!number) return "RM0";
-  return "RM" + Number(number).toLocaleString("en-MY");
-}
-
-function changeZone(zone, button) {
-  selectedZone = zone;
-  currentPage = 1;
-  document.querySelectorAll(".zone-button").forEach(item => item.classList.remove("active"));
-  button.classList.add("active");
-  document.getElementById("zoneTitle").innerText = zone === "ALL"
-    ? "Property Available (Semua Zone)"
-    : "Property Available di " + zone;
-  renderPublicListings();
-}
-
-function goToPage(pageNum, totalPages) {
-  if (pageNum < 1 || pageNum > totalPages || pageNum === currentPage) return;
-  currentPage = pageNum;
-  renderPublicListings();
-  window.scrollTo({ top: 0, behavior: "smooth" });
-}
-
-function renderPagination(totalItems) {
-  const paginationEl = document.getElementById("paginationBar");
-  if (!paginationEl) return;
-
-  if (totalItems <= LISTINGS_PER_PAGE) {
-    paginationEl.innerHTML = "";
-    return;
-  }
-
-  const totalPages = Math.ceil(totalItems / LISTINGS_PER_PAGE);
-  if (currentPage > totalPages) currentPage = totalPages;
-  if (currentPage < 1) currentPage = 1;
-
-  const startIdx = (currentPage - 1) * LISTINGS_PER_PAGE;
-  const endIdx = Math.min(startIdx + LISTINGS_PER_PAGE, totalItems);
-
-  let buttonsHtml = `<button type="button" class="page-btn" onclick="goToPage(${currentPage - 1}, ${totalPages})" ${currentPage === 1 ? "disabled" : ""}>&#9664; Prev</button>`;
-
-  for (let p = 1; p <= totalPages; p++) {
-    buttonsHtml += `<button type="button" class="page-btn ${p === currentPage ? "active" : ""}" onclick="goToPage(${p}, ${totalPages})">${p}</button>`;
-  }
-
-  buttonsHtml += `<button type="button" class="page-btn" onclick="goToPage(${currentPage + 1}, ${totalPages})" ${currentPage === totalPages ? "disabled" : ""}>Next &#9654;</button>`;
-
-  paginationEl.innerHTML = `
-    ${buttonsHtml}
-    <div class="pagination-info">Halaman ${currentPage} daripada ${totalPages} • Memaparkan ${startIdx + 1}–${endIdx} daripada ${totalItems} listing</div>
-  `;
-}
-
-function getStatusClass(status) {
-  if (status === "Available") return "available";
-  if (status === "Booked") return "booked";
-  return "sold";
-}
-
-function escapeHTML(text) {
-  return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
-
-function moveAttachment(fromIndex, toIndex) {
-  const validImgs = (currentAttachments || []).filter(u => u && u !== FALLBACK_IMAGE);
-  if (
-    fromIndex < 0 || fromIndex >= validImgs.length ||
-    toIndex < 0 || toIndex >= validImgs.length ||
-    fromIndex === toIndex
-  ) {
-    return;
-  }
-  const [moved] = validImgs.splice(fromIndex, 1);
-  validImgs.splice(toIndex, 0, moved);
-  currentAttachments = validImgs;
-  currentImageUrl = validImgs[0] || FALLBACK_IMAGE;
-  renderAttachmentPreview();
-}
-
-function removeAttachment(index) {
-  const validImgs = (currentAttachments || []).filter(u => u && u !== FALLBACK_IMAGE);
-  if (index < 0 || index >= validImgs.length) return;
-  validImgs.splice(index, 1);
-  currentAttachments = validImgs;
-  currentImageUrl = validImgs[0] || FALLBACK_IMAGE;
-  renderAttachmentPreview();
-}
-
-function handleAttachmentDragStart(event, index) {
-  draggedAttachmentIndex = index;
-  event.dataTransfer.effectAllowed = "move";
-  event.dataTransfer.setData("text/plain", String(index));
-  event.currentTarget.classList.add("dragging");
-}
-
-function handleAttachmentDragOver(event) {
-  event.preventDefault();
-  event.dataTransfer.dropEffect = "move";
-  event.currentTarget.classList.add("drag-over");
-}
-
-function handleAttachmentDragLeave(event) {
-  event.currentTarget.classList.remove("drag-over");
-}
-
-function handleAttachmentDrop(event, targetIndex) {
-  event.preventDefault();
-  event.currentTarget.classList.remove("drag-over");
-  const fromIndex = draggedAttachmentIndex !== null
-    ? draggedAttachmentIndex
-    : Number(event.dataTransfer.getData("text/plain"));
-  draggedAttachmentIndex = null;
-  if (!Number.isNaN(fromIndex)) {
-    moveAttachment(fromIndex, targetIndex);
-  }
-}
-
-function handleAttachmentDragEnd(event) {
-  draggedAttachmentIndex = null;
-  event.currentTarget.classList.remove("dragging");
-  document.querySelectorAll(".attachment-item.drag-over").forEach(el => el.classList.remove("drag-over"));
-}
-
-function renderAttachmentPreview() {
-  const previewEl = document.getElementById("attachmentPreview");
-  const helperEl = document.getElementById("attachmentHelper");
-  if (!previewEl) return;
-
-  const validImgs = (currentAttachments || []).filter(u => u && u !== FALLBACK_IMAGE);
-  currentAttachments = validImgs;
-
-  if (validImgs.length === 0) {
-    previewEl.innerHTML = "";
-    if (helperEl) helperEl.classList.add("hidden");
-    return;
-  }
-
-  if (helperEl) helperEl.classList.remove("hidden");
-
-  previewEl.innerHTML = validImgs.map((url, idx) => {
-    const safeUrl = escapeHTML(url);
-    const isCover = idx === 0;
-    const badgeLabel = isCover ? "#1 Cover" : `#${idx + 1}`;
-    return `
-      <div
-        class="attachment-item ${isCover ? "cover" : ""}"
-        draggable="true"
-        data-idx="${idx}"
-        title="Seret untuk ubah susunan atau klik untuk preview"
-        onclick="openGalleryFromUrls('Attachment Listing (${validImgs.length})', currentAttachments)"
-        ondragstart="handleAttachmentDragStart(event, ${idx})"
-        ondragover="handleAttachmentDragOver(event)"
-        ondragleave="handleAttachmentDragLeave(event)"
-        ondrop="handleAttachmentDrop(event, ${idx})"
-        ondragend="handleAttachmentDragEnd(event)"
-      >
-        <img src="${safeUrl}" alt="Attachment ${idx + 1}" class="attachment-thumb" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
-        <span class="attachment-order-badge">${badgeLabel}</span>
-        <button type="button" class="attachment-remove-btn" title="Buang gambar ini" onclick="event.stopPropagation(); removeAttachment(${idx})">&times;</button>
-        ${validImgs.length > 1 ? `
-        <div class="attachment-move-bar" onclick="event.stopPropagation()">
-          <button type="button" class="attachment-move-btn" title="Gerak ke kiri" onclick="moveAttachment(${idx}, ${idx - 1})" ${idx === 0 ? "disabled" : ""}>&#9664;</button>
-          <button type="button" class="attachment-move-btn" title="Gerak ke kanan" onclick="moveAttachment(${idx}, ${idx + 1})" ${idx === validImgs.length - 1 ? "disabled" : ""}>&#9654;</button>
-        </div>` : ""}
-      </div>
-    `;
-  }).join("");
-}
-
-/* =========================================
-   PUBLIC LISTINGS (AVAILABLE SAHAJA, SEMUA ZONE)
-========================================= */
-function renderPublicListings() {
-  const list = document.getElementById("propertyList");
-  const filtered = properties.filter(p =>
-    p.status === "Available" && (selectedZone === "ALL" || p.zone === selectedZone)
-  );
-
-  if (filtered.length === 0) {
-    const label = selectedZone === "ALL" ? "semua zone" : selectedZone;
-    list.innerHTML = `<div class="empty">Belum ada property available di ${escapeHTML(label)}.</div>`;
-    renderPagination(0);
-    return;
-  }
-
-  const totalPages = Math.ceil(filtered.length / LISTINGS_PER_PAGE);
-  if (currentPage > totalPages) currentPage = totalPages;
-  if (currentPage < 1) currentPage = 1;
-
-  const startIndex = (currentPage - 1) * LISTINGS_PER_PAGE;
-  const pageItems = filtered.slice(startIndex, startIndex + LISTINGS_PER_PAGE);
-
-  list.innerHTML = pageItems.map(property => {
-    const message = encodeURIComponent(`Hi Jackson, saya berminat dengan property ${property.name}. Boleh bagi maklumat lanjut?`);
-    const hasLink = Boolean(property.listingLink);
-    const imgCount = (property.images && property.images.length) || 1;
-    return `
-    <div class="property-card">
-      <div class="image-wrapper" onclick="handlePropertyPhotoClick('${escapeHTML(property.id)}', 0)" title="Klik untuk lihat galeri gambar listing">
-  <img class="property-image" src="${escapeHTML(property.image)}" alt="${escapeHTML(property.name)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
-  <span class="gallery-trigger-badge" onclick="openGalleryById('${escapeHTML(property.id)}', event, 0)" title="View Photo">🖼️ ${imgCount}</span>
-  <span class="photo-badge">🔍 Galeri (${imgCount})</span>
-</div>
-      <div class="property-content">
-        <span class="status ${getStatusClass(property.status)}">${escapeHTML(property.status)}</span>
-        <h3 class="property-name">${escapeHTML(property.name)}</h3>
-        <div class="price">${formatPrice(property.price)}</div>
-        <div class="location">📍 ${escapeHTML(property.location)} (${escapeHTML(property.zone)})</div>
-        <p class="description">${escapeHTML(property.description)}</p>
-        <div class="property-actions">
-          <a class="button whatsapp" href="https://wa.me/${WHATSAPP_NUMBER}?text=${message}" target="_blank">💬 WHATSAPP JACKSON</a>
-        </div>
-      </div>
-    </div>`;
-  }).join("");
-
-  renderPagination(filtered.length);
-}
-
-/* =========================================
-   NAVIGATION ADMIN
-========================================= */
-function openAdmin() {
-  document.getElementById("publicPage").style.display = "none";
-  document.getElementById("adminPage").style.display = "block";
-  window.scrollTo(0, 0);
-}
-
-function backToWebsite() {
-  document.getElementById("adminPage").style.display = "none";
-  document.getElementById("publicPage").style.display = "block";
-  renderPublicListings();
-  window.scrollTo(0, 0);
-}
-
-/* =========================================
-   FUNGSI TUKAR FILE / LINK KEPADA BASE64 & AUTO UPLOAD IMGBB
-========================================= */
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const res = String(reader.result || "");
-      resolve(res.includes(",") ? res.split(",")[1] : res);
-    };
-    reader.onerror = error => reject(error);
-  });
-}
-
-function blobToBase64(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-    reader.onload = () => {
-      const res = String(reader.result || "");
-      resolve(res.includes(",") ? res.split(",")[1] : res);
-    };
-    reader.onerror = error => reject(error);
-  });
-}
-
-async function uploadBase64ToImgBB(base64Image) {
-  const formData = new FormData();
-  formData.append("key", IMGBB_API_KEY);
-  formData.append("image", base64Image);
-
-  const response = await fetch("https://api.imgbb.com/1/upload", {
-    method: "POST",
-    body: formData
-  });
-
-  const result = await response.json();
-  if (result && result.success && result.data && result.data.url) {
-    return result.data.url;
-  }
-  throw new Error("Gagal upload ke ImgBB. Sila semak API Key anda.");
-}
-
-async function uploadSingleToImgBB(file) {
-  const base64Image = await fileToBase64(file);
-  return uploadBase64ToImgBB(base64Image);
-}
-
-async function uploadImageUrlToImgBB(imageUrl) {
-  if (!imageUrl || imageUrl === FALLBACK_IMAGE) return null;
-  if (isImgBBUrl(imageUrl)) return imageUrl;
-
-  if (imageUrl.startsWith("data:image/")) {
-    const base64Part = imageUrl.split(",")[1];
-    return base64Part ? uploadBase64ToImgBB(base64Part) : imageUrl;
-  }
-
-  try {
-    const res = await fetch(imageUrl, { mode: "cors" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const blob = await res.blob();
-    if (!blob || !blob.type.startsWith("image/")) {
-      throw new Error("Bukan fail gambar");
-    }
-    const base64Data = await blobToBase64(blob);
-    return await uploadBase64ToImgBB(base64Data);
-  } catch (err) {
-    console.warn("Tidak dapat fetch terus link gambar ke ImgBB (kemungkinan CORS), simpan link asal sebagai lampiran:", imageUrl, err);
-    return imageUrl;
-  }
-}
-
-document.getElementById("propertyImageFile").addEventListener("change", function(event) {
-  const count = event.target.files ? event.target.files.length : 0;
-  const statusEl = document.getElementById("imageStatus");
-  if (!statusEl) return;
-  statusEl.innerText = count > 0
-    ? `✅ ${count} fail dipilih. Akan dimuat naik automatik ke ImgBB semasa publish.`
-    : "";
-});
-
-/* =========================================
-   SAVE / UPDATE PROPERTY (REALTIME DB + IMGBB)
-========================================= */
-async function saveProperty() {
-  const publishBtn = document.getElementById("publishBtn") || document.querySelector(".publish-button");
-  const zone = (document.getElementById("propertyZone")?.value || "Sandakan").trim();
-  const rawImageLinks = (document.getElementById("propertyImageLinks")?.value || "").trim();
-  const listingLinkInput = (document.getElementById("propertyListingLink")?.value || "").trim();
-  const name = (document.getElementById("propertyName")?.value || "").trim().toUpperCase();
-  const price = (document.getElementById("propertyPrice")?.value || "").replace(/[^0-9]/g, "");
-  const location = (document.getElementById("propertyLocation")?.value || "").trim();
-  const description = (document.getElementById("propertyDescription")?.value || "").trim();
-  const status = (document.getElementById("propertyStatus")?.value || "Available").trim();
-  const imageFileInput = document.getElementById("propertyImageFile");
-
-  if (!name || !price || !location) {
-    alert("Sila isi Nama Property, Harga dan Lokasi.");
-    return;
-  }
-
-  if (publishBtn) {
-    publishBtn.disabled = true;
-    publishBtn.innerText = "⏳ Sedang memproses...";
-  }
-
-  try {
-    const parsedLinks = splitUrlLinks(rawImageLinks);
-    const imageLinkCandidates = parsedLinks.filter(u => !isMarketplaceItemPage(u));
-    const detectedMarketplaceLink = parsedLinks.find(u => isMarketplaceItemPage(u)) || "";
-    const listingLink = listingLinkInput || detectedMarketplaceLink;
-
-    let uploadedUrls = [];
-
-    const files = imageFileInput && imageFileInput.files ? Array.from(imageFileInput.files) : [];
-    if (files.length > 0) {
-      if (publishBtn) publishBtn.innerText = `⏳ Sedang upload ${files.length} fail gambar ke ImgBB...`;
-      const fileUploads = await Promise.all(files.map(file => uploadSingleToImgBB(file)));
-      uploadedUrls.push(...fileUploads);
-    }
-
-    if (imageLinkCandidates.length > 0) {
-      if (publishBtn) publishBtn.innerText = `⏳ Sedang upload ${imageLinkCandidates.length} link gambar ke ImgBB...`;
-      const linkUploads = await Promise.all(imageLinkCandidates.map(link => uploadImageUrlToImgBB(link)));
-      uploadedUrls.push(...linkUploads.filter(Boolean));
-    }
-
-    if (publishBtn) publishBtn.innerText = "⏳ Sedang simpan ke Database...";
-
-    const zoneCode = zone === "Kota Kinabalu" ? "KK" : (zone === "Tawau" ? "TWU" : "SDK");
-    const existingRaw = editingId ? (properties.find(p => p.id === editingId)?._raw || {}) : {};
-    const orderedExistingUrls = (currentAttachments || []).filter(u => isImageUrl(u) && u !== FALLBACK_IMAGE);
-
-    const combinedUrls = [...new Set([...orderedExistingUrls, ...uploadedUrls])];
-    const finalImageUrls = combinedUrls.length > 0 ? combinedUrls : [FALLBACK_IMAGE];
-
-    const updatedImages = finalImageUrls.map(url => ({ url, path: "" }));
-    const resolvedListingLink = listingLink || extractListingLink(existingRaw);
-    const combinedUrlField = [
-      resolvedListingLink,
-      ...finalImageUrls.filter(u => u !== FALLBACK_IMAGE)
-    ].filter(Boolean).join(" ");
-
-    const listingPayload = {
-      ...existingRaw,
-      PROPERTY: name,
-      ZONE: zoneCode,
-      FOR: existingRaw.FOR || "SELL",
-      TYPE: existingRaw.TYPE || "LANDED",
-      LOT: existingRaw.LOT || "INTERMEDIATE",
-      PRICE: Number(price),
-      location: location,
-      REMARK: description,
-      STATUS: status.toUpperCase(),
-      LINK: resolvedListingLink,
-      URL: combinedUrlField,
-      IMAGES: updatedImages,
-      createdAt: existingRaw.createdAt || Date.now()
-    };
-
-    if (editingId !== null) {
-      await rtdb.ref("properties/" + editingId).update(listingPayload);
-      alert("Property berjaya dikemas kini!");
-    } else {
-      await rtdb.ref("properties").push(listingPayload);
-      alert("Property berjaya dipublish!");
-    }
-
-    cancelEdit();
-  } catch (error) {
-    console.error("Ralat saveProperty:", error);
-    alert("Gagal publish property: " + (error && error.message ? error.message : "Ralat tidak diketahui"));
-  } finally {
-    if (publishBtn) {
-      publishBtn.innerText = "🚀 PUBLISH PROPERTY";
-      publishBtn.disabled = false;
-    }
-  }
-}
-
-/* =========================================
-   MANAGE LISTINGS (ADMIN)
-========================================= */
-function renderManageListings() {
-  const list = document.getElementById("manageList");
-  if (!list) return;
-  if (properties.length === 0) {
-    list.innerHTML = `<div class="empty">Belum ada listing.</div>`;
-    return;
-  }
-
-  list.innerHTML = properties.map(property => {
-    const imgCount = (property.images && property.images.length) || 1;
-    return `
-    <div class="property-card">
-      <div class="image-wrapper" onclick="openGalleryById('${escapeHTML(property.id)}')" title="Klik untuk lihat semua gambar">
-        <img class="property-image" src="${escapeHTML(property.image)}" alt="${escapeHTML(property.name)}" loading="lazy" onerror="this.onerror=null;this.src='${FALLBACK_IMAGE}';">
-        ${imgCount > 1 ? `<span class="photo-badge">📷 ${imgCount}</span>` : `<span class="photo-badge">🔍 Lihat</span>`}
-      </div>
-      <div class="property-content">
-        <span class="status ${getStatusClass(property.status)}">${escapeHTML(property.status)}</span>
-        <h3 class="property-name">${escapeHTML(property.name)}</h3>
-        <div class="price">${formatPrice(property.price)}</div>
-        <div class="location">📍 ${escapeHTML(property.location)}</div>
-        <p class="description">Zone: <b>${escapeHTML(property.zone)}</b></p>
-        <button type="button" class="edit-button" onclick="editProperty('${property.id}')">EDIT</button>
-        <button type="button" class="delete-button" onclick="deleteProperty('${property.id}')">DELETE</button>
-      </div>
-    </div>`;
-  }).join("");
-}
-
-function editProperty(id) {
-  const property = properties.find(item => item.id === id);
-  if (!property) return;
-
-  editingId = id;
-  currentImageUrl = property.image;
-  currentAttachments = Array.isArray(property.images)
-    ? property.images.filter(u => u && u !== FALLBACK_IMAGE)
-    : [];
-
-  document.getElementById("propertyZone").value = property.zone;
-  document.getElementById("propertyListingLink").value = property.listingLink || "";
-  document.getElementById("propertyImageLinks").value = "";
-  document.getElementById("propertyName").value = property.name;
-  document.getElementById("propertyPrice").value = property.price;
-  document.getElementById("propertyLocation").value = property.location;
-  document.getElementById("propertyDescription").value = property._raw?.REMARK ?? property.description;
-  document.getElementById("propertyStatus").value = property.status;
-  document.getElementById("propertyImageFile").value = "";
-  document.getElementById("imageStatus").innerText = "Seret gambar di bawah untuk susun kedudukan (#1 Cover Utama), atau muat naik gambar baharu.";
-  renderAttachmentPreview();
-
-  document.getElementById("formTitle").innerText = "✏️ Edit Property";
-  document.getElementById("cancelEditButton").classList.remove("hidden");
-  window.scrollTo(0, 0);
-}
-
-function cancelEdit() {
-  editingId = null;
-  currentImageUrl = FALLBACK_IMAGE;
-  currentAttachments = [];
-  document.getElementById("formTitle").innerText = "➕ Tambah Property";
-  document.getElementById("cancelEditButton").classList.add("hidden");
-  document.getElementById("propertyZone").value = "Sandakan";
-  document.getElementById("propertyImageFile").value = "";
-  document.getElementById("propertyImageLinks").value = "";
-  document.getElementById("propertyListingLink").value = "";
-  document.getElementById("propertyName").value = "";
-  document.getElementById("propertyPrice").value = "";
-  document.getElementById("propertyLocation").value = "";
-  document.getElementById("propertyDescription").value = "";
-  document.getElementById("propertyStatus").value = "Available";
-  document.getElementById("imageStatus").innerText = "";
-  renderAttachmentPreview();
-}
-
-async function deleteProperty(id) {
-  if (!confirm("Adakah anda pasti mahu delete property ini?")) return;
-  try {
-    await rtdb.ref("properties/" + id).remove();
-    alert("Property telah dipadam.");
-  } catch (error) {
-    console.error("Ralat memadam:", error);
-    alert("Gagal memadam property.");
-  }
-}
-
-// Muat turun data awam secara langsung apabila laman dibuka
-loadPublicProperties();
-</script>
-
+    </script>
 </body>
 </html>
